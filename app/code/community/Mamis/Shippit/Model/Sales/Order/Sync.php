@@ -16,7 +16,7 @@
 
 class Mamis_Shippit_Model_Sales_Order_Sync extends Mage_Core_Model_Abstract
 {
-    public $api;
+    protected $api;
 
     public function __construct()
     {
@@ -53,9 +53,19 @@ class Mamis_Shippit_Model_Sales_Order_Sync extends Mage_Core_Model_Abstract
         $this->_setReceiver($orderData, $order);
         $this->_setDeliveryAddress($orderData, $order);
         $this->_setParcelsAttributes($orderData, $order);
-    
-        // Mage::log($orderData->toArray());
-        $this->api->sendOrder($orderData);
+
+        try {
+            $this->api->sendOrder($orderData);
+
+            // Update the order to be marked as synced
+            $order->setShippitSync(true);
+
+            // Add the order tracking details
+            
+                
+            $order->save();
+
+        }
     }
 
     private function _setRetailerInvoice(&$orderData, &$order)

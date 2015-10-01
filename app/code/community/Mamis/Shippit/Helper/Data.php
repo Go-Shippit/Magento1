@@ -63,7 +63,7 @@ class Mamis_Shippit_Helper_Data extends Mage_Core_Helper_Abstract
     {
         return self::getStoreConfig('title');
     }
-    
+
     public function getMaxTimeslots()
     {
         return self::getStoreConfig('max_timeslots');

@@ -19,7 +19,7 @@
     <sections>
         <carriers>
             <groups>
-                <shippit translate="label" module="mamis_shippit">
+                <mamis_shippit translate="label" module="mamis_shippit">
                     <label>Shippit</label>
                     <sort_order>1</sort_order>
                     <show_in_default>1</show_in_default>
@@ -176,7 +176,7 @@
                             <show_in_store>0</show_in_store>
                         </sort_order>
                      </fields>
-                </shippit>
+                </mamis_shippit>
             </groups>
         </carriers>
     </sections>
