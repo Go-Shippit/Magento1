@@ -1,0 +1,142 @@
+<?xml version="1.0"?>
+<!--
+/**
+*  Mamis.IT
+*
+*  NOTICE OF LICENSE
+*
+*  This source file is subject to the EULA
+*  that is available through the world-wide-web at this URL:
+*  http://www.mamis.com.au/licencing
+*
+*  @category   Mamis
+*  @copyright  Copyright (c) 2015 by Mamis.IT Pty Ltd (http://www.mamis.com.au)
+*  @author     Matthew Muscat <matthew@mamis.com.au>
+*  @license    http://www.mamis.com.au/licencing
+*/
+-->
+<config>
+    <modules>
+        <Mamis_Shippit>
+            <version>3.0.0</version>
+        </Mamis_Shippit>
+    </modules>
+
+    <global>
+        <blocks>
+            <mamis_shippit>
+                <class>Mamis_Shippit_Block</class>
+            </mamis_shippit>
+            <checkout>
+                <rewrite>
+                    <cart_shipping>Mamis_Shippit_Block_Checkout_Cart_Shipping</cart_shipping>
+                </rewrite>
+            </checkout>
+        </blocks>
+
+        <models>
+            <mamis_shippit>
+                <class>Mamis_Shippit_Model</class>
+            </mamis_shippit>
+        </models>
+
+        <helpers>
+            <mamis_shippit>
+                <class>Mamis_Shippit_Helper</class>
+            </mamis_shippit>
+        </helpers>
+
+        <resources>
+            <mamis_shippit_setup>
+                <setup>
+                    <module>Mamis_Shippit</module>
+                    <class>Mage_Eav_Model_Entity_Setup</class>
+                </setup>
+                <connection>
+                    <use>core_setup</use>
+                </connection>
+            </mamis_shippit_setup>
+        </resources>
+
+        <events>
+            <sales_order_place_after>
+                <observers>
+                    <mamis_shippit_add_order_to_sync>
+                        <class>mamis_shippit/sales_order_observer</class>
+                        <method>addOrderToSync</method>
+                    </mamis_shippit_add_order_to_sync>
+                </observers>
+            </sales_order_place_after>
+
+            <checkout_controller_onepage_save_shipping_method>
+                <observers>
+                    <mamis_shippit_add_delivery_instructions_to_quote>
+                        <class>mamis_shippit/sales_order_observer</class>
+                        <method>addDeliveryInstructionsToQuote</method>
+                    </mamis_shippit_add_delivery_instructions_to_quote>
+
+                    <mamis_shippit_add_authority_to_leave_to_quote>
+                        <class>mamis_shippit/sales_order_observer</class>
+                        <method>addAuthorityToLeaveToQuote</method>
+                    </mamis_shippit_add_authority_to_leave_to_quote>
+                </observers>
+            </checkout_controller_onepage_save_shipping_method>
+        </events>
+
+        <fieldsets>
+            <sales_convert_quote>
+                <shippit_authority_to_leave>
+                    <to_order>*</to_order>
+                </shippit_authority_to_leave>
+
+                <shippit_delivery_instructions>
+                    <to_order>*</to_order>
+                </shippit_delivery_instructions>
+            </sales_convert_quote>
+        </fieldsets>
+    </global>
+
+    <frontend>
+        <translate>
+            <modules>
+                <mamis_shippit>
+                    <files>
+                        <default>mamis_shippit.csv</default>
+                    </files>
+                </mamis_shippit>
+            </modules>
+        </translate>
+
+        <layout>
+            <updates>
+                <mamis_shippit>
+                    <file>mamis_shippit.xml</file>
+                </mamis_shippit>
+            </updates>
+        </layout>
+    </frontend>
+
+    <crontab>
+        <jobs>
+            <mamis_shippit_order_sync>
+                <schedule>
+                    <cron_expr>*/5 * * * *</cron_expr>
+                </schedule>
+                <run>
+                    <model>mamis_shippit/sales_order_sync::run</model>
+                </run>
+            </mamis_shippit_order_sync>
+        </jobs>
+    </crontab>
+
+    <default>
+        <carriers>
+            <mamis_shippit>
+                <active>0</active>
+                <sort_order>10</sort_order>
+                <model>mamis_shippit/shipping_carrier_shippit</model>
+                <title>Shippit</title>
+            </mamis_shippit>
+        </carriers>
+    </default>
+</config>

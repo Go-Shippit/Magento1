@@ -1,0 +1,26 @@
+<?php
+/**
+*  Mamis.IT
+*
+*  NOTICE OF LICENSE
+*
+*  This source file is subject to the EULA
+*  that is available through the world-wide-web at this URL:
+*  http://www.mamis.com.au/licencing
+*
+*  @category   Mamis
+*  @copyright  Copyright (c) 2015 by Mamis.IT Pty Ltd (http://www.mamis.com.au)
+*  @author     Matthew Muscat <matthew@mamis.com.au>
+*  @license    http://www.mamis.com.au/licencing
+*/
+?>
+
+<ul class="form-list">
+    <li class="control">
+        <!-- Shippit Authority To Leave Checkbox -->
+        <input name="<?php echo $this->getFieldId(); ?>" type="checkbox" title="<?php echo $this->getLabelText() ?>" class="checkbox" <?php echo ($this->getValue() ? 'checked' : '') ?> />
+        <label for="<?php echo $this->getFieldId() ?>">
+            <?php echo $this->getLabelText() ?>
+        </label>
+    </li>
+</ul>
