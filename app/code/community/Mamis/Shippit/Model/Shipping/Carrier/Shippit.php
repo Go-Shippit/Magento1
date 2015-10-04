@@ -29,6 +29,7 @@ class Mamis_Shippit_Model_Shipping_Carrier_Shippit extends Mage_Shipping_Model_C
      */
     protected $helper;
     protected $api;
+    protected $bugsnag;
 
     /**
      * Attach the helper as a class variable
@@ -37,6 +38,10 @@ class Mamis_Shippit_Model_Shipping_Carrier_Shippit extends Mage_Shipping_Model_C
     {
         $this->helper = Mage::helper('mamis_shippit');
         $this->api = Mage::helper('mamis_shippit/api');
+
+        if ($this->helper->isDebugActive()) {
+            $this->bugsnag = Mage::helper('mamis_shippit/bugsnag')->init();
+        }
 
         return parent::__construct();
     }
@@ -51,7 +56,6 @@ class Mamis_Shippit_Model_Shipping_Carrier_Shippit extends Mage_Shipping_Model_C
     public function collectRates(Mage_Shipping_Model_Rate_Request $request)
     {
         if (!$this->helper->isActive()) {
-            Mage::log('shippit is not activated');
             return false;
         }
 
@@ -64,6 +68,9 @@ class Mamis_Shippit_Model_Shipping_Carrier_Shippit extends Mage_Shipping_Model_C
 
         $quoteRequest = new Varien_Object;
 
+        // @TODO: Confirm how processing time is factored in
+        // for order pickup availability date
+        // Suggestion - config value?
         $orderDate = new Zend_Date(Mage::getModel('core/date')->timestamp(), Zend_Date::TIMESTAMP);
         $orderDate->addDay('+2');
 
@@ -88,6 +95,10 @@ class Mamis_Shippit_Model_Shipping_Carrier_Shippit extends Mage_Shipping_Model_C
             $shippingQuotes = $this->api->getQuote($quoteRequest);
         }
         catch (Exception $e) {
+            if ($this->helper->isDebugActive() && $this->bugsnag) {
+                $this->bugsnag->notifyError('API - Quote Request', $e->getMessage());
+            }
+
             Mage::log($e->getMessage());
         
             return false;
@@ -117,13 +128,11 @@ class Mamis_Shippit_Model_Shipping_Carrier_Shippit extends Mage_Shipping_Model_C
 
     private function _addEconomyQuote(&$rateResult, $shippingQuote)
     {
-        Mage::log('_addEconomyQuote');
-
         foreach ($shippingQuote->quotes as $shippingQuoteQuote) {
             $rateResultMethod = Mage::getModel('shipping/rate_result_method');
-            $rateResultMethod->setCarrier($this->_code);
-
-            $rateResultMethod->setCarrierTitle($shippingQuote->courier_type)
+            $rateResultMethod->setCarrier($this->_code)
+                ->setCarrierTitle($shippingQuote->courier_type)
+                ->setMethod($shippingQuote->courier_type)
                 ->setMethodTitle('Economy')
                 ->setCost($shippingQuoteQuote->price)
                 ->setPrice($shippingQuoteQuote->price);
@@ -134,24 +143,33 @@ class Mamis_Shippit_Model_Shipping_Carrier_Shippit extends Mage_Shipping_Model_C
 
     private function _addPremiumQuote(&$rateResult, $shippingQuote)
     {
-        Mage::log('_addPremiumQuote');
+        $maxTimeslots = Mage::helper('mamis_shippit')->getMaxTimeslots();
+        $timeslotCount = 0;
 
         foreach ($shippingQuote->quotes as $shippingQuoteQuote) {
+            if (!empty($maxTimeslots)&& $maxTimeslots <= $timeslotCount) {
+                break;
+            }
+
             $rateResultMethod = Mage::getModel('shipping/rate_result_method');
-            $rateResultMethod->setCarrier($this->_code);
 
             if (property_exists($shippingQuoteQuote, 'delivery_date')
                 && property_exists($shippingQuoteQuote, 'delivery_window')
                 && property_exists($shippingQuoteQuote, 'delivery_window_desc')) {
-                $carrierTitle = $shippingQuote->courier_type . '_' . $shippingQuote->delivery_date . '_' . $shippingQuoteQuote->delivery_window;
+                $timeslotCount++;
+                $carrierTitle = $shippingQuote->courier_type;
+                $method = $shippingQuote->courier_type . '_' . $shippingQuoteQuote->delivery_date . '_' . $shippingQuoteQuote->delivery_window;
                 $methodTitle = 'Premium' . ' - Delivered ' . $shippingQuoteQuote->delivery_date. ', Between ' . $shippingQuoteQuote->delivery_window_desc;
             }
             else {
                 $carrierTitle = $shippingQuote->courier_type;
+                $method = $shippingQuote->courier_type;
                 $methodTitle = 'Premium';
             }
 
-            $rateResultMethod->setCarrierTitle($carrierTitle)
+            $rateResultMethod->setCarrier($this->_code)
+                ->setCarrierTitle($carrierTitle)
+                ->setMethod($method)
                 ->setMethodTitle($methodTitle)
                 ->setCost($shippingQuoteQuote->price)
                 ->setPrice($shippingQuoteQuote->price);
@@ -162,10 +180,18 @@ class Mamis_Shippit_Model_Shipping_Carrier_Shippit extends Mage_Shipping_Model_C
 
     public function getAllowedMethods()
     {
-        return array(
-            'economy'     =>  'Economy',
-            'premium'     =>  'Premium',
-        );
+        $configAllowedMethods = explode(',', Mage::helper('mamis_shippit')->getAllowedMethods());
+        $availableMethods = Mage::getModel('mamis_shippit/shipping_carrier_shippit_methods')->getMethods();
+
+        $allowedMethods = array();
+
+        foreach ($availableMethods as $methodValue => $methodLabel) {
+            if (in_array($methodValue, $configAllowedMethods)) {
+                $allowedMethods[$methodValue] = $methodLabel;
+            }
+        }
+
+        return $allowedMethods;
     }
 
     public function isStateProvinceRequired()
@@ -207,11 +233,9 @@ class Mamis_Shippit_Model_Shipping_Carrier_Shippit extends Mage_Shipping_Model_C
         $canShipEnabledProductAttributes = $this->_canShipEnabledProductAttributes($productIds);
 
         if ($canShipEnabledProducts && $canShipEnabledProductAttributes) {
-            Mage::log('_canShipProducts returning true');
             return true;
         }
         else {
-            Mage::log('_canShipProducts returning false');
             return false;
         }
     }
@@ -245,7 +269,7 @@ class Mamis_Shippit_Model_Shipping_Carrier_Shippit extends Mage_Shipping_Model_C
         $attributeValue = $this->helper->getEnabledProductAttributeValue();
         
         if (!empty($attributeCode) && !empty($attributeValue)) {
-            $attributeProductCount =Mage::getModel('catalog/product')
+            $attributeProductCount = Mage::getModel('catalog/product')
                 ->getCollection()
                 ->addAttributeToFilter('entity_id', array('in' => $productIds))
                 ->addAttributeToFilter($attributeCode, array('eq' => $attributeValue))

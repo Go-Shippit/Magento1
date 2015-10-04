@@ -16,8 +16,8 @@
 
 class Mamis_Shippit_Model_System_Config_Source_Shippit_MaxTimeslots
 {
-    const MAX_TIMESLOTS_MIN = 1;
-    const MAX_TIMESLOTS_MAX = 20;
+    const TIMESLOTS_MIN = 1;
+    const TIMESLOTS_MAX = 20;
     /**
      * Returns code => code pairs of attributes for all product attributes
      *
@@ -25,9 +25,13 @@ class Mamis_Shippit_Model_System_Config_Source_Shippit_MaxTimeslots
      */
     public function toOptionArray()
     {
-        $timeslots = range(self::MAX_TIMESLOTS_MIN, self::MAX_TIMESLOTS_MAX);
+        $timeslots = range(self::TIMESLOTS_MIN, self::TIMESLOTS_MAX);
 
         $timeslotsArray = array();
+        $timeslotsArray[] = array(
+            'label' => '-- No Max Timeslots --',
+            'value' => ''
+        );
 
         foreach ($timeslots as $timeslot)
         {

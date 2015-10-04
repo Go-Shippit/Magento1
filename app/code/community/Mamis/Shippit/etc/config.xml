@@ -132,10 +132,23 @@
     <default>
         <carriers>
             <mamis_shippit>
-                <active>0</active>
-                <sort_order>10</sort_order>
                 <model>mamis_shippit/shipping_carrier_shippit</model>
+                <active>0</active>
+                <api_key/>
+                <debug_active>0</debug_active>
+                <allowed_methods>CouriersPlease,eParcel,Bonds</allowed_methods>
                 <title>Shippit</title>
+                <max_timeslots/>
+                <send_all_orders_active>0</send_all_orders_active>
+                <enabled_product_active>0</enabled_product_active>
+                <enabled_product_ids/>
+                <enabled_product_attribute_active>0</enabled_product_attribute_active>
+                <enabled_product_attribute_code/>
+                <enabled_product_attribute_value/>
+                <sallowspecific/>
+                <specificcountry/>
+                <showmethod/>
+                <sort_order>10</sort_order>
             </mamis_shippit>
         </carriers>
     </default>

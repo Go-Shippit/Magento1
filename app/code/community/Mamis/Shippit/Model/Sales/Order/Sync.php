@@ -16,11 +16,20 @@
 
 class Mamis_Shippit_Model_Sales_Order_Sync extends Mage_Core_Model_Abstract
 {
+    const CARRIER_CODE = 'mamis_shippit';
+
     protected $api;
+    protected $helper;
+    protected $bugsnag;
 
     public function __construct()
     {
+        $this->helper = Mage::helper('mamis_shippit');
         $this->api = Mage::helper('mamis_shippit/api');
+
+        if ($this->helper->isDebugActive()) {
+            $this->bugsnag = Mage::helper('mamis_shippit/bugsnag')->init();
+        }
     }
 
     public function run()
@@ -36,6 +45,7 @@ class Mamis_Shippit_Model_Sales_Order_Sync extends Mage_Core_Model_Abstract
     {
         $orders = Mage::getModel('sales/order')
             ->getCollection()
+            ->addFieldToFilter('state', Mage_Sales_Model_Order::STATE_PROCESSING)
             ->addAttributeToFilter('shippit_sync', array('eq' => false));
 
         return $orders;
@@ -55,17 +65,29 @@ class Mamis_Shippit_Model_Sales_Order_Sync extends Mage_Core_Model_Abstract
         $this->_setParcelsAttributes($orderData, $order);
 
         try {
-            $this->api->sendOrder($orderData);
+            $apiResponse = $this->api->sendOrder($orderData);
 
             // Update the order to be marked as synced
             $order->setShippitSync(true);
 
             // Add the order tracking details
-            
+            $comment = $this->helper->__('Order Synced with Shippit - ' . $apiResponse->tracking_number);
+            $order->addStatusHistoryComment($comment)
+                ->setIsVisibleOnFront(false);
                 
             $order->save();
-
         }
+        catch (Exception $e) {
+            if ($this->helper->isDebugActive() && $this->bugsnag) {
+                $this->bugsnag->notifyError('API - Order Sync Request', $e->getMessage());
+            }
+
+            Mage::log($e->getMessage());
+        
+            return false;
+        }
+
+        return true;
     }
 
     private function _setRetailerInvoice(&$orderData, &$order)
@@ -73,6 +95,8 @@ class Mamis_Shippit_Model_Sales_Order_Sync extends Mage_Core_Model_Abstract
         $orderData->setRetailerInvoice(
             $order->getIncrementId()
         );
+
+        return $orderData;
     }
 
     private function _setAuthorityToLeave(&$orderData, &$order)
@@ -85,6 +109,8 @@ class Mamis_Shippit_Model_Sales_Order_Sync extends Mage_Core_Model_Abstract
         }
 
         $orderData->setAuthorityToLeave($authorityToLeave);
+
+        return $orderData;
     }
 
     private function _setDeliveryInstructions(&$orderData, &$order)
@@ -92,29 +118,38 @@ class Mamis_Shippit_Model_Sales_Order_Sync extends Mage_Core_Model_Abstract
         $orderData->setDeliveryInstructions(
             $order->getShippitDeliveryInstructions()
         );
+
+        return $orderData;
     }
 
     private function _setCourierType(&$orderData, &$order)
     {
-        $shippingMethod = $order->getShippingDescription();
-        $shippingMethodSegments = explode(' - ', $shippingMethod);
-        $courierData = array();
-        
-        if (isset($shippingMethodSegments[0])) {
-            if ($shippingMethodSegments[0] == 'Bonds') {
-                // convert the delivery date to the format required by the order api
-                $deliveryDate = new Zend_Date(
-                    strtotime($shippingMethodSegments[1])
-                );
+        $shippingMethod = $order->getShippingMethod();
 
-                $orderData->setCourierType( $shippingMethodSegments[0] )
-                    ->setDeliveryDate( $deliveryDate->toString('dd/MM/YYYY') )
-                    ->setDeliveryWindow( $shippingMethodSegments[2] );
-            }
-            else {
-                $orderData->setCourierType( $shippingMethodSegments[0] );
+        // If the shipping method is a shippit method,
+        // processing using the selected shipping options
+        if (strpos($shippingMethod, $this::CARRIER_CODE) !== FALSE) {
+            $shippingOptions = str_replace($this::CARRIER_CODE . '_', '', $shippingMethod);
+            $shippingOptions = explode('_', $shippingOptions);
+            $courierData = array();
+            
+            if (isset($shippingOptions[0])) {
+                if ($shippingOptions[0] == 'Bonds') {
+                    $orderData->setCourierType( $shippingOptions[0] )
+                        ->setDeliveryDate( $shippingOptions[1] )
+                        ->setDeliveryWindow( $shippingOptions[2] );
+                }
+                else {
+                    $orderData->setCourierType( $shippingOptions[0] );
+                }
             }
         }
+        // Otherwise, use the default "CouriersPlease" courier type
+        else {
+            $orderData->setCourierType('CouriersPlease');
+        }
+
+        return $orderData;
     }
 
     private function _setReceiver(&$orderData, &$order)
@@ -123,6 +158,8 @@ class Mamis_Shippit_Model_Sales_Order_Sync extends Mage_Core_Model_Abstract
 
         $orderData->setReceiverName( $shippingAddress->getName() )
             ->setReceiverContactNumber( $shippingAddress->getTelephone() );
+
+        return $orderData;
     }
 
     private function _setDeliveryAddress(&$orderData, &$order)
@@ -133,6 +170,8 @@ class Mamis_Shippit_Model_Sales_Order_Sync extends Mage_Core_Model_Abstract
             ->setDeliverySuburb( $shippingAddress->getCity() )
             ->setDeliveryPostcode( $shippingAddress->getPostcode() )
             ->setDeliveryState( $shippingAddress->getRegionCode() );
+
+        return $orderData;
     }
 
     private function _setUserAttributes(&$orderData, &$order)
@@ -144,6 +183,8 @@ class Mamis_Shippit_Model_Sales_Order_Sync extends Mage_Core_Model_Abstract
         );
 
         $orderData->setUserAttributes($userAttributes);
+
+        return $orderData;
     }
 
     private function _setParcelsAttributes(&$orderData, &$order)
@@ -167,5 +208,7 @@ class Mamis_Shippit_Model_Sales_Order_Sync extends Mage_Core_Model_Abstract
         }
 
         $orderData->setParcelAttributes($parcelsAttributes);
+
+        return $orderData;
     }
 }

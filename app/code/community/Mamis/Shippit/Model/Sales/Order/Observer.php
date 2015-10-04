@@ -16,6 +16,8 @@
 
 class Mamis_Shippit_Model_Sales_Order_Observer
 {
+    const CARRIER_CODE = 'mamis_shippit';
+    
     /**
      * Set the order to be synced with shippit
      * @param Varien_Event_Observer $observer [description]
@@ -39,7 +41,7 @@ class Mamis_Shippit_Model_Sales_Order_Observer
         $shippingMethod = $order->getShippingMethod();
 
         if ($helper->isSendAllOrdersActive()
-            || $shippingMethod == 'mamis_shippit') {
+            || strpos($shippingMethod, $this::CARRIER_CODE) !== FALSE) {
             // trigger the order to be synced on the next cron run
             $order->setShippitSync(false);
             $order->save();

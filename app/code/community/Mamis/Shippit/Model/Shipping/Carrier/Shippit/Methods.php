@@ -23,17 +23,27 @@ class Mamis_Shippit_Model_Shipping_Carrier_Shippit_Methods
      */
     public function toOptionArray()
     {
-        $methods = array(
-            array(
-                'label' => 'Standard',
-                'value' => 'standard'
-            ),
-            array(
-                'label' => 'Economy',
-                'value' => 'ecomony'
-            ),
-        );
+        $methods = $this->getMethods();
+        $methodOptions = array();
+
+        foreach ($methods as $methodValue => $methodLabel) {
+            $methodOptions[] = array(
+                'label' => $methodLabel,
+                'value' => $methodValue
+            );
+        }
         
+        return $methodOptions;
+    }
+
+    public function getMethods()
+    {
+        $methods = array(
+            'CouriersPlease' => 'Couriers Please',
+            'eParcel' => 'eParcel (Australia Post)',
+            'Bonds' => 'Bonds'
+        );
+
         return $methods;
     }
 }

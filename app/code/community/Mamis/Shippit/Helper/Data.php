@@ -41,6 +41,17 @@ class Mamis_Shippit_Helper_Data extends Mage_Core_Helper_Abstract
         }
     }
 
+    public function getModuleVersion()
+    {
+        $version = (string) Mage::getConfig()
+            ->getNode()
+            ->modules
+            ->Mamis_Shippit
+            ->version;
+
+        return $version;
+    }
+
     /**
      * @return bool
      */
@@ -52,6 +63,11 @@ class Mamis_Shippit_Helper_Data extends Mage_Core_Helper_Abstract
     public function getApiKey()
     {
         return self::getStoreConfig('api_key');
+    }
+
+    public function isDebugActive()
+    {
+        return self::getStoreConfig('debug_active', true);
     }
 
     public function getAllowedMethods()
