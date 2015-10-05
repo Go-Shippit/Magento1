@@ -68,13 +68,8 @@ class Mamis_Shippit_Model_Shipping_Carrier_Shippit extends Mage_Shipping_Model_C
 
         $quoteRequest = new Varien_Object;
 
-        // @TODO: Confirm how processing time is factored in
-        // for order pickup availability date
-        // Suggestion - config value?
-        $orderDate = new Zend_Date(Mage::getModel('core/date')->timestamp(), Zend_Date::TIMESTAMP);
-        $orderDate->addDay('+2');
-
-        $quoteRequest->setOrderDate($orderDate->toString('YYYY-MM-dd'));
+        // Get the first available dates based on the customer's shippit profile settings
+        $quoteRequest->setOrderDate(null);
 
         if ($request->getDestCity()) {
             $quoteRequest->setDropoffSuburb($request->getDestCity());
