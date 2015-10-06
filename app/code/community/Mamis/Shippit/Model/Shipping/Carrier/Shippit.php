@@ -75,7 +75,7 @@ class Mamis_Shippit_Model_Shipping_Carrier_Shippit extends Mage_Shipping_Model_C
         $quoteRequest = new Varien_Object;
 
         // Get the first available dates based on the customer's shippit profile settings
-        $quoteRequest->setOrderDate(null);
+        $quoteRequest->setOrderDate('');
 
         if ($request->getDestCity()) {
             $quoteRequest->setDropoffSuburb($request->getDestCity());
