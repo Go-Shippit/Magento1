@@ -267,7 +267,7 @@ class Mamis_Shippit_Model_Shipping_Carrier_Shippit extends Mage_Shipping_Model_C
         // if we have enabled products, check that all
         // items in the shipping request are enabled
         if (count($enabledProductIds) > 0) {
-            if ($productIds == array_intersect($productIds, $enabledProductIds)) {
+            if ($productIds != array_intersect($productIds, $enabledProductIds)) {
                 return false;
             }
         }
