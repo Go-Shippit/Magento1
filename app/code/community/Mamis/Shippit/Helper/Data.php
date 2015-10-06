@@ -70,9 +70,9 @@ class Mamis_Shippit_Helper_Data extends Mage_Core_Helper_Abstract
         return self::getStoreConfig('debug_active', true);
     }
 
-    public function getAllowedMethods()
+    public function isSendAllOrdersActive()
     {
-        return self::getStoreConfig('allowed_methods');
+        return self::getStoreConfig('send_all_orders_active', true);
     }
 
     public function getTitle()
@@ -80,14 +80,14 @@ class Mamis_Shippit_Helper_Data extends Mage_Core_Helper_Abstract
         return self::getStoreConfig('title');
     }
 
+    public function getAllowedMethods()
+    {
+        return explode(',', self::getStoreConfig('allowed_methods'));
+    }
+
     public function getMaxTimeslots()
     {
         return self::getStoreConfig('max_timeslots');
-    }
-
-    public function isSendAllOrdersActive()
-    {
-        return self::getStoreConfig('send_all_orders_active', true);
     }
 
     public function isEnabledProductActive()

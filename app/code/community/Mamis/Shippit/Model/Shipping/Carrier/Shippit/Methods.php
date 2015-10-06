@@ -39,9 +39,8 @@ class Mamis_Shippit_Model_Shipping_Carrier_Shippit_Methods
     public function getMethods()
     {
         $methods = array(
-            'CouriersPlease' => 'Couriers Please',
-            'eParcel' => 'eParcel (Australia Post)',
-            'Bonds' => 'Bonds'
+            'Standard' => 'Standard',
+            'Premium' => 'Premium',
         );
 
         return $methods;

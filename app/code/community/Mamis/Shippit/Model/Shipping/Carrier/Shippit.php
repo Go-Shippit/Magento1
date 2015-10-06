@@ -59,6 +59,12 @@ class Mamis_Shippit_Model_Shipping_Carrier_Shippit extends Mage_Shipping_Model_C
             return false;
         }
 
+        // check if we have any methods allowed before proceeding
+        $allowedMethods = $this->helper->getAllowedMethods();
+        if (count($allowedMethods) == 0) {
+            return false;
+        }
+
         $rateResult = Mage::getModel('shipping/rate_result');
 
         // check the products are eligible for shippit shipping
@@ -106,14 +112,21 @@ class Mamis_Shippit_Model_Shipping_Carrier_Shippit extends Mage_Shipping_Model_C
 
     private function _processShippingQuotes(&$rateResult, $shippingQuotes)
     {
+        $allowedMethods = $this->helper->getAllowedMethods();
+
+        $isPremiumAvailable = in_array('Premium', $allowedMethods);
+        $isStandardAvailable = in_array('Standard', $allowedMethods);
+
         // Process the response and return available options
         foreach ($shippingQuotes as $shippingQuoteKey => $shippingQuote) {
             if ($shippingQuote->success) {
-                if ($shippingQuote->courier_type == 'Bonds') {
+                if ($shippingQuote->courier_type == 'Bonds'
+                    && $isPremiumAvailable) {
                     $this->_addPremiumQuote($rateResult, $shippingQuote);
                 }
-                else {
-                    $this->_addEconomyQuote($rateResult, $shippingQuote);
+                elseif ($shippingQuote->courier_type != 'Bonds'
+                    && $isStandardAvailable) {
+                    $this->_addStandardQuote($rateResult, $shippingQuote);
                 }
             }
         }
@@ -121,14 +134,14 @@ class Mamis_Shippit_Model_Shipping_Carrier_Shippit extends Mage_Shipping_Model_C
         return $rateResult;
     }
 
-    private function _addEconomyQuote(&$rateResult, $shippingQuote)
+    private function _addStandardQuote(&$rateResult, $shippingQuote)
     {
         foreach ($shippingQuote->quotes as $shippingQuoteQuote) {
             $rateResultMethod = Mage::getModel('shipping/rate_result_method');
             $rateResultMethod->setCarrier($this->_code)
                 ->setCarrierTitle($shippingQuote->courier_type)
                 ->setMethod($shippingQuote->courier_type)
-                ->setMethodTitle('Economy')
+                ->setMethodTitle('Standard')
                 ->setCost($shippingQuoteQuote->price)
                 ->setPrice($shippingQuoteQuote->price);
 
@@ -175,7 +188,7 @@ class Mamis_Shippit_Model_Shipping_Carrier_Shippit extends Mage_Shipping_Model_C
 
     public function getAllowedMethods()
     {
-        $configAllowedMethods = explode(',', Mage::helper('mamis_shippit')->getAllowedMethods());
+        $configAllowedMethods = Mage::helper('mamis_shippit')->getAllowedMethods();
         $availableMethods = Mage::getModel('mamis_shippit/shipping_carrier_shippit_methods')->getMethods();
 
         $allowedMethods = array();
@@ -221,7 +234,15 @@ class Mamis_Shippit_Model_Shipping_Carrier_Shippit extends Mage_Shipping_Model_C
         $productIds = array();
 
         foreach ($items as $item) {
-            $productIds[] = $item->getId();
+            // Skip special product types
+            if ($item->getProduct()->getTypeId() == Mage_Catalog_Model_Product_Type::TYPE_CONFIGURABLE
+                || $item->getProduct()->getTypeId() == Mage_Catalog_Model_Product_Type::TYPE_BUNDLE
+                || $item->getProduct()->getTypeId() == Mage_Catalog_Model_Product_Type::TYPE_GROUPED
+                || $item->getProduct()->getTypeId() == Mage_Catalog_Model_Product_Type::TYPE_VIRTUAL) {
+                continue;
+            }
+
+            $productIds[] = $item->getProduct()->getId();
         }
 
         $canShipEnabledProducts = $this->_canShipEnabledProducts($productIds);
@@ -266,15 +287,31 @@ class Mamis_Shippit_Model_Shipping_Carrier_Shippit extends Mage_Shipping_Model_C
         if (!empty($attributeCode) && !empty($attributeValue)) {
             $attributeProductCount = Mage::getModel('catalog/product')
                 ->getCollection()
-                ->addAttributeToFilter('entity_id', array('in' => $productIds))
-                ->addAttributeToFilter($attributeCode, array('eq' => $attributeValue))
-                ->getSize();
+                ->addAttributeToFilter('entity_id', array('in' => $productIds));
 
+            // When filtering by attribute value, allow for * as a wildcard
+            if (strpos($attributeValue, '*') !== FALSE) {
+                $attributeValue = str_replace('*', '%', $attributeValue);
+
+                $attributeProductCount = $attributeProductCount->addAttributeToFilter($attributeCode, array('like' => $attributeValue))
+                    ->getSize();
+            }
+            // Otherwise, use the exact match
+            else {
+                $attributeProductCount = $attributeProductCount->addAttributeToFilter($attributeCode, array('eq' => $attributeValue))
+                    ->getSize();
+            }
+
+            // Mage::log($attributeProductCount->getSelect()->__toString());
+
+            // If the number of filtered products is not
+            // equal to the products in the cart, return false
             if ($attributeProductCount != count($productIds)) {
                 return false;
             }
         }
 
+        // All checks have passed, return true
         return true;
     }
 
