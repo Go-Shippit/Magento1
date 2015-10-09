@@ -69,16 +69,6 @@ class Mamis_Shippit_Helper_Api extends Mage_Core_Helper_Abstract
             ->setRawData($jsonRequestData);
 
         try {
-            $apiResponse = $apiRequest->request();
-        }
-        catch (Exception $e) {
-            throw Mage::Exception('Mamis_Shippit', 'An API Communication Error Occurred - ' . "\n" . $e->getTraceAsString());
-        }
-
-        if ($apiResponse->isError()) {
-            $message = 'API Response Error' . "\n";
-            $message .= 'Response: ' . $apiResponse->getStatus() . ' - ' . $apiResponse->getMessage() . "\n";
-            
             if ($this->helper->isDebugActive() && $this->bugsnag) {
                 // get the core meta data
                 $metaData = Mage::helper('mamis_shippit/bugsnag')->getMetaData();
@@ -98,6 +88,16 @@ class Mamis_Shippit_Helper_Api extends Mage_Core_Helper_Abstract
                 $this->bugsnag->setMetaData($metaData);
             }
 
+            $apiResponse = $apiRequest->request();
+        }
+        catch (Exception $e) {
+            throw Mage::Exception('Mamis_Shippit', 'An API Communication Error Occurred - ' . "\n" . $e->getTraceAsString());
+        }
+
+        if ($apiResponse->isError()) {
+            $message = 'API Response Error' . "\n";
+            $message .= 'Response: ' . $apiResponse->getStatus() . ' - ' . $apiResponse->getMessage() . "\n";
+            
             throw Mage::Exception('Mamis_Shippit', $message);
         }
 
