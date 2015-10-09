@@ -52,7 +52,7 @@ class Mamis_Shippit_Helper_Api extends Mage_Core_Helper_Abstract
         return self::API_ENDPOINT . '/' . $path . '?auth_token=' . $authToken;
     }
 
-    public function call($uri, $requestData, $method = Zend_Http_Client::POST)
+    public function call($uri, $requestData, $method = Zend_Http_Client::POST, $exceptionOnResponseError = true)
     {
         $uri = $this->getApiUri($uri);
         $jsonRequestData = json_encode($requestData);
@@ -65,39 +65,27 @@ class Mamis_Shippit_Helper_Api extends Mage_Core_Helper_Abstract
 
         $apiRequest = $this->api
             ->setMethod($method)
-            ->setUri($uri)
-            ->setRawData($jsonRequestData);
+            ->setUri($uri);
+
+        if (!is_null($requestData)) {
+            $apiRequest->setRawData($jsonRequestData);
+        }
 
         try {
-            if ($this->helper->isDebugActive() && $this->bugsnag) {
-                // get the core meta data
-                $metaData = Mage::helper('mamis_shippit/bugsnag')->getMetaData();
-
-                // add the request meta data
-                $requestMetaData = array(
-                    'api_request' => array(
-                        'request_uri' => $uri,
-                        'request_body' => $jsonRequestData,
-                        'response_code' => $apiResponse->getStatus(),
-                        'response_body' => $apiResponse->getBody(),
-                    )
-                );
-
-                $metaData = array_merge($metaData, $requestMetaData);
-
-                $this->bugsnag->setMetaData($metaData);
-            }
-
             $apiResponse = $apiRequest->request();
         }
         catch (Exception $e) {
+            $this->prepareBugsnagReport($uri, $jsonRequestData, $apiResponse);
+
             throw Mage::Exception('Mamis_Shippit', 'An API Communication Error Occurred - ' . "\n" . $e->getTraceAsString());
         }
 
-        if ($apiResponse->isError()) {
+        if ($exceptionOnResponseError && $apiResponse->isError()) {
             $message = 'API Response Error' . "\n";
             $message .= 'Response: ' . $apiResponse->getStatus() . ' - ' . $apiResponse->getMessage() . "\n";
             
+            $this->prepareBugsnagReport($uri, $jsonRequestData, $apiResponse);
+
             throw Mage::Exception('Mamis_Shippit', $message);
         }
 
@@ -108,7 +96,32 @@ class Mamis_Shippit_Helper_Api extends Mage_Core_Helper_Abstract
             Mage::log($apiResponseBody);
         }
 
-        return $apiResponseBody->response;
+        return $apiResponseBody;
+    }
+
+    protected function prepareBugsnagReport($uri, $jsonRequestData, $apiResponse)
+    {
+        if ($this->helper->isDebugActive() && $this->bugsnag) {
+            // get the core meta data
+            $metaData = Mage::helper('mamis_shippit/bugsnag')->getMetaData();
+
+            // add the request meta data
+            $requestMetaData = array(
+                'api_request' => array(
+                    'request_uri' => $uri,
+                    'request_body' => $jsonRequestData,
+                )
+            );
+
+            if (!is_null($apiResponse)) {
+                $requestMetaData['api_request']['response_code'] = $apiResponse->getStatus();
+                $requestMetaData['api_request']['response_body'] = $apiResponse->getBody();
+            }
+
+            $metaData = array_merge($metaData, $requestMetaData);
+
+            $this->bugsnag->setMetaData($metaData);
+        }
     }
 
     public function getQuote(Varien_Object $requestData)
@@ -117,7 +130,8 @@ class Mamis_Shippit_Helper_Api extends Mage_Core_Helper_Abstract
             'quote' => $requestData->toArray()
         );
 
-        return $this->call('quotes', $requestData);
+        return $this->call('quotes', $requestData)
+            ->response;
     }
 
     public function sendOrder(Varien_Object $requestData)
@@ -126,6 +140,12 @@ class Mamis_Shippit_Helper_Api extends Mage_Core_Helper_Abstract
             'order' => $requestData->toArray()
         );
 
-        return $this->call('orders', $requestData);
+        return $this->call('orders', $requestData)
+            ->response;
+    }
+
+    public function getMerchant()
+    {
+        return $this->call('merchant', null, Zend_Http_Client::GET, false);
     }
 }

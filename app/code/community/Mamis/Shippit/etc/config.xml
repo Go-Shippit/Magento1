@@ -67,20 +67,6 @@
                     </mamis_shippit_add_order_to_sync>
                 </observers>
             </sales_order_place_after>
-
-            <checkout_controller_onepage_save_shipping_method>
-                <observers>
-                    <mamis_shippit_add_delivery_instructions_to_quote>
-                        <class>mamis_shippit/sales_order_observer</class>
-                        <method>addDeliveryInstructionsToQuote</method>
-                    </mamis_shippit_add_delivery_instructions_to_quote>
-
-                    <mamis_shippit_add_authority_to_leave_to_quote>
-                        <class>mamis_shippit/sales_order_observer</class>
-                        <method>addAuthorityToLeaveToQuote</method>
-                    </mamis_shippit_add_authority_to_leave_to_quote>
-                </observers>
-            </checkout_controller_onepage_save_shipping_method>
         </events>
 
         <fieldsets>
@@ -114,7 +100,36 @@
                 </mamis_shippit>
             </updates>
         </layout>
+
+        <events>
+            <checkout_controller_onepage_save_shipping_method>
+                <observers>
+                    <mamis_shippit_add_delivery_instructions_to_quote>
+                        <class>mamis_shippit/sales_order_observer</class>
+                        <method>addDeliveryInstructionsToQuote</method>
+                    </mamis_shippit_add_delivery_instructions_to_quote>
+
+                    <mamis_shippit_add_authority_to_leave_to_quote>
+                        <class>mamis_shippit/sales_order_observer</class>
+                        <method>addAuthorityToLeaveToQuote</method>
+                    </mamis_shippit_add_authority_to_leave_to_quote>
+                </observers>
+            </checkout_controller_onepage_save_shipping_method>
+        </events>
     </frontend>
+
+    <adminhtml>
+        <events>
+            <admin_system_config_changed_section_carriers>
+                <observers>
+                    <mamis_shippit_check_api_key>
+                        <class>mamis_shippit/system_config_observer</class>
+                        <method>checkApiKey</method>
+                    </mamis_shippit_check_api_key>
+                </observers>
+            </admin_system_config_changed_section_carriers>
+        </events>
+    </adminhtml>
 
     <crontab>
         <jobs>
