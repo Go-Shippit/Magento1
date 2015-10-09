@@ -65,13 +65,12 @@ class Mamis_Shippit_Model_Shipping_Carrier_Shippit extends Mage_Shipping_Model_C
             return false;
         }
 
-        $rateResult = Mage::getModel('shipping/rate_result');
-
         // check the products are eligible for shippit shipping
         if (!$this->_canShipProducts($request)) {
             return false;
         }
 
+        $rateResult = Mage::getModel('shipping/rate_result');
         $quoteRequest = new Varien_Object;
 
         // Get the first available dates based on the customer's shippit profile settings
