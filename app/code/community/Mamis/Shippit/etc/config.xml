@@ -151,7 +151,7 @@
                 <active>0</active>
                 <api_key/>
                 <debug_active>0</debug_active>
-                <allowed_methods>CouriersPlease,eParcel,Bonds</allowed_methods>
+                <allowed_methods>Standard,Premium</allowed_methods>
                 <title>Shippit</title>
                 <max_timeslots/>
                 <send_all_orders_active>0</send_all_orders_active>

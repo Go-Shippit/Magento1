@@ -39,8 +39,10 @@ class Mamis_Shippit_Model_Sales_Order_Observer
         }
 
         $shippingMethod = $order->getShippingMethod();
+        $shippingCountry = $order->getShippingAddress()->getCountryId();
 
-        if ($helper->isSendAllOrdersActive()
+        // If send all orders + au delivery, or shippit method is selected
+        if (($helper->isSendAllOrdersActive() && $shippingCountry == 'AU')
             || strpos($shippingMethod, $this::CARRIER_CODE) !== FALSE) {
             // trigger the order to be synced on the next cron run
             $order->setShippitSync(false);

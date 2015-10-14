@@ -96,3 +96,8 @@ foreach ($regions as $region) {
 }
 
 $installer->endSetup();
+
+/**
+ * Migrate previous cedcross shippit settings if present
+ */
+// @TODO: Complete config migration from cedcross_shippit method
