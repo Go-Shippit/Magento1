@@ -85,9 +85,7 @@ class Mamis_Shippit_Model_Sales_Order_Observer
     protected function _addDeliveryInstructionsToQuote($quote, $deliveryInstructions)
     {
         $deliveryInstructions = strip_tags($deliveryInstructions);
-
-        $quote->setShippitDeliveryInstructions($deliveryInstructions)
-            ->save();
+        $quote->setShippitDeliveryInstructions($deliveryInstructions);
     }
 
     /**
@@ -128,7 +126,6 @@ class Mamis_Shippit_Model_Sales_Order_Observer
      */
     protected function _addAuthorityToLeaveToQuote($quote, $authorityToLeave)
     {
-        $quote->setShippitAuthorityToLeave($authorityToLeave)
-            ->save();
+        $quote->setShippitAuthorityToLeave($authorityToLeave);
     }
 }
