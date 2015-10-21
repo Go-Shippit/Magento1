@@ -171,6 +171,17 @@ class Mamis_Shippit_Model_Sales_Order_Sync extends Mage_Core_Model_Abstract
             ->setDeliveryPostcode( $shippingAddress->getPostcode() )
             ->setDeliveryState( $shippingAddress->getRegionCode() );
 
+        $regionCode = $shippingAddress->getRegionCode();
+
+        if (empty($regionCode)) {
+            // attempt to use fallback mechanism
+            $regionCodeFallback = $this->helper->getRegionCodeFromPostcode($shippingAddress->getPostcode());
+
+            if ($regionCodeFallback) {
+                $orderData->setDeliveryState($regionCodeFallback);
+            }
+        }
+
         return $orderData;
     }
 

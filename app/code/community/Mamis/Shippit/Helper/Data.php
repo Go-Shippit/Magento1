@@ -127,4 +127,57 @@ class Mamis_Shippit_Helper_Data extends Mage_Core_Helper_Abstract
     {
         return self::DELIVERY_INSTRUCTIONS_ID;
     }
+
+    /**
+     * Attempts to get the region code (ie: VIC), using the postcode
+     * Used as a fallback mechanism where the address does not contain region data
+     * (ie: saved addresses with text based region, or a postcode estimate shipping request)
+     *
+     * @uses  Postcode ranges from https://en.wikipedia.org/wiki/Postcodes_in_Australia
+     *
+     * @param  string $postcode The postcode
+     * @return mixed            The region code, or false if unable to determine
+     */
+    public function getRegionCodeFromPostcode($postcode)
+    {
+        $postcode = (int) $postcode;
+
+        if ($postcode >= 1000 && $postcode <= 2599
+            || $postcode >= 2619 && $postcode <= 2899
+            || $postcode >= 2921 && $postcode <= 2999) {
+            return 'NSW';
+        }
+        elseif ($postcode >= 200 && $postcode <= 299
+            || $postcode >= 2600 && $postcode <= 2618
+            || $postcode >= 2900 && $postcode <= 2920) {
+            return 'ACT';
+        }
+        elseif ($postcode >= 3000 && $postcode <= 3999
+            || $postcode >= 8000 && $postcode <= 8999) {
+            return 'VIC';
+        }
+        elseif ($postcode >= 4000 && $postcode <= 4999
+            || $postcode >= 9000 && $postcode <= 9999) {
+            return 'QLD';
+        }
+        elseif ($postcode >= 5000 && $postcode <= 5799
+            || $postcode >= 5800 && $postcode <= 5999) {
+            return 'SA';
+        }
+        elseif ($postcode >= 6000 && $postcode <= 6797
+            || $postcode >= 6800 && $postcode <= 6999) {
+            return 'WA';
+        }
+        elseif ($postcode >= 7000 && $postcode <= 7799
+            || $postcode >= 7800 && $postcode <= 7999) {
+            return 'TAS';
+        }
+        elseif ($postcode >= 800 && $postcode <= 899
+            || $postcode >= 900 && $postcode <= 999) {
+            return 'NT';
+        }
+        else {
+            return false;
+        }
+    }
 }

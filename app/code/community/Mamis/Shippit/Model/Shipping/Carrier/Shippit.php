@@ -87,6 +87,10 @@ class Mamis_Shippit_Model_Shipping_Carrier_Shippit extends Mage_Shipping_Model_C
         if ($request->getDestRegionCode()) {
             $quoteRequest->setDropoffState($request->getDestRegionCode());
         }
+        elseif ($request->getDestPostcode()
+            && $regionCodeFallback = $this->helper->getRegionCodeFromPostcode($request->getDestPostcode())) {
+            $quoteRequest->setDropoffState($regionCodeFallback);
+        }
 
         $quoteRequest->setParcelAttributes($this->_getParcelAttributes($request));
 
