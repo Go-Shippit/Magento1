@@ -201,7 +201,7 @@ class Mamis_Shippit_Model_Sales_Order_Sync extends Mage_Core_Model_Abstract
     private function _setParcelsAttributes(&$orderData, &$order)
     {
         $items = $order->getAllItems();
-        $parcelsAttributes = array();
+        $parcelAttributes = array();
 
         foreach ($items as $item) {
             // Skip special product types
@@ -212,13 +212,13 @@ class Mamis_Shippit_Model_Sales_Order_Sync extends Mage_Core_Model_Abstract
                 continue;
             }
 
-            $parcelsAttributes[] = array(
+            $parcelAttributes[] = array(
                 'qty' => $item->getQtyOrdered(),
                 'weight' => $item->getWeight()
             );
         }
 
-        $orderData->setParcelAttributes($parcelsAttributes);
+        $orderData->setParcelAttributes($parcelAttributes);
 
         return $orderData;
     }
