@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+
+<!--
+/**
+*  Shippit Pty Ltd
+*
+*  NOTICE OF LICENSE
+*
+*  This source file is subject to the terms
+*  that is available through the world-wide-web at this URL:
+*  http://www.shippit.com/terms
+*
+*  @category   Shippit
+*  @copyright  Copyright (c) 2016 by Shippit Pty Ltd (http://www.shippit.com)
+*  @author     Matthew Muscat <matthew@mamis.com.au>
+*  @license    http://www.shippit.com/terms
+*/
+-->
+
+<layout version="0.1.0">
+    <checkout_onepage_index>
+        <reference name="checkout.onepage.shipping_method">
+            <action method="setTemplate">
+                <template>shippit/checkout/onepage/shipping_method.phtml</template>
+            </action>
+
+            <block type="shippit/checkout_shipping_deliveryInstructions" name="shippit.shipping_comment" as="shippit_delivery_instructions" template="shippit/checkout/onepage/shipping_method/deliveryinstructions.phtml" />
+
+            <block type="shippit/checkout_shipping_authorityToLeave" name="shippit.authority_to_leave" as="shippit_authority_to_leave" template="shippit/checkout/onepage/shipping_method/authoritytoleave.phtml" />
+        </reference>
+    </checkout_onepage_index>
+</layout>

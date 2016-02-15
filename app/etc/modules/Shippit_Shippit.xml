@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<config>
+    <modules>
+        <Shippit_Shippit>
+            <active>true</active>
+            <codePool>community</codePool>
+            <depends>
+            	<Mage_Shipping/>
+            	<Mage_Checkout/>
+            </depends>
+        </Shippit_Shippit>
+    </modules>
+</config>

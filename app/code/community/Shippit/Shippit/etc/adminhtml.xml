@@ -1,0 +1,53 @@
+<?xml version="1.0"?>
+<!--
+/**
+*  Shippit Pty Ltd
+*
+*  NOTICE OF LICENSE
+*
+*  This source file is subject to the terms
+*  that is available through the world-wide-web at this URL:
+*  http://www.shippit.com/terms
+*
+*  @category   Shippit
+*  @copyright  Copyright (c) 2016 by Shippit Pty Ltd (http://www.shippit.com)
+*  @author     Matthew Muscat <matthew@mamis.com.au>
+*  @license    http://www.shippit.com/terms
+*/
+-->
+<config>
+    <menu>
+        <sales>
+            <children>
+                <shippit_orders translate="title" module="shippit">
+                    <sort_order>10</sort_order>
+                    <title>Shippit Orders</title>
+                    <action>adminhtml/shippit_order</action>
+                </shippit_orders>
+            </children>
+        </sales>
+    </menu>
+
+    <acl>
+        <resources>
+            <all>
+                <title>Allow everything</title>
+            </all>
+            <admin>
+                <children>
+                    <system>
+                        <children>
+                            <config>
+                                <children>
+                                    <shippit>
+                                        <title>Shippit</title>
+                                    </shippit>
+                                </children>
+                            </config>
+                        </children>
+                    </system>
+                </children>
+            </admin>
+        </resources>
+    </acl>
+</config>
