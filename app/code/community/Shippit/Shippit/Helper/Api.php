@@ -29,7 +29,9 @@ class Shippit_Shippit_Helper_Api extends Mage_Core_Helper_Abstract
     {
         $this->helper = Mage::helper('shippit');
 
-        $this->api = new Varien_Http_Client;
+        // We use Zend_HTTP_Client instead of Varien_Http_Client,
+        // as Varien_Http_Client does not handle PUT requests correctly
+        $this->api = new Zend_Http_Client;
         $this->api->setConfig(
                 array(
                     'timeout' => self::API_TIMEOUT,
@@ -69,14 +71,8 @@ class Shippit_Shippit_Helper_Api extends Mage_Core_Helper_Abstract
         $uri = $this->getApiUri($uri);
 
         $jsonRequestData = json_encode($requestData);
-        // if (PHP_VERSION_ID >= 50400) {
-        //     $jsonRequestData = json_encode($requestData, JSON_UNESCAPED_SLASHES);
-        // }
-        // else {
-        //     $jsonRequestData = str_replace('\\/', '/', json_encode($requestData));
-        // }
 
-        if (true||$this->helper->isDebugActive()) {
+        if ($this->helper->isDebugActive()) {
             Mage::log('-- SHIPPIT - API REQUEST: --', null, 'shippit.log');
             Mage::log($uri, null, 'shippit.log');
             Mage::log($jsonRequestData, null, 'shippit.log');
@@ -87,20 +83,15 @@ class Shippit_Shippit_Helper_Api extends Mage_Core_Helper_Abstract
             ->setUri($uri);
 
         if (!is_null($requestData)) {
-            $apiRequest->setRawData($jsonRequestData)
-                ->setMethod('put')
-                ->setEncType('application/json');
+            $apiRequest->setRawData($jsonRequestData);
         }
 
         try {
-            Mage::log('s-1', null, 'shippit.log');
-            $apiResponse = $apiRequest->request();
-            Mage::log('s-2', null, 'shippit.log');
+            $apiResponse = $apiRequest->request($method);
         }
         catch (Exception $e) {
-            Mage::log('s-3', null, 'shippit.log');
             $this->prepareBugsnagReport($uri, $jsonRequestData, $apiResponse);
-
+            
             throw Mage::Exception('Shippit_Shippit', 'An API Communication Error Occurred - ' . "\n" . $e->getTraceAsString());
         }
 
@@ -115,7 +106,7 @@ class Shippit_Shippit_Helper_Api extends Mage_Core_Helper_Abstract
 
         $apiResponseBody = json_decode($apiResponse->getBody());
 
-        if (true||$this->helper->isDebugActive()) {
+        if ($this->helper->isDebugActive()) {
             Mage::log('-- SHIPPIT - API RESPONSE --', null, 'shippit.log');
             Mage::log($apiResponse, null, 'shippit.log');
         }
@@ -181,28 +172,7 @@ class Shippit_Shippit_Helper_Api extends Mage_Core_Helper_Abstract
 
         $url = $this->getApiUri('merchant');
 
-        // return $this->call('merchant', $requestData, Zend_Http_Client::PUT, $exceptionOnResponseError)
-        //     ->response;
-
-        $jsonRequestData = json_encode($requestData);
-
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_HTTPHEADER,
-            array(
-                'Content-Type: application/json',
-                'Content-Length: ' . strlen($jsonRequestData)
-            )
-        );
-
-        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'PUT');
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $jsonRequestData);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        $jsonResponse  = curl_exec($ch);
-        curl_close($ch);
-
-        $response = json_decode($jsonResponse);
-
-        return $response;
+        return $this->call('merchant', $requestData, Zend_Http_Client::PUT, $exceptionOnResponseError)
+            ->response;
     }
 }

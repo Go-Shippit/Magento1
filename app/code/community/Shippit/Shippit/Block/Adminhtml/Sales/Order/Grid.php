@@ -26,6 +26,8 @@ class Shippit_Shippit_Block_Adminhtml_Sales_Order_Grid extends Mage_Adminhtml_Bl
                     'shipping_description' => 'shipping_description',
                     'state'                => 'state',
                     'created_at'           => 'created_at',
+                    'customer_firstname'   => 'customer_firstname',
+                    'customer_lastname'    => 'customer_lastname',
                 )
             )
             ->join(
@@ -36,14 +38,6 @@ class Shippit_Shippit_Block_Adminhtml_Sales_Order_Grid extends Mage_Adminhtml_Bl
                 array(
                     'city'         => 'city',
                     'country_id'   => 'country_id',
-                )
-            )
-            ->addExpressionFieldToSelect(
-                'fullname',
-                'CONCAT({{customer_firstname}}, \' \', {{customer_lastname}})',
-                array(
-                    'customer_firstname' => 'order.customer_firstname',
-                    'customer_lastname' => 'order.customer_lastname'
                 )
             )
             ->addFilterToMap(
@@ -73,12 +67,16 @@ class Shippit_Shippit_Block_Adminhtml_Sales_Order_Grid extends Mage_Adminhtml_Bl
             'index'  => 'created_at'
         ));
  
-        $this->addColumn('fullname', array(
-            'header'       => $helper->__('Name'),
-            'index'        => 'fullname',
-            'filter_index' => 'CONCAT(customer_firstname, \' \', customer_lastname)'
+        $this->addColumn('customer_firstname', array(
+            'header' => $helper->__('Firstname'),
+            'index'  => 'customer_firstname'
         ));
- 
+
+        $this->addColumn('customer_lastname', array(
+            'header' => $helper->__('Lastname'),
+            'index'  => 'customer_lastname'
+        ));
+
         $this->addColumn('city', array(
             'header' => $helper->__('City'),
             'index'  => 'city'
