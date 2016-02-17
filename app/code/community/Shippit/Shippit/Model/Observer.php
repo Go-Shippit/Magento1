@@ -37,7 +37,7 @@ class Shippit_Shippit_Model_Observer
         $order = $observer->getEvent()->getOrder();
 
         // Ensure we have an order
-        if (!$order) {
+        if (!$order || !$order->getId()) {
             return $this;
         }
 
@@ -50,37 +50,13 @@ class Shippit_Shippit_Model_Observer
             // trigger the order to be synced on the next cron run
             Mage::getModel('shippit/order_sync')->addOrder($order);
 
+            // If the sync mode is realtime, attempt realtime sync now
             if ($helper->getSyncMode() == $helper::SYNC_MODE_REALTIME) {
                 $this->_syncOrder($order);
             }
         }
 
         return $this;
-    }
-
-    public function syncOrderRealtime(Varien_Event_Observer $observer)
-    {
-        $helper = Mage::helper('shippit');
-
-        // If the module is not active, or the sync mode is not realtime,
-        // prevent syncing
-        if (!$helper->isActive()
-            || $helper->getSyncMode() != $helper::SYNC_MODE_REALTIME) {
-            return $this;
-        }
-
-        $order = $observer->getEvent()->getOrder();
-
-        // Ensure we have an order
-        if (!$order) {
-            return $this;
-        }
-
-        // Check if the order state has changed in this save event
-        if ($order->getOrigData('state') != $order->getData('state')) {
-            // Sync the order
-            $this->_syncOrder($order);
-        }
     }
 
     private function _syncOrder($order)
