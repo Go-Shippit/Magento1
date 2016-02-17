@@ -62,10 +62,10 @@ class Shippit_Shippit_Model_Observer
     {
         $helper = Mage::helper('shippit');
 
-        // Ensure the module is active and
-        // Configuration requires realtime processing
+        // If the module is not active, or the sync mode is not realtime,
+        // prevent syncing
         if (!$helper->isActive()
-            && $helper->getSyncMode() != $helper::SYNC_MODE_REALTIME) {
+            || $helper->getSyncMode() != $helper::SYNC_MODE_REALTIME) {
             return $this;
         }
 
