@@ -29,7 +29,6 @@ class Shippit_Shippit_OrderController extends Mage_Core_Controller_Front_Action
     {
         $post = json_decode(file_get_contents('php://input'));
         $apiKey = $this->getRequest()->getParam('api_key');
-        $coreHelper = $coreHelper;
         $orderIncrementId = $post->retailer_order_number;
         $orderShipmentState = $post->current_state;
         $courierName = $post->courier_name;

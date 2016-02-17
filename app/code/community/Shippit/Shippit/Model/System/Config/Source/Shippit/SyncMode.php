@@ -24,7 +24,7 @@ class Shippit_Shippit_Model_System_Config_Source_Shippit_SyncMode
                 'value' => Shippit_Shippit_Helper_Data::SYNC_MODE_REALTIME
             ),
             array(
-                'label' => 'Every 5 Minutes',
+                'label' => 'Scheduled',
                 'value' => Shippit_Shippit_Helper_Data::SYNC_MODE_CRON
             )
         );
