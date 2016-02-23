@@ -18,7 +18,7 @@
 <config>
     <modules>
         <Shippit_Shippit>
-            <version>4.0.5</version>
+            <version>4.0.6</version>
         </Shippit_Shippit>
     </modules>
 
@@ -97,6 +97,16 @@
                     </shippit_add_order_to_sync>
                 </observers>
             </sales_order_place_after>
+
+            <core_block_abstract_to_html_before>
+                <observers>
+                    <shippit_update_order_shipment_track_template>
+                        <type>singleton</type>
+                        <class>shippit/observer</class>
+                        <method>updateOrderShipmentTrackTemplate</method>
+                    </shippit_update_order_shipment_track_template>
+                </observers>
+            </core_block_abstract_to_html_before>
         </events>
 
         <fieldsets>

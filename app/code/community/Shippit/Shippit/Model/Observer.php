@@ -146,7 +146,6 @@ class Shippit_Shippit_Model_Observer
         }
 
         return $this;
-
     }
 
     /**
@@ -159,5 +158,20 @@ class Shippit_Shippit_Model_Observer
     protected function _addAuthorityToLeaveToQuote($quote, $authorityToLeave)
     {
         $quote->setShippitAuthorityToLeave($authorityToLeave);
+    }
+
+    /**
+     * Updates the order shipment email template to include
+     * the tracking link in the tracking details
+     *
+     * @param  Varien_Event_Observer $observer
+     */
+    public function updateOrderShipmentTrackTemplate(Varien_Event_Observer $observer)
+    {
+        $block = $observer->getBlock();
+
+        if ($block->getTemplate() == 'email/order/shipment/track.phtml') {
+            $block->setTemplate('shippit/email/order/shipment/track.phtml');
+        }
     }
 }
