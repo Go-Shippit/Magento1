@@ -15,6 +15,14 @@ class Shippit_Shippit_Block_Adminhtml_Sales_Order_Grid extends Mage_Adminhtml_Bl
     protected function _prepareCollection()
     {
         $collection = Mage::getResourceModel('shippit/order_sync_collection')
+            ->addFieldToSelect(
+                array(
+                    'sync_id',
+                    'track_number',
+                    'synced_at',
+                    'sync_status' => 'status'
+                )
+            )
             ->join(
                 array(
                     'order' => 'sales/order'
@@ -24,7 +32,8 @@ class Shippit_Shippit_Block_Adminhtml_Sales_Order_Grid extends Mage_Adminhtml_Bl
                     'increment_id'         => 'increment_id',
                     'grand_total'          => 'grand_total',
                     'shipping_description' => 'shipping_description',
-                    'state'                => 'state',
+                    'order_state'          => 'state',
+                    'order_status'         => 'status',
                     'created_at'           => 'created_at',
                     'customer_firstname'   => 'customer_firstname',
                     'customer_lastname'    => 'customer_lastname',
@@ -41,8 +50,17 @@ class Shippit_Shippit_Block_Adminhtml_Sales_Order_Grid extends Mage_Adminhtml_Bl
                 )
             )
             ->addFilterToMap(
-                'status',
+                'sync_status',
                 'main_table.status'
+            )
+
+            ->addFilterToMap(
+                'order_state',
+                'order.state'
+            )
+            ->addFilterToMap(
+                'order_status',
+                'order.status'
             );
  
         $this->setCollection($collection);
@@ -89,22 +107,29 @@ class Shippit_Shippit_Block_Adminhtml_Sales_Order_Grid extends Mage_Adminhtml_Bl
         ));
  
         $this->addColumn('grand_total', array(
-            'header'        => $helper->__('Order Grand Total'),
+            'header'        => $helper->__('Grand Total'),
             'index'         => 'grand_total',
             'type'          => 'currency',
             'currency_code' => $currency
         ));
  
         $this->addColumn('shipping_method', array(
-            'header' => $helper->__('Order Shipping Method'),
+            'header' => $helper->__('Shipping Method'),
             'index'  => 'shipping_description'
         ));
  
         $this->addColumn('order_state', array(
-            'header'  => $helper->__('Order State'),
-            'index'   => 'state',
+            'header'  => $helper->__('State'),
+            'index'   => 'order_state',
             'type'    => 'options',
             'options' => Mage::getSingleton('sales/order_config')->getStates(),
+        ));
+
+        $this->addColumn('order_status', array(
+            'header'  => $helper->__('Status'),
+            'index'   => 'order_status',
+            'type'    => 'options',
+            'options' => Mage::getSingleton('sales/order_config')->getStatuses(),
         ));
 
         $this->addColumn('track_number', array(
@@ -121,7 +146,7 @@ class Shippit_Shippit_Block_Adminhtml_Sales_Order_Grid extends Mage_Adminhtml_Bl
 
         $this->addColumn('sync_status', array(
             'header'  => $helper->__('Sync Status'),
-            'index'   => 'status',
+            'index'   => 'sync_status',
             'type'    => 'options',
             'options' => Mage::getSingleton('shippit/order_sync_config')->getStatus(),
             'frame_callback' => array($this, 'decorateStatus'),
