@@ -47,6 +47,7 @@ class Shippit_Shippit_Adminhtml_Shippit_OrderController extends Mage_Adminhtml_C
             $this->_getSession()->addError($this->__('You must select at least 1 order to sync'));
 
             $this->_redirect('*/*/index');
+
             return;
         }
 
@@ -72,6 +73,7 @@ class Shippit_Shippit_Adminhtml_Shippit_OrderController extends Mage_Adminhtml_C
             $this->_getSession()->addError($this->__('No valid orders were found'));
 
             $this->_redirect('*/*/index');
+
             return;
         }
 
@@ -86,6 +88,7 @@ class Shippit_Shippit_Adminhtml_Shippit_OrderController extends Mage_Adminhtml_C
         }
 
         $this->_redirect('*/*/index');
+
         return;
     }
 
@@ -97,6 +100,7 @@ class Shippit_Shippit_Adminhtml_Shippit_OrderController extends Mage_Adminhtml_C
             $this->_getSession()->addError($this->__('You must select at least 1 order to remove'));
 
             $this->_redirect('*/*/index');
+
             return;
         }
 
@@ -116,6 +120,7 @@ class Shippit_Shippit_Adminhtml_Shippit_OrderController extends Mage_Adminhtml_C
             $this->_getSession()->addError($this->__('You must select at least 1 order to remove'));
 
             $this->_redirect('*/*/index');
+
             return;
         }
 
@@ -136,6 +141,7 @@ class Shippit_Shippit_Adminhtml_Shippit_OrderController extends Mage_Adminhtml_C
         }
 
         $this->_redirect('*/*/index');
+
         return;
     }
 
@@ -147,6 +153,7 @@ class Shippit_Shippit_Adminhtml_Shippit_OrderController extends Mage_Adminhtml_C
             $this->_getSession()->addError($this->__('You must select at least 1 order to schedule'));
 
             $this->_redirect('*/*/index');
+
             return;
         }
 
@@ -165,6 +172,7 @@ class Shippit_Shippit_Adminhtml_Shippit_OrderController extends Mage_Adminhtml_C
             $this->_getSession()->addError($this->__('You must select at least 1 order to schedule'));
 
             $this->_redirect('*/*/index');
+
             return;
         }
 
@@ -189,6 +197,12 @@ class Shippit_Shippit_Adminhtml_Shippit_OrderController extends Mage_Adminhtml_C
         }
 
         $this->_redirect('*/*/index');
+
         return;
+    }
+
+    protected function _isAllowed()
+    {
+        return Mage::getSingleton('admin/session')->isAllowed('sales/shippit_orders');
     }
 }

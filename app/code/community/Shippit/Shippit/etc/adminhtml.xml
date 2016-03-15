@@ -35,6 +35,14 @@
             </all>
             <admin>
                 <children>
+                    <sales>
+                        <children>
+                            <shippit_orders>
+                                <title>Shippit Orders</title>
+                                <sort_order>10</sort_order>
+                            </shippit_orders>
+                        </children>
+                    </sales>
                     <system>
                         <children>
                             <config>

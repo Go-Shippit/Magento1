@@ -127,6 +127,16 @@ class Shippit_Shippit_Helper_Data extends Mage_Core_Helper_Abstract
         return self::getStoreConfig('enabled_product_attribute_value');
     }
 
+    public function getSyncModeRealtime()
+    {
+        return self::SYNC_MODE_REALTIME;
+    }
+
+    public function getSyncModeScheduled()
+    {
+        return self::SYNC_MODE_CRON;
+    }
+
     // Begin helper methods for authority to leave
     //    and delivery instructions fields
 
