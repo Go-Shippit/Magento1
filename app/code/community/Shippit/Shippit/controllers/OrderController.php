@@ -1,18 +1,18 @@
 <?php
 /**
-*  Shippit Pty Ltd
-*
-*  NOTICE OF LICENSE
-*
-*  This source file is subject to the terms
-*  that is available through the world-wide-web at this URL:
-*  http://www.shippit.com/terms
-*
-*  @category   Shippit
-*  @copyright  Copyright (c) 2016 by Shippit Pty Ltd (http://www.shippit.com)
-*  @author     Matthew Muscat <matthew@mamis.com.au>
-*  @license    http://www.shippit.com/terms
-*/
+ *  Shippit Pty Ltd
+ *
+ *  NOTICE OF LICENSE
+ *
+ *  This source file is subject to the terms
+ *  that is available through the world-wide-web at this URL:
+ *  http://www.shippit.com/terms
+ *
+ *  @category   Shippit
+ *  @copyright  Copyright (c) 2016 by Shippit Pty Ltd (http://www.shippit.com)
+ *  @author     Matthew Muscat <matthew@mamis.com.au>
+ *  @license    http://www.shippit.com/terms
+ */
 
 class Shippit_Shippit_OrderController extends Mage_Core_Controller_Front_Action
 {
@@ -27,12 +27,18 @@ class Shippit_Shippit_OrderController extends Mage_Core_Controller_Front_Action
 
     public function updateAction()
     {
-        $post = json_decode(file_get_contents('php://input'));
+        $request = json_decode(file_get_contents('php://input'), true);
+        
         $apiKey = $this->getRequest()->getParam('api_key');
-        $orderIncrementId = $post->retailer_order_number;
-        $orderShipmentState = $post->current_state;
-        $courierName = $post->courier_name;
-        $trackingNumber = $post->tracking_number;
+        $orderIncrementId = $request['retailer_order_number'];
+        $orderShipmentState = $request['current_state'];
+
+        $courierName = $request['courier_name'];
+        $trackingNumber = $request['tracking_number'];
+
+        if (isset($request['products'])) {
+            $products = $request['products'];
+        }
 
         if (empty($apiKey)) {
             $response = $this->_prepareResponse(false, self::ERROR_API_KEY_MISSING);
@@ -46,7 +52,7 @@ class Shippit_Shippit_OrderController extends Mage_Core_Controller_Front_Action
             return $this->getResponse()->setBody($response);
         }
 
-        if (empty($post)) {
+        if (empty($request)) {
             $response = $this->_prepareResponse(false, self::ERROR_BAD_REQUEST);
 
             return $this->getResponse()->setBody($response);
@@ -58,30 +64,31 @@ class Shippit_Shippit_OrderController extends Mage_Core_Controller_Front_Action
             return $this->getResponse()->setBody($response);
         }
 
-        // attempt to get the order using the reference provided
-        $order = $this->_getOrder($orderIncrementId);
+        try {
+            $shipmentRequest = Mage::getModel('shippit/request_api_shipment')
+                ->setOrderByIncrementId($orderIncrementId)
+                ->processItems($products);
 
-        if (!$order->getId()) {
-            $response = $this->_prepareResponse(false, self::ERROR_ORDER_MISSING);
+            $order = $shipmentRequest->getOrder();
+            $items = $shipmentRequest->getItems();
+
+            // create the shipment
+            $response = $this->_createShipment($order, $items, $courierName, $trackingNumber);
 
             return $this->getResponse()->setBody($response);
         }
-
-        if (!$order->canShip()) {
-            $response = $this->_prepareResponse(false, self::ERROR_ORDER_STATUS);
+        catch (Exception $e)
+        {
+            $response = $this->_prepareResponse(false, $e->getMessage());
 
             return $this->getResponse()->setBody($response);
         }
-
-        $response = $this->_createShipment($order, 'Shippit - ' . $courierName, $trackingNumber);
-
-        return $this->getResponse()->setBody($response);
     }
 
     private function _prepareResponse($success, $message)
     {
         return Mage::helper('core')->jsonEncode(array(
-            'success' => false,
+            'success' => $success,
             'message' => $message,
         ));
     }
@@ -102,17 +109,20 @@ class Shippit_Shippit_OrderController extends Mage_Core_Controller_Front_Action
         return true;
     }
 
-    private function _createShipment($order, $courierName, $trackingNumber)
+    private function _createShipment($order, $items, $courierName, $trackingNumber)
     {
-        $shipment = $order->prepareShipment();
+        $shipment = $order->prepareShipment($items);
+
+        $shipment = Mage::getModel('sales/service_order', $order)
+            ->prepareShipment($items);
 
         if ($shipment) {
             $comment = 'Your order has been shipped - your tracking number is ' . $trackingNumber;
 
             $track = Mage::getModel('sales/order_shipment_track')
                 ->setNumber($trackingNumber)
-                ->setCarrierCode('shippit')
-                ->setTitle($courierName);
+                ->setCarrierCode(Shippit_Shippit_Helper_Data::CARRIER_CODE)
+                ->setTitle('Shippit - ' . $courierName);
 
             $shipment->addTrack($track)
                 ->register()

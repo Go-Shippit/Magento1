@@ -16,5 +16,5 @@
 
 class Shippit_Shippit_Model_Resource_Setup extends Mage_Eav_Model_Entity_Setup
 {
-	
+	// This resource model has been intentionally left blank
 }

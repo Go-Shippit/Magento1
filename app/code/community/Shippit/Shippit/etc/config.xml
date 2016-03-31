@@ -1,24 +1,24 @@
 <?xml version="1.0"?>
 <!--
 /**
-*  Shippit Pty Ltd
-*
-*  NOTICE OF LICENSE
-*
-*  This source file is subject to the terms
-*  that is available through the world-wide-web at this URL:
-*  http://www.shippit.com/terms
-*
-*  @category   Shippit
-*  @copyright  Copyright (c) 2016 by Shippit Pty Ltd (http://www.shippit.com)
-*  @author     Matthew Muscat <matthew@mamis.com.au>
-*  @license    http://www.shippit.com/terms
-*/
+ *  Shippit Pty Ltd
+ *
+ *  NOTICE OF LICENSE
+ *
+ *  This source file is subject to the terms
+ *  that is available through the world-wide-web at this URL:
+ *  http://www.shippit.com/terms
+ *
+ *  @category   Shippit
+ *  @copyright  Copyright (c) 2016 by Shippit Pty Ltd (http://www.shippit.com)
+ *  @author     Matthew Muscat <matthew@mamis.com.au>
+ *  @license    http://www.shippit.com/terms
+ */
 -->
 <config>
     <modules>
         <Shippit_Shippit>
-            <version>4.0.9</version>
+            <version>4.1.0</version>
         </Shippit_Shippit>
     </modules>
 
@@ -44,9 +44,16 @@
                 <class>Shippit_Shippit_Model_Resource</class>
                 
                 <entities>
+                    <!-- Depreciated Node as of v4.1.0 -->
                     <order_sync>
                         <table>shippit_order_sync</table>
                     </order_sync>
+                    <sync_order>
+                        <table>shippit_sync_order</table>
+                    </sync_order>
+                    <sync_order_item>
+                        <table>shippit_sync_order_item</table>
+                    </sync_order_item>
                 </entities>
             </shippit_resource>
         </models>
@@ -92,8 +99,8 @@
             <sales_order_place_after>
                 <observers>
                     <shippit_add_order_to_sync>
-                        <class>shippit/observer</class>
-                        <method>addOrderToSync</method>
+                        <class>shippit/observer_order_sync</class>
+                        <method>addOrder</method>
                     </shippit_add_order_to_sync>
                 </observers>
             </sales_order_place_after>
@@ -102,11 +109,20 @@
                 <observers>
                     <shippit_update_order_shipment_track_template>
                         <type>singleton</type>
-                        <class>shippit/observer</class>
+                        <class>shippit/observer_shipping_tracking</class>
                         <method>updateOrderShipmentTrackTemplate</method>
                     </shippit_update_order_shipment_track_template>
                 </observers>
             </core_block_abstract_to_html_before>
+
+            <shippit_add_order>
+                <observers>
+                    <shippit_add_order>
+                        <class>shippit/observer_shippit</class>
+                        <method>addOrder</method>
+                    </shippit_add_order>
+                </observers>
+            </shippit_add_order>
         </events>
 
         <fieldsets>
@@ -155,12 +171,12 @@
             <checkout_controller_onepage_save_shipping_method>
                 <observers>
                     <shippit_add_delivery_instructions_to_quote>
-                        <class>shippit/observer</class>
+                        <class>shippit/observer_quote_deliveryInstructions</class>
                         <method>addDeliveryInstructionsToQuote</method>
                     </shippit_add_delivery_instructions_to_quote>
 
                     <shippit_add_authority_to_leave_to_quote>
-                        <class>shippit/observer</class>
+                        <class>shippit/observer_quote_authorityToLeave</class>
                         <method>addAuthorityToLeaveToQuote</method>
                     </shippit_add_authority_to_leave_to_quote>
                 </observers>
@@ -193,7 +209,7 @@
             <admin_system_config_changed_section_carriers>
                 <observers>
                     <shippit_check_api_key>
-                        <class>shippit/system_config_observer</class>
+                        <class>shippit/observer_system_config</class>
                         <method>checkApiKey</method>
                     </shippit_check_api_key>
                 </observers>
@@ -203,12 +219,22 @@
 
     <crontab>
         <jobs>
+            <!-- @TODO: Remove Test Job -->
+            <shippit_test>
+                <schedule>
+                    <cron_expr>0 0 0 0 0</cron_expr>
+                </schedule>
+                <run>
+                    <model>shippit/observer_shippit::test</model>
+                </run>
+            </shippit_test>
+
             <shippit_order_sync>
                 <schedule>
                     <cron_expr>*/5 * * * *</cron_expr>
                 </schedule>
                 <run>
-                    <model>shippit/sync_order::run</model>
+                    <model>shippit/api_order::run</model>
                 </run>
             </shippit_order_sync>
         </jobs>

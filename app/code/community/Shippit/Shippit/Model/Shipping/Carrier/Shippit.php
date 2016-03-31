@@ -29,6 +29,7 @@ class Shippit_Shippit_Model_Shipping_Carrier_Shippit extends Mage_Shipping_Model
      */
     protected $helper;
     protected $api;
+    protected $logger;
     protected $bugsnag;
 
     /**
@@ -38,6 +39,7 @@ class Shippit_Shippit_Model_Shipping_Carrier_Shippit extends Mage_Shipping_Model
     {
         $this->helper = Mage::helper('shippit');
         $this->api = Mage::helper('shippit/api');
+        $this->logger = Mage::getSingleton('shippit/logger');
 
         if ($this->helper->isDebugActive()) {
             $this->bugsnag = Mage::helper('shippit/bugsnag')->init();
@@ -88,7 +90,7 @@ class Shippit_Shippit_Model_Shipping_Carrier_Shippit extends Mage_Shipping_Model
             $quoteRequest->setDropoffState($request->getDestRegionCode());
         }
         elseif ($request->getDestPostcode()
-            && $regionCodeFallback = $this->helper->getRegionCodeFromPostcode($request->getDestPostcode())) {
+            && $regionCodeFallback = $this->helper->getStateFromPostcode($request->getDestPostcode())) {
             $quoteRequest->setDropoffState($regionCodeFallback);
         }
 
@@ -103,7 +105,7 @@ class Shippit_Shippit_Model_Shipping_Carrier_Shippit extends Mage_Shipping_Model
                 $this->bugsnag->notifyError('API - Quote Request', $e->getMessage());
             }
 
-            Mage::log($e->getMessage(), null, 'shippit.log');
+            $this->logger->logException($e);
         
             return false;
         }

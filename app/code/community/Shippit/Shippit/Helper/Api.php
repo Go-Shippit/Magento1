@@ -23,11 +23,12 @@ class Shippit_Shippit_Helper_Api extends Mage_Core_Helper_Abstract
 
     protected $api;
     protected $apiUrl;
-    protected $bugsnag;
+    protected $logger;
 
     public function __construct()
     {
         $this->helper = Mage::helper('shippit');
+        $this->logger = Mage::getSingleton('shippit/logger');
 
         // We use Zend_HTTP_Client instead of Varien_Http_Client,
         // as Varien_Http_Client does not handle PUT requests correctly
@@ -39,10 +40,6 @@ class Shippit_Shippit_Helper_Api extends Mage_Core_Helper_Abstract
                 )
             )
             ->setHeaders('Content-Type', 'application/json');
-
-        if ($this->helper->isDebugActive()) {
-            $this->bugsnag = Mage::helper('shippit/bugsnag')->init();
-        }
     }
 
     public function getApiEndpoint()
@@ -57,26 +54,20 @@ class Shippit_Shippit_Helper_Api extends Mage_Core_Helper_Abstract
         }
     }
 
-    public function getApiUri($path, $authToken = null)
+    public function getApiUri($path, $apiKey = null)
     {
-        if (is_null($authToken)) {
-            $authToken = $this->helper->getApiKey();
+        if (is_null($apiKey)) {
+            $apiKey = $this->helper->getApiKey();
         }
 
-        return $this->getApiEndpoint() . '/' . $path . '?auth_token=' . $authToken;
+        return $this->getApiEndpoint() . '/' . $path . '?auth_token=' . $apiKey;
     }
 
-    public function call($uri, $requestData, $method = Zend_Http_Client::POST, $exceptionOnResponseError = true)
+    public function call($uri, $requestData, $method = Zend_Http_Client::POST, $exceptionOnResponseError = true, $apiKey = null)
     {
-        $uri = $this->getApiUri($uri);
+        $uri = $this->getApiUri($uri, $apiKey);
 
         $jsonRequestData = json_encode($requestData);
-
-        if ($this->helper->isDebugActive()) {
-            Mage::log('-- SHIPPIT - API REQUEST: --', null, 'shippit.log');
-            Mage::log($uri, null, 'shippit.log');
-            Mage::log($jsonRequestData, null, 'shippit.log');
-        }
 
         $apiRequest = $this->api
             ->setMethod($method)
@@ -87,11 +78,17 @@ class Shippit_Shippit_Helper_Api extends Mage_Core_Helper_Abstract
         }
 
         try {
+            $apiResponse = null;
             $apiResponse = $apiRequest->request($method);
+
+            // debug logging
+            $this->prepareBugsnagReport($uri, $requestData, $apiResponse);
+            $this->logger->log('API Request', "Request to $uri");
         }
         catch (Exception $e) {
-            $this->prepareBugsnagReport($uri, $jsonRequestData, $apiResponse);
-            
+            $this->prepareBugsnagReport($uri, $requestData, $apiResponse);
+            $this->logger->log('API Request Error', 'An API Request Error Occurred');
+
             throw Mage::Exception('Shippit_Shippit', 'An API Communication Error Occurred - ' . "\n" . $e->getTraceAsString());
         }
 
@@ -99,24 +96,20 @@ class Shippit_Shippit_Helper_Api extends Mage_Core_Helper_Abstract
             $message = 'API Response Error' . "\n";
             $message .= 'Response: ' . $apiResponse->getStatus() . ' - ' . $apiResponse->getMessage() . "\n";
             
-            $this->prepareBugsnagReport($uri, $jsonRequestData, $apiResponse);
+            $this->prepareBugsnagReport($uri, $requestData, $apiResponse);
+            $this->logger->log('API Response Error', 'An API Response Error Occurred');
 
             throw Mage::Exception('Shippit_Shippit', $message);
         }
 
         $apiResponseBody = json_decode($apiResponse->getBody());
 
-        if ($this->helper->isDebugActive()) {
-            Mage::log('-- SHIPPIT - API RESPONSE --', null, 'shippit.log');
-            Mage::log($apiResponse, null, 'shippit.log');
-        }
-
         return $apiResponseBody;
     }
 
-    protected function prepareBugsnagReport($uri, $jsonRequestData, $apiResponse)
+    protected function prepareBugsnagReport($uri, $requestData, $apiResponse = null)
     {
-        if ($this->helper->isDebugActive() && $this->bugsnag) {
+        if ($this->logger->bugsnag) {
             // get the core meta data
             $metaData = Mage::helper('shippit/bugsnag')->getMetaData();
 
@@ -124,18 +117,18 @@ class Shippit_Shippit_Helper_Api extends Mage_Core_Helper_Abstract
             $requestMetaData = array(
                 'api_request' => array(
                     'request_uri' => $uri,
-                    'request_body' => $jsonRequestData,
+                    'request_body' => $requestData,
                 )
             );
 
             if (!is_null($apiResponse)) {
                 $requestMetaData['api_request']['response_code'] = $apiResponse->getStatus();
-                $requestMetaData['api_request']['response_body'] = $apiResponse->getBody();
+                $requestMetaData['api_request']['response_body'] = json_decode($apiResponse->getBody());
             }
 
             $metaData = array_merge($metaData, $requestMetaData);
 
-            $this->bugsnag->setMetaData($metaData);
+            $this->logger->setMetaData($metaData);
         }
     }
 
@@ -149,13 +142,13 @@ class Shippit_Shippit_Helper_Api extends Mage_Core_Helper_Abstract
             ->response;
     }
 
-    public function sendOrder(Varien_Object $requestData)
+    public function sendOrder(Varien_Object $requestData, $apiKey = null)
     {
         $requestData = array(
             'order' => $requestData->toArray()
         );
 
-        return $this->call('orders', $requestData)
+        return $this->call('orders', $requestData, Zend_Http_Client::POST, true, $apiKey)
             ->response;
     }
 

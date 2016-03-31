@@ -98,6 +98,19 @@ class Bugsnag_Client
     }
 
     /**
+     * Enable debug mode to help diagnose problems.
+     *
+     * @param Boolean $debug whether to enable debug mode
+     * @return $this
+     */
+    public function setDebug($debug)
+    {
+        $this->config->debug = $debug;
+
+        return $this;
+    }
+
+    /**
      * Set whether or not to use SSL when notifying bugsnag
      *
      * @param Boolean $useSSL whether to use SSL
@@ -435,18 +448,20 @@ class Bugsnag_Client
     }
 
     /**
-     * Notify Bugsnag of a non-fatal/handled exception
+     * Notify Bugsnag of a non-fatal/handled throwable
      *
-     * @param Exception $exception the exception to notify Bugsnag about
+     * @param Throwable $throwable the throwable to notify Bugsnag about
      * @param Array     $metaData  optional metaData to send with this error
      * @param String    $severity  optional severity of this error (fatal/error/warning/info)
      */
-    public function notifyException(Exception $exception, array $metaData = null, $severity = null)
+    public function notifyException($throwable, array $metaData = null, $severity = null)
     {
-        $error = Bugsnag_Error::fromPHPException($this->config, $this->diagnostics, $exception);
-        $error->setSeverity($severity);
+        if (is_subclass_of($throwable, 'Throwable') || is_subclass_of($throwable, 'Exception') || get_class($throwable) == 'Exception') {
+            $error = Bugsnag_Error::fromPHPThrowable($this->config, $this->diagnostics, $throwable);
+            $error->setSeverity($severity);
 
-        $this->notify($error, $metaData);
+            $this->notify($error, $metaData);
+        }
     }
 
     /**
@@ -466,13 +481,13 @@ class Bugsnag_Client
     }
 
     // Exception handler callback, should only be called internally by PHP's set_exception_handler
-    public function exceptionHandler($exception)
+    public function exceptionHandler($throwable)
     {
         if(!$this->config->autoNotify) {
             return;
         }
 
-        $error = Bugsnag_Error::fromPHPException($this->config, $this->diagnostics, $exception);
+        $error = Bugsnag_Error::fromPHPThrowable($this->config, $this->diagnostics, $throwable);
         $error->setSeverity("error");
         $this->notify($error);
     }

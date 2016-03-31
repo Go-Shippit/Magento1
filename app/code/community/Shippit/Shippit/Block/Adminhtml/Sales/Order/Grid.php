@@ -1,12 +1,26 @@
 <?php
- 
+/**
+ *  Shippit Pty Ltd
+ *
+ *  NOTICE OF LICENSE
+ *
+ *  This source file is subject to the terms
+ *  that is available through the world-wide-web at this URL:
+ *  http://www.shippit.com/terms
+ *
+ *  @category   Shippit
+ *  @copyright  Copyright (c) 2016 by Shippit Pty Ltd (http://www.shippit.com)
+ *  @author     Matthew Muscat <matthew@mamis.com.au>
+ *  @license    http://www.shippit.com/terms
+ */
+
 class Shippit_Shippit_Block_Adminhtml_Sales_Order_Grid extends Mage_Adminhtml_Block_Widget_Grid
 {
     public function __construct()
     {
         parent::__construct();
         $this->setId('shippit_order_grid');
-        $this->setDefaultSort('increment_id');
+        $this->setDefaultSort('sync_id');
         $this->setDefaultDir('DESC');
         $this->setSaveParametersInSession(true);
         $this->setUseAjax(true);
@@ -14,7 +28,7 @@ class Shippit_Shippit_Block_Adminhtml_Sales_Order_Grid extends Mage_Adminhtml_Bl
  
     protected function _prepareCollection()
     {
-        $collection = Mage::getResourceModel('shippit/order_sync_collection')
+        $collection = Mage::getResourceModel('shippit/sync_order_collection')
             ->addFieldToSelect(
                 array(
                     'sync_id',
@@ -37,16 +51,6 @@ class Shippit_Shippit_Block_Adminhtml_Sales_Order_Grid extends Mage_Adminhtml_Bl
                     'created_at'           => 'created_at',
                     'customer_firstname'   => 'customer_firstname',
                     'customer_lastname'    => 'customer_lastname',
-                )
-            )
-            ->join(
-                array(
-                    'a' => 'sales/order_address'
-                ),
-                'order.entity_id = a.parent_id AND a.address_type != \'billing\'',
-                array(
-                    'city'         => 'city',
-                    'country_id'   => 'country_id',
                 )
             )
             ->addFilterToMap(
@@ -73,10 +77,20 @@ class Shippit_Shippit_Block_Adminhtml_Sales_Order_Grid extends Mage_Adminhtml_Bl
     {
         $helper = Mage::helper('shippit');
         $currency = (string) Mage::getStoreConfig(Mage_Directory_Model_Currency::XML_PATH_CURRENCY_BASE);
+
+        $this->addColumn('sync_id', array(
+            'header' => $helper->__('ID'),
+            'index'  => 'sync_id',
+            'column_css_class' => 'no-display',
+            'header_css_class' => 'no-display'
+        ));
  
         $this->addColumn('increment_id', array(
             'header' => $helper->__('Order #'),
-            'index'  => 'increment_id'
+            // @TODO: add link to the order page
+            // 'getter' => 'getOrder',
+            // 'frame_callback' => array($this, 'decorateOrderIncrement'),
+            'index'  => 'increment_id',
         ));
  
         $this->addColumn('purchased_on', array(
@@ -95,15 +109,11 @@ class Shippit_Shippit_Block_Adminhtml_Sales_Order_Grid extends Mage_Adminhtml_Bl
             'index'  => 'customer_lastname'
         ));
 
-        $this->addColumn('city', array(
-            'header' => $helper->__('City'),
-            'index'  => 'city'
-        ));
- 
-        $this->addColumn('country', array(
-            'header'   => $helper->__('Country'),
-            'index'    => 'country_id',
-            'renderer' => 'adminhtml/widget_grid_column_renderer_country'
+        $this->addColumn('items', array(
+            'header' => $helper->__('Items'),
+            // @TODO: strlen error reported in system log
+            'getter' => 'getItems',
+            'frame_callback' => array($this, 'decorateItems')
         ));
  
         $this->addColumn('grand_total', array(
@@ -148,7 +158,7 @@ class Shippit_Shippit_Block_Adminhtml_Sales_Order_Grid extends Mage_Adminhtml_Bl
             'header'  => $helper->__('Sync Status'),
             'index'   => 'sync_status',
             'type'    => 'options',
-            'options' => Mage::getSingleton('shippit/order_sync_config')->getStatus(),
+            'options' => Mage::getSingleton('shippit/sync_order_config')->getStatus(),
             'frame_callback' => array($this, 'decorateStatus'),
         ));
 
@@ -179,6 +189,26 @@ class Shippit_Shippit_Block_Adminhtml_Sales_Order_Grid extends Mage_Adminhtml_Bl
         return parent::_prepareColumns();
     }
 
+    // public function decorateOrderIncrement($order)
+    // {
+    //     $orderUrl = $this->getUrl(
+    //         'admin/sales_order/view',
+    //         array(
+    //             'id' => $order->getId()
+    //         )
+    //     );
+
+    //     $orderIncrement = $order->getIncrementId();
+
+    //     $link = sprintf(
+    //         '<a href="%s" title="View Order" target="_blank">%s</a>',
+    //         $url,
+    //         $orderIncrement
+    //     );
+        
+    //     return $link;
+    // }
+
     public function decorateTrackNumber($value)
     {
         if (empty($value)) {
@@ -204,18 +234,51 @@ class Shippit_Shippit_Block_Adminhtml_Sales_Order_Grid extends Mage_Adminhtml_Bl
         return $cell;
     }
 
+    public function decorateItems($items)
+    {
+        if (empty($items)) {
+            return 'All Items';
+        }
+
+        $table = '<table class="data-table orders-table" cellspacing="0">';
+        $table .= '<thead>';
+        $table .= '<tr>';
+            $table .= '<th>Sku</th>';
+            $table .= '<th>Title</th>';
+            $table .= '<th>Qty</th>';
+            $table .= '<th>Location</th>';
+        $table .= '</tr>';
+        $table .= '</thead>';
+
+        $table .= '<tbody>';
+        
+        foreach ($items as $item) {
+            $table .= '<tr>';
+            $table .= '<td>' . $item->getSku() . '</td>';
+            $table .= '<td>' . $item->getTitle() . '</td>';
+            $table .= '<td>' . $item->getQty() . '</td>';
+            $table .= '<td>' . ($item->getLocation() ? $item->getLocation() : 'N/A') . '</td>';
+            $table .= '</tr>';
+        }
+
+        $table .= '</tbody>';
+        $table .= '</table>';
+
+        return $table;
+    }
+
     public function getGridSeverity($value)
     {
         $gridSeverity = 'critical';
 
         switch ($value) {
-            case Shippit_Shippit_Model_Order_Sync::STATUS_PENDING_TEXT:
+            case Shippit_Shippit_Model_Sync_Order::STATUS_PENDING_TEXT:
                 $gridSeverity = 'minor';
                 break;
-            case Shippit_Shippit_Model_Order_Sync::STATUS_FAILED_TEXT:
+            case Shippit_Shippit_Model_Sync_Order::STATUS_FAILED_TEXT:
                 $gridSeverity = 'critical';
                 break;
-            case Shippit_Shippit_Model_Order_Sync::STATUS_SYNCED_TEXT:
+            case Shippit_Shippit_Model_Sync_Order::STATUS_SYNCED_TEXT:
                 $gridSeverity = 'notice';
                 break;
         }

@@ -1,0 +1,140 @@
+<?php
+/**
+ *  Shippit Pty Ltd
+ *
+ *  NOTICE OF LICENSE
+ *
+ *  This source file is subject to the terms
+ *  that is available through the world-wide-web at this URL:
+ *  http://www.shippit.com/terms
+ *
+ *  @category   Shippit
+ *  @copyright  Copyright (c) 2016 by Shippit Pty Ltd (http://www.shippit.com)
+ *  @author     Matthew Muscat <matthew@mamis.com.au>
+ *  @license    http://www.shippit.com/terms
+ */
+
+// Validates the request to create a sync order object
+// Ensuring the items and qtys requested to be synced are
+// valid for the order
+
+class Shippit_Shippit_Model_Request_Sync_Order extends Varien_Object
+{
+    protected $helper;
+    protected $itemsHelper;
+    protected $items;
+
+    /**
+     * Constants for keys of data array. Identical to the name of the getter in snake case
+     */
+    const ORDER_ID     = 'order_id';
+    const ITEMS        = 'items';
+
+    public function __construct() {
+        $this->helper = Mage::helper('shippit');
+        $this->itemsHelper = Mage::helper('shippit/order_items');
+    }
+
+    /**
+     * Set the order to be sent to the api request
+     *
+     * @param object $order The Order Request
+     */
+    public function setOrderId($orderId)
+    {
+        return $this->setData(self::ORDER_ID, $orderId);
+    }
+
+    public function setOrder(Mage_Sales_Model_Order $order)
+    {
+        return $this->setOrderId($order->getId());
+    }
+
+    /**
+     * Add items from the order to the parcel details
+     *
+     * @param object $items   The items to be included in the request
+     */
+    public function setItems($items = array())
+    {
+        $itemsCollection = Mage::getResourceModel('sales/order_item_collection')
+            ->addFieldToFilter('order_id', $this->getOrderId());
+
+        // if specific items have been passed,
+        // ensure that these are the only items in the request
+        if (!empty($items)) {
+            $itemsSkus = $this->itemsHelper->getSkus($items);
+
+            if (!empty($itemsSkus)) {
+                $itemsCollection = $itemsCollection->addFieldToFilter('sku', array('in' => $itemsSkus));
+            }
+        }
+
+        foreach ($itemsCollection as $item) {
+            if ($item->getHasChildren()) {
+                continue;
+            }
+
+            $requestedQty = $this->itemsHelper->getItemData($items, 'sku', $item->getSku(), 'qty');
+
+            /**
+             * Magento marks a shipment only for the parent item in the order
+             * get the parent item to determine the correct qty to ship
+             */
+            $rootItem = $this->_getRootItem($item);
+            
+            $itemQty = $this->itemsHelper->getQtyToShip($rootItem, $requestedQty);
+            $itemWeight = $itemQty * $item->getWeight();
+
+            $itemLocation = $this->itemsHelper->getLocation($item);
+
+            if ($itemQty > 0) {
+                $this->addItem($item->getSku(), $item->getName(), $itemQty, $itemWeight, $itemLocation);
+            }
+        }
+
+        return $this;
+    }
+
+    private function _getRootItem($item)
+    {
+        if ($item->getParentItem()) {
+            return $item->getParentItem();
+        }
+        else {
+            return $item;
+        }
+    }
+
+    public function reset()
+    {
+        // reset the request data
+        $this->setOrderId(null)
+            ->setItems(null);
+    }
+
+    /**
+     * Add a parcel with attributes
+     *
+     */
+    public function addItem($sku, $title, $qty, $weight = 0, $location = null)
+    {
+        $items = $this->getItems();
+
+        if (empty($items)) {
+            $items = array();
+        }
+
+        $newItem = array(
+            'sku' => $sku,
+            'title' => $title,
+            'qty' => $qty,
+            'weight' => $weight,
+            'location' => $location
+        );
+
+        $items[] = $newItem;
+
+        return $this->setData(self::ITEMS, $items);
+    }
+}

@@ -13,13 +13,10 @@ class Shippit_Shippit_Helper_Bugsnag extends Mage_Core_Helper_Abstract
                 require_once(Mage::getBaseDir('lib') . '/shippit-bugsnag/Autoload.php');
             }
             else {
-                Mage::log('Shippit Bugsnag Error: Couldn\'t activate Bugsnag Error Monitoring due to missing Bugsnag PHP library!', null, 'shippit.log');
+                Mage::log('Shippit Bugsnag Error', 'Couldn\'t activate Bugsnag Error Monitoring due to missing Bugsnag PHP library!', null, 'shippit.log');
                 
                 return;
             }
-
-            $this->notifySeverities = Mage::getStoreConfig("dev/Bugsnag_Notifier/severites");
-            $this->filterFields = Mage::getStoreConfig("dev/Bugsnag_Notifier/filterFiels");
 
             if (!empty($this->apiKey)) {
                 $this->client = new Bugsnag_Client($this->apiKey);
@@ -89,7 +86,7 @@ class Shippit_Shippit_Helper_Bugsnag extends Mage_Core_Helper_Abstract
         $level = 0;
         $severities = explode(",", $severites);
 
-        foreach($severities as $severity) {
+        foreach ($severities as $severity) {
             $level |= Bugsnag_ErrorTypes::getLevelsForSeverity($severity);
         }
 

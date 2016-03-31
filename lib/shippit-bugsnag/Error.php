@@ -30,10 +30,10 @@ class Bugsnag_Error
         return $error;
     }
 
-    public static function fromPHPException(Bugsnag_Configuration $config, Bugsnag_Diagnostics $diagnostics, Exception $exception)
+    public static function fromPHPThrowable(Bugsnag_Configuration $config, Bugsnag_Diagnostics $diagnostics, $throwable)
     {
         $error = new Bugsnag_Error($config, $diagnostics);
-        $error->setPHPException($exception);
+        $error->setPHPException($throwable);
 
         return $error;
     }
@@ -96,8 +96,20 @@ class Bugsnag_Error
         return $this;
     }
 
-    public function setPHPException(Exception $exception)
+    public function setPHPException($exception)
     {
+        if (version_compare(PHP_VERSION, '7.0.0', '>=')) {
+            if (!$exception instanceof \Throwable) {
+                error_log('Bugsnag Warning: Exception must implement interface \Throwable.');
+                return;
+            }
+        } else {
+            if (!$exception instanceof \Exception) {
+                error_log('Bugsnag Warning: Exception must be instance of \Exception.');
+                return;
+            }
+        }
+
         $this->setName(get_class($exception))
              ->setMessage($exception->getMessage())
              ->setStacktrace(Bugsnag_Stacktrace::fromBacktrace($this->config, $exception->getTrace(), $exception->getFile(), $exception->getLine()));
@@ -143,7 +155,7 @@ class Bugsnag_Error
     public function setPrevious($exception)
     {
         if ($exception) {
-            $this->previous = Bugsnag_Error::fromPHPException($this->config, $this->diagnostics, $exception);
+            $this->previous = Bugsnag_Error::fromPHPThrowable($this->config, $this->diagnostics, $exception);
         }
 
         return $this;
@@ -159,7 +171,7 @@ class Bugsnag_Error
             'payloadVersion' => $this->payloadVersion,
             'severity' => $this->severity,
             'exceptions' => $this->exceptionArray(),
-            'metaData' => $this->cleanupObj($this->metaData),
+            'metaData' => $this->cleanupObj($this->metaData, true),
         );
 
         if (isset($this->groupingHash)) {
@@ -183,10 +195,10 @@ class Bugsnag_Error
             'stacktrace' => $this->stacktrace->toArray(),
         );
 
-        return $exceptionArray;
+        return $this->cleanupObj($exceptionArray, false);
     }
 
-    private function cleanupObj($obj)
+    private function cleanupObj($obj, $isMetaData)
     {
         if (is_null($obj)) {
             return null;
@@ -195,23 +207,23 @@ class Bugsnag_Error
         if (is_array($obj)) {
             $cleanArray = array();
             foreach ($obj as $key => $value) {
-                // Apply filters if required
-                if (is_array($this->config->filters)) {
-                    // Check if this key should be filtered
-                    $shouldFilter = false;
+                // Check if this key should be filtered
+                $shouldFilter = false;
+
+                // Apply filters to metadata if required
+                if ($isMetaData && is_array($this->config->filters)) {
                     foreach ($this->config->filters as $filter) {
                         if (strpos($key, $filter) !== false) {
                             $shouldFilter = true;
                             break;
                         }
                     }
-
-                    // Apply filters
-                    if ($shouldFilter) {
-                        $cleanArray[$key] = '[FILTERED]';
-                    } else {
-                        $cleanArray[$key] = $this->cleanupObj($value);
-                    }
+                }
+                // Apply filter
+                if ($shouldFilter) {
+                    $cleanArray[$key] = '[FILTERED]';
+                } else {
+                    $cleanArray[$key] = $this->cleanupObj($value, $isMetaData);
                 }
             }
 
@@ -225,7 +237,7 @@ class Bugsnag_Error
             }
         } elseif (is_object($obj)) {
             // json_encode -> json_decode trick turns an object into an array
-            return $this->cleanupObj(json_decode(json_encode($obj), true));
+            return $this->cleanupObj(json_decode(json_encode($obj), true), $isMetaData);
         } else {
             return $obj;
         }

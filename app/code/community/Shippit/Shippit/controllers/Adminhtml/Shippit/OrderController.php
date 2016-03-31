@@ -1,18 +1,18 @@
 <?php
 /**
-*  Shippit Pty Ltd
-*
-*  NOTICE OF LICENSE
-*
-*  This source file is subject to the terms
-*  that is available through the world-wide-web at this URL:
-*  http://www.shippit.com/terms
-*
-*  @category   Shippit
-*  @copyright  Copyright (c) 2016 by Shippit Pty Ltd (http://www.shippit.com)
-*  @author     Matthew Muscat <matthew@mamis.com.au>
-*  @license    http://www.shippit.com/terms
-*/
+ *  Shippit Pty Ltd
+ *
+ *  NOTICE OF LICENSE
+ *
+ *  This source file is subject to the terms
+ *  that is available through the world-wide-web at this URL:
+ *  http://www.shippit.com/terms
+ *
+ *  @category   Shippit
+ *  @copyright  Copyright (c) 2016 by Shippit Pty Ltd (http://www.shippit.com)
+ *  @author     Matthew Muscat <matthew@mamis.com.au>
+ *  @license    http://www.shippit.com/terms
+ */
 
 class Shippit_Shippit_Adminhtml_Shippit_OrderController extends Mage_Adminhtml_Controller_Action
 {
@@ -60,16 +60,16 @@ class Shippit_Shippit_Adminhtml_Shippit_OrderController extends Mage_Adminhtml_C
             $this->_getSession()->addError($this->__('You must select at least 1 order to sync'));
 
             $this->_redirect('*/*/index');
+            
             return;
         }
 
         // get a list of all pending sync in the sync queue
-        $orderIds = Mage::getModel('shippit/order_sync')
+        $syncOrders = Mage::getModel('shippit/sync_order')
             ->getCollection()
-            ->addFieldToFilter('sync_id', array('in', $syncIds))
-            ->getAllOrderIds();
+            ->addFieldToFilter('sync_id', array('in', $syncIds));
 
-        if (empty($orderIds)) {
+        if ($syncOrders->getSize() == 0) {
             $this->_getSession()->addError($this->__('No valid orders were found'));
 
             $this->_redirect('*/*/index');
@@ -77,14 +77,10 @@ class Shippit_Shippit_Adminhtml_Shippit_OrderController extends Mage_Adminhtml_C
             return;
         }
 
-        $orders = Mage::getModel('sales/order')
-            ->getCollection()
-            ->addAttributeToFilter('entity_id', array('in' => $orderIds));
+        $apiOrder = Mage::getSingleton('shippit/api_order');
 
-        $syncOrder = Mage::getSingleton('shippit/sync_order');
-
-        foreach ($orders as $order) {
-            $syncOrder->syncOrder($order, true);
+        foreach ($syncOrders as $syncOrder) {
+            $apiOrder->sync($syncOrder, true);
         }
 
         $this->_redirect('*/*/index');
@@ -125,7 +121,7 @@ class Shippit_Shippit_Adminhtml_Shippit_OrderController extends Mage_Adminhtml_C
         }
 
         // get a list of all pending sync in the sync queue
-        $syncItems = Mage::getModel('shippit/order_sync')
+        $syncItems = Mage::getModel('shippit/sync_order')
             ->getCollection()
             ->addFieldToFilter('sync_id', array('in', $syncIds));
 
@@ -177,12 +173,12 @@ class Shippit_Shippit_Adminhtml_Shippit_OrderController extends Mage_Adminhtml_C
         }
 
         // get a list of all pending sync in the sync queue
-        $syncItems = Mage::getModel('shippit/order_sync')
+        $syncItems = Mage::getModel('shippit/sync_order')
             ->getCollection()
             ->addFieldToFilter('sync_id', array('in', $syncIds));
 
         foreach ($syncItems as $syncItem) {
-            $syncItem->setStatus(Shippit_Shippit_Model_Order_Sync::STATUS_PENDING)
+            $syncItem->setStatus(Shippit_Shippit_Model_Sync_Order::STATUS_PENDING)
                 ->setAttemptCount(0)
                 ->setTrackNumber(null)
                 ->setSyncedAt(null)

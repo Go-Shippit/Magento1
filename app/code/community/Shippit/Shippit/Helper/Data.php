@@ -22,8 +22,12 @@ class Shippit_Shippit_Helper_Data extends Mage_Core_Helper_Abstract
     const XML_PATH_SETTINGS = 'carriers/shippit/';
     const AUTHORITY_TO_LEAVE_ID = 'shippit_authority_to_leave';
     const DELIVERY_INSTRUCTIONS_ID = 'shippit_delivery_instructions';
+    
     const SYNC_MODE_REALTIME = 'realtime';
     const SYNC_MODE_CRON = 'cron';
+    const SYNC_MODE_CUSTOM = 'custom';
+
+    const CARRIER_CODE = 'shippit';
     
     /**
      * Return store config value for key
@@ -41,6 +45,11 @@ class Shippit_Shippit_Helper_Data extends Mage_Core_Helper_Abstract
         else {
             return Mage::getStoreConfig($path);
         }
+    }
+
+    public function getCarrierCode()
+    {
+        return self::CARRIER_CODE;
     }
 
     public function getModuleVersion()
@@ -102,6 +111,16 @@ class Shippit_Shippit_Helper_Data extends Mage_Core_Helper_Abstract
         return self::getStoreConfig('max_timeslots');
     }
 
+    public function isProductLocationActive()
+    {
+        return self::getStoreConfig('product_location_active', true);
+    }
+
+    public function getProductLocationAttributeCode()
+    {
+        return self::getStoreConfig('product_location_attribute_code');
+    }
+
     public function isEnabledProductActive()
     {
         return self::getStoreConfig('enabled_product_active', true);
@@ -160,7 +179,7 @@ class Shippit_Shippit_Helper_Data extends Mage_Core_Helper_Abstract
      * @param  string $postcode The postcode
      * @return mixed            The region code, or false if unable to determine
      */
-    public function getRegionCodeFromPostcode($postcode)
+    public function getStateFromPostcode($postcode)
     {
         $postcode = (int) $postcode;
 

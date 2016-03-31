@@ -106,14 +106,14 @@ foreach ($orders as $order) {
     $orderSyncs[] = array(
         'store_id' => $order->getStoreId(),
         'order_id' => $order->getEntityId(),
-        'status' => Shippit_Shippit_Model_Order_Sync::STATUS_PENDING,
+        'status' => Shippit_Shippit_Model_Sync_Order::STATUS_PENDING,
     );
 }
 
 foreach ($orderSyncs as $orderSync) {
     // Insert the order sync data
     $installer->getConnection()->insert(
-        $installer->getTable('shippit/order_sync'),
+        $installer->getTable('shippit/sync_order'),
         $orderSync
     );
 }

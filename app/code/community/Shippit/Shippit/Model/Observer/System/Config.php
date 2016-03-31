@@ -14,7 +14,7 @@
 *  @license    http://www.shippit.com/terms
 */
 
-class Shippit_Shippit_Model_System_Config_Observer
+class Shippit_Shippit_Model_Observer_System_Config
 {
     public function checkApiKey(Varien_Event_Observer $observer)
     {

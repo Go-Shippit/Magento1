@@ -14,7 +14,7 @@
 *  @license    http://www.shippit.com/terms
 */
 
-class Shippit_Shippit_Model_System_Config_Source_Shippit_SyncMode
+class Shippit_Shippit_Model_System_Config_Source_Shippit_Sync_Mode
 {
     public function toOptionArray()
     {
@@ -26,6 +26,10 @@ class Shippit_Shippit_Model_System_Config_Source_Shippit_SyncMode
             array(
                 'label' => 'Scheduled',
                 'value' => Shippit_Shippit_Helper_Data::SYNC_MODE_CRON
+            ),
+            array(
+                'label' => 'Custom',
+                'value' => Shippit_Shippit_Helper_Data::SYNC_MODE_CUSTOM
             )
         );
         
