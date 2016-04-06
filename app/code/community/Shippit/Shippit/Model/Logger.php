@@ -35,49 +35,41 @@ class Shippit_Shippit_Model_Logger
     public function log($errorType, $message, $level = Zend_Log::DEBUG)
     {
         // if debug mode is disabled, only log when the level is above notice
-        if (!$this->debugMode) {
-            if ($level <= Zend_Log::NOTICE) {
-                $this->bugsnagLog($errorType, $message, $level);
+        if (!$this->debugMode && $level <= Zend_Log::NOTICE
+            || $this->debugMode) {
+            $this->bugsnagLog($errorType, $message, $level);
 
-                Mage::log($errorType . "\n" . $message, $level, 'shippit.log');
-                
-                if (!empty($this->metaData)) {
-                    Mage::log($this->metaData, $level, 'shippit.log');
-                }
-
-                return true;
-            }
-            else {
-                return false;
+            Mage::log($errorType . "\n" . $message, $level, 'shippit.log');
+            
+            if (!empty($this->metaData)) {
+                Mage::log($this->metaData, $level, 'shippit.log');
             }
         }
-        // otherwise, always log...
-        else {
-            $log = $this->bugsnagLog($errorType, $message, $level);
 
-            return Mage::log($errorType . "\n" . $message, $level, 'shippit.log');
-        }
+        return $this;
     }
 
     public function bugsnagLog($errorType, $message, $level = Zend_Log::DEBUG)
     {
         if (!$this->bugsnag) {
-            return false;
+            return $this;
         }
 
-        return $this->bugsnag->notifyError($errorType, $message, $this->metaData, $this->getBugsnagErrorLevel($level));
+        $this->bugsnag->notifyError($errorType, $message, $this->metaData, $this->_getBugsnagErrorLevel($level));
+
+        return $this;
     }
 
     public function bugsnagException($exception)
     {
         if (!$this->bugsnag) {
-            return false;
+            return $this;
         }
 
         return $this->bugsnag->notifyException($exception);
     }
 
-    public function getBugsnagErrorLevel($level)
+    public function _getBugsnagErrorLevel($level)
     {
         if ($level <= 3) {
             return 'error';
@@ -100,11 +92,13 @@ class Shippit_Shippit_Model_Logger
             Mage::log($this->metaData, $level, 'shippit.log');
         }
 
-        return true;
+        return $this;
     }
 
     public function setMetaData($metaData)
     {
-        return $this->metaData = $metaData;
+        $this->metaData = $metaData;
+
+        return $this;
     }
 }

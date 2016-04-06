@@ -28,23 +28,27 @@ class Shippit_Shippit_Model_Shippit extends Mage_Core_Model_Abstract
      * Adds the order to the request queue, and if the mode is requested as realtime,
      * attempts to sync the record immediately.
      *
+     * Note: Premium shipping services are only available via live quoting
+     *
      * @param integer $entityId             The order entity_id
      * @param array   $items                An array of the items to be included
+     * @param string  $shippingMethod       The shipping method service class to be used (standard, express)
      * @param string  $apiKey               The API Key to be used in the request
      * @param string  $syncMode             The sync mode ot be used for the request
      * @param boolean $displayNotifications Flag to indiciate if notifications should be shown to the user
      */
-    public function addOrder($entityId, $items = array(), $apiKey = null, $syncMode = null, $displayNotifications = false)
+    public function addOrder($entityId, $items = array(), $shippingMethod = null, $apiKey = null, $syncMode = null, $displayNotifications = false)
     {
         // Ensure the module is active
         if (!$this->helper->isActive()) {
             return $this;
         }
-        
+
         $request = Mage::getModel('shippit/request_sync_order')
             ->setOrderId($entityId)
             ->setItems($items)
-            ->setApiKey($apiKey);
+            ->setApiKey($apiKey)
+            ->setShippingMethod($shippingMethod);
 
         // Create a new sync order record
         $syncOrder = Mage::getModel('shippit/sync_order')->addRequest($request)

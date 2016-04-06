@@ -18,7 +18,7 @@
 <config>
     <modules>
         <Shippit_Shippit>
-            <version>4.1.0</version>
+            <version>4.1.3</version>
         </Shippit_Shippit>
     </modules>
 
@@ -206,29 +206,19 @@
         </layout>
 
         <events>
-            <admin_system_config_changed_section_carriers>
+            <admin_system_config_changed_section_shippit>
                 <observers>
                     <shippit_check_api_key>
                         <class>shippit/observer_system_config</class>
                         <method>checkApiKey</method>
                     </shippit_check_api_key>
                 </observers>
-            </admin_system_config_changed_section_carriers>
+            </admin_system_config_changed_section_shippit>
         </events>
     </adminhtml>
 
     <crontab>
         <jobs>
-            <!-- @TODO: Remove Test Job -->
-            <shippit_test>
-                <schedule>
-                    <cron_expr>0 0 0 0 0</cron_expr>
-                </schedule>
-                <run>
-                    <model>shippit/observer_shippit::test</model>
-                </run>
-            </shippit_test>
-
             <shippit_order_sync>
                 <schedule>
                     <cron_expr>*/5 * * * *</cron_expr>
@@ -241,18 +231,43 @@
     </crontab>
 
     <default>
-        <carriers>
-            <shippit>
-                <model>shippit/shipping_carrier_shippit</model>
+        <!-- Shippit Core Module Configuration -->
+        <shippit>
+            <general>
                 <active>0</active>
                 <api_key/>
                 <environment>production</environment>
                 <debug_active>0</debug_active>
-                <sync_mode>realtime</sync_mode>
-                <allowed_methods>Standard,Premium</allowed_methods>
+            </general>
+
+            <checkout>
+                <authority_to_leave>1</authority_to_leave>
+                <delivery_instructions>1</delivery_instructions>
+            </checkout>
+
+            <sync_order>
+                <active>0</active>
+                <mode>realtime</mode>
+                <send_all_orders_active>0</send_all_orders_active>
+                <product_location_active>0</product_location_active>
+                <product_location_attribute_code></product_location_attribute_code>
+            </sync_order>
+
+            <sync_shipping>
+                <active>0</active>
+                <update_template_active>0</update_template_active>
+            </sync_shipping>
+        </shippit>
+
+        <!-- Shippit Carrier Module Configuration -->
+        <carriers>
+            <shippit>
+                <model>shippit/shipping_carrier_shippit</model>
+                <active>0</active>
+                <debug_active>0</debug_active>
+                <allowed_methods>Standard,Express,Premium</allowed_methods>
                 <title>Shippit</title>
                 <max_timeslots/>
-                <send_all_orders_active>0</send_all_orders_active>
                 <enabled_product_active>0</enabled_product_active>
                 <enabled_product_ids/>
                 <enabled_product_attribute_active>0</enabled_product_attribute_active>

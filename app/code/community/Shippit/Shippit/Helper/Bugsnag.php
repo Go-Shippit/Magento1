@@ -2,7 +2,7 @@
 
 class Shippit_Shippit_Helper_Bugsnag extends Mage_Core_Helper_Abstract
 {
-    private $apiKey = 'b2873ea2ae95a3c9f2cb63ca1557abb5';
+    private $apiKey = false;
     private $severites = 'fatal,error';
     private $client = false;
 
@@ -16,6 +16,18 @@ class Shippit_Shippit_Helper_Bugsnag extends Mage_Core_Helper_Abstract
                 Mage::log('Shippit Bugsnag Error', 'Couldn\'t activate Bugsnag Error Monitoring due to missing Bugsnag PHP library!', null, 'shippit.log');
                 
                 return;
+            }
+
+            // Allow override of bugsnag key
+            $apiKey = Mage::getStoreConfig('shippit/bugsnag/api_key');
+
+            // if we have a value in shippit_bugsnag_api_key, use it
+            if (!is_null($apiKey)) {
+                $this->apiKey = $apiKey;
+            }
+            // otherwise, report to the shippit bugsnag account
+            else {
+                $this->apiKey = 'b2873ea2ae95a3c9f2cb63ca1557abb5';
             }
 
             if (!empty($this->apiKey)) {

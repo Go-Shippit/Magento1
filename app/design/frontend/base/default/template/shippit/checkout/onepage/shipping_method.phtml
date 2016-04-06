@@ -1,28 +1,18 @@
 <?php
 /**
- * Magento
- *
- * NOTICE OF LICENSE
- *
- * This source file is subject to the Academic Free License (AFL 3.0)
- * that is bundled with this package in the file LICENSE_AFL.txt.
- * It is also available through the world-wide-web at this URL:
- * http://opensource.org/licenses/afl-3.0.php
- * If you did not receive a copy of the license and are unable to
- * obtain it through the world-wide-web, please send an email
- * to license@magentocommerce.com so we can send you a copy immediately.
- *
- * DISCLAIMER
- *
- * Do not edit or add to this file if you wish to upgrade Magento to newer
- * versions in the future. If you wish to customize Magento for your
- * needs please refer to http://www.magentocommerce.com for more information.
- *
- * @category    design
- * @package     base_default
- * @copyright   Copyright (c) 2013 Magento Inc. (http://www.magentocommerce.com)
- * @license     http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
- */
+*  Shippit Pty Ltd
+*
+*  NOTICE OF LICENSE
+*
+*  This source file is subject to the terms
+*  that is available through the world-wide-web at this URL:
+*  http://www.shippit.com/terms
+*
+*  @category   Shippit
+*  @copyright  Copyright (c) 2016 by Shippit Pty Ltd (http://www.shippit.com)
+*  @author     Matthew Muscat <matthew@mamis.com.au>
+*  @license    http://www.shippit.com/terms
+*/
 ?>
 <form id="co-shipping-method-form" action="">
     <div id="checkout-shipping-method-load">
@@ -36,12 +26,8 @@
 
     <?php if (Mage::helper('core')->isModuleEnabled('Shippit_Shippit')): ?>
         <div id="onepage-checkout-shipping-method-shippit">
-            <div id="onepage-checkout-shipping-method-shippit-authoritytoleave">
-                <?php echo $this->getChildHtml('shippit_authority_to_leave') ?>
-            </div>
-            <div id="onepage-checkout-shipping-method-shippit-deliveryinstructions">
-                <?php echo $this->getChildHtml('shippit_delivery_instructions') ?>
-            </div>
+            <?php echo $this->getChildHtml('shippit_authority_to_leave') ?>
+            <?php echo $this->getChildHtml('shippit_delivery_instructions') ?>
         </div>
     <?php endif ?>
     

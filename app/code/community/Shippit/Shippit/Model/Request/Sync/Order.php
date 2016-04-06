@@ -15,8 +15,8 @@
  */
 
 // Validates the request to create a sync order object
-// Ensuring the items and qtys requested to be synced are
-// valid for the order
+// Ensuring the order details, items and qtys requested
+// to be synced are valid
 
 class Shippit_Shippit_Model_Request_Sync_Order extends Varien_Object
 {
@@ -27,11 +27,15 @@ class Shippit_Shippit_Model_Request_Sync_Order extends Varien_Object
     /**
      * Constants for keys of data array. Identical to the name of the getter in snake case
      */
-    const ORDER_ID     = 'order_id';
-    const ITEMS        = 'items';
+    const ORDER_ID        = 'order_id';
+    const ITEMS           = 'items';
+    const SHIPPING_METHOD = 'shipping_method';
+
+    // const ERROR_INVALID_SHIPPING_METHOD = 'An invalid shipping method was requested, valid options include "standard" or "express"';
+    const ERROR_NO_ITEMS_AVAILABLE_FOR_SHIPPING = 'No items could be added to the sync order request, please ensure the items are available for shipping';
 
     public function __construct() {
-        $this->helper = Mage::helper('shippit');
+        $this->helper = Mage::helper('shippit/sync_order');
         $this->itemsHelper = Mage::helper('shippit/order_items');
     }
 
@@ -70,6 +74,8 @@ class Shippit_Shippit_Model_Request_Sync_Order extends Varien_Object
             }
         }
 
+        $itemsAdded = 0;
+
         foreach ($itemsCollection as $item) {
             if ($item->getHasChildren()) {
                 continue;
@@ -84,13 +90,18 @@ class Shippit_Shippit_Model_Request_Sync_Order extends Varien_Object
             $rootItem = $this->_getRootItem($item);
             
             $itemQty = $this->itemsHelper->getQtyToShip($rootItem, $requestedQty);
-            $itemWeight = $itemQty * $item->getWeight();
+            $itemWeight = $item->getWeight();
 
             $itemLocation = $this->itemsHelper->getLocation($item);
 
             if ($itemQty > 0) {
                 $this->addItem($item->getSku(), $item->getName(), $itemQty, $itemWeight, $itemLocation);
+                $itemsAdded++;
             }
+        }
+
+        if ($itemsAdded == 0) {
+            throw new Exception(self::ERROR_NO_ITEMS_AVAILABLE_FOR_SHIPPING);
         }
 
         return $this;
@@ -106,11 +117,37 @@ class Shippit_Shippit_Model_Request_Sync_Order extends Varien_Object
         }
     }
 
+    public function setShippingMethod($shippingMethod)
+    {
+        // Standard, express and premium options are available
+        // Premium services requires the use of live quoting to determine
+        // booking availability
+        $validShippingMethods = array(
+            'standard',
+            'express',
+            'premium'
+        );
+
+        // if the shipping method passed is not a standard shippit service class, attempt to get a service class based on the configured mapping
+        if (!in_array($shippingMethod, $validShippingMethods)) {
+            $shippingMethod = $this->helper->getShippingMethodMapping($shippingMethod);
+        }
+
+        if (in_array($shippingMethod, $validShippingMethods)) {
+            return $this->setData(self::SHIPPING_METHOD, $shippingMethod);
+        }
+        else {
+            return $this->setData(self::SHIPPING_METHOD, 'standard');
+        }
+    }
+
     public function reset()
     {
         // reset the request data
         $this->setOrderId(null)
             ->setItems(null);
+
+        return $this->setData(self::SHIPPING_METHOD, null);
     }
 
     /**

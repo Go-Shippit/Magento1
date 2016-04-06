@@ -14,9 +14,11 @@
  *  @license    http://www.shippit.com/terms
  */
 
+// Read the Shippit webhook request and provides
+// a summary of the available item actions in Magento
+
 class Shippit_Shippit_Model_Request_Api_Shipment extends Varien_Object
 {
-    protected $helper;
     protected $itemsHelper;
     protected $items = null;
 
@@ -27,7 +29,6 @@ class Shippit_Shippit_Model_Request_Api_Shipment extends Varien_Object
     const ERROR_ORDER_STATUS = 'The order id requested has an status that is not available for shipping';
 
     public function __construct() {
-        $this->helper = Mage::helper('shippit');
         $this->itemsHelper = Mage::helper('shippit/order_items');
 
         return $this;

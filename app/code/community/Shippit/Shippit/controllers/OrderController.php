@@ -16,6 +16,7 @@
 
 class Shippit_Shippit_OrderController extends Mage_Core_Controller_Front_Action
 {
+    const ERROR_SYNC_DISABLED = 'Shipping Sync is Disabled';
     const ERROR_API_KEY_MISSING = 'An API Key is required';
     const ERROR_API_KEY_MISMATCH = 'The API Key provided does not match the configured API Key';
     const ERROR_BAD_REQUEST = 'An invalid request was recieved';
@@ -25,10 +26,36 @@ class Shippit_Shippit_OrderController extends Mage_Core_Controller_Front_Action
     const ERROR_SHIPMENT_FAILED = 'The shipment record was not able to be created at this time, please try again.';
     const SUCCESS_SHIPMENT_CREATED = 'The shipment record was created successfully.';
 
+    protected $helper;
+    protected $logger;
+
+    public function _construct()
+    {
+        $this->helper = Mage::helper('shippit/sync_shipping');
+        $this->logger = Mage::getModel('shippit/logger');
+
+        return parent::_construct();
+    }
+
     public function updateAction()
     {
         $request = json_decode(file_get_contents('php://input'), true);
+
+        $metaData = array(
+            'api_request' => array(
+                'request_body' => $request
+            )
+        );
         
+        $this->logger->setMetaData($metaData);
+
+        if (!$this->helper->isActive()) {
+            $this->logger->log('Shipping Sync is not active');
+            $response = $this->_prepareResponse(false, self::ERROR_SYNC_DISABLED);
+
+            return $this->getResponse()->setBody($response);
+        }
+
         $apiKey = $this->getRequest()->getParam('api_key');
         $orderIncrementId = $request['retailer_order_number'];
         $orderShipmentState = $request['current_state'];
@@ -39,27 +66,34 @@ class Shippit_Shippit_OrderController extends Mage_Core_Controller_Front_Action
         if (isset($request['products'])) {
             $products = $request['products'];
         }
+        else {
+            $products = array();
+        }
 
         if (empty($apiKey)) {
             $response = $this->_prepareResponse(false, self::ERROR_API_KEY_MISSING);
+            $this->logger->log('Shipment Sync Error - ' . self::ERROR_API_KEY_MISSING, Zend_Log::WARN);
 
             return $this->getResponse()->setBody($response);
         }
 
         if (!$this->_checkApiKey($apiKey)) {
             $response = $this->_prepareResponse(false, self::ERROR_API_KEY_MISMATCH);
+            $this->logger->log('Shipment Sync Error - ' . self::ERROR_API_KEY_MISMATCH, Zend_Log::WARN);
 
             return $this->getResponse()->setBody($response);
         }
 
         if (empty($request)) {
             $response = $this->_prepareResponse(false, self::ERROR_BAD_REQUEST);
+            $this->logger->log('Shipment Sync Error - ' . self::ERROR_BAD_REQUEST, Zend_Log::WARN);
 
             return $this->getResponse()->setBody($response);
         }
 
         if (empty($orderShipmentState) || $orderShipmentState != 'ready_for_pickup') {
             $response = $this->_prepareResponse(true, self::NOTICE_SHIPMENT_STATUS);
+            $this->logger->log('Shipment Sync Error - ' . self::NOTICE_SHIPMENT_STATUS);
 
             return $this->getResponse()->setBody($response);
         }
@@ -80,6 +114,7 @@ class Shippit_Shippit_OrderController extends Mage_Core_Controller_Front_Action
         catch (Exception $e)
         {
             $response = $this->_prepareResponse(false, $e->getMessage());
+            $this->logger->logException($e);
 
             return $this->getResponse()->setBody($response);
         }
@@ -87,10 +122,21 @@ class Shippit_Shippit_OrderController extends Mage_Core_Controller_Front_Action
 
     private function _prepareResponse($success, $message)
     {
-        return Mage::helper('core')->jsonEncode(array(
+        $response = array(
             'success' => $success,
             'message' => $message,
-        ));
+        );
+
+        $metaData = array(
+            'api_request' => array(
+                'request_body' => json_decode(file_get_contents('php://input'), true),
+                'response_body' => $response
+            )
+        );
+
+        $this->logger->setMetaData($metaData);
+
+        return Mage::helper('core')->jsonEncode($response);
     }
 
     private function _getOrder($orderIncrementId)
@@ -140,12 +186,15 @@ class Shippit_Shippit_OrderController extends Mage_Core_Controller_Front_Action
                 $shipment->sendEmail(true, $comment);
             }
             catch (Mage_Core_Exception $e) {
+                $this->logger->log('Shipment Sync Error - ' . self::ERROR_SHIPMENT_FAILED);
                 return $this->_prepareResponse(false, self::ERROR_SHIPMENT_FAILED);
             }
 
+            $this->logger->log('Shipment Sync Successful - ' . self::SUCCESS_SHIPMENT_CREATED);
             return $this->_prepareResponse(true, self::SUCCESS_SHIPMENT_CREATED);
         }
 
+        $this->logger->log('Shipment Sync Error - ' . self::ERROR_SHIPMENT_FAILED);
         return $this->_prepareResponse(false, self::ERROR_SHIPMENT_FAILED);
     }
 }

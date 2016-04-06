@@ -24,7 +24,8 @@ class Shippit_Shippit_Model_Observer_Order_Sync
 
     public function __construct()
     {
-        $this->helper = Mage::helper('shippit');
+        $this->helper = Mage::helper('shippit/sync_order');
+        $this->logger = Mage::getModel('shippit/logger');
         $this->carrierCode = $this->helper->getCarrierCode();
     }
     
@@ -40,7 +41,7 @@ class Shippit_Shippit_Model_Observer_Order_Sync
         }
 
         // If the sync mode is custom, stop processing
-        if ($this->helper->getSyncMode() == Shippit_Shippit_Helper_Data::SYNC_MODE_CUSTOM) {
+        if ($this->helper->getMode() == Shippit_Shippit_Helper_Data::SYNC_MODE_CUSTOM) {
             return $this;
         }
 
@@ -51,24 +52,48 @@ class Shippit_Shippit_Model_Observer_Order_Sync
             return $this;
         }
 
-        $shippingMethod = $order->getShippingMethod();
         $shippingCountry = $order->getShippingAddress()->getCountryId();
 
-        // If send all orders + au delivery, or shippit method is selected
-        if (($this->helper->isSendAllOrdersActive() && $shippingCountry == 'AU')
-            || strpos($shippingMethod, $this->carrierCode) !== FALSE) {
+        // Ensure the order is destined for Australia
+        if ($shippingCountry != 'AU') {
+            return $this;
+        }
 
-            $request = Mage::getModel('shippit/request_sync_order')
-                ->setOrderId($order->getId())
-                ->setItems();
+        $shippingMethod = $order->getShippingMethod();
+        $shippitShippingMethod = $this->helper->getShippitShippingMethod($shippingMethod);
 
-            // Create a new sync order record
-            $syncOrder = Mage::getModel('shippit/sync_order')->addRequest($request)
-                ->save();;
+        // If send all orders,
+        // or shippit shipping class present
+        if (($this->helper->isSendAllOrdersActive())
+            || $shippitShippingMethod !== FALSE) {
 
-            // If the sync mode is realtime, attempt realtime sync now
-            if ($this->helper->getSyncMode() == Shippit_Shippit_Helper_Data::SYNC_MODE_REALTIME) {
-                $this->_syncOrder($syncOrder);
+            try {
+                $request = Mage::getModel('shippit/request_sync_order')
+                    ->setOrderId($order->getId())
+                    ->setItems()
+                    ->setShippingMethod($shippitShippingMethod);
+
+                // Create a new sync order record
+                $syncOrder = Mage::getModel('shippit/sync_order')->addRequest($request)
+                    ->save();
+            }
+            catch (Exception $e) {
+                $this->logger->log('Sync Order was unable to be created', $e->getMessage(), Zend_Log::ERR);
+                $this->logger->logException($e);
+            }
+
+            try {
+                // If the sync mode is realtime,
+                // or the shipping method is premium
+                // - attempt realtime sync now
+                if ($this->helper->getMode() == Shippit_Shippit_Helper_Data::SYNC_MODE_REALTIME
+                    || $shippitShippingMethod == 'premium') {
+                    $this->_syncOrder($syncOrder);
+                }
+            }
+            catch (Exception $e) {
+                $this->logger->log('Sync Order was unable to be synced realtime', $e->getMessage(), Zend_Log::ERR);
+                $this->logger->logException($e);
             }
         }
 

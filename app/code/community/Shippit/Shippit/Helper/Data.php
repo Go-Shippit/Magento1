@@ -17,9 +17,10 @@
 class Shippit_Shippit_Helper_Data extends Mage_Core_Helper_Abstract
 {
     /**
-     * Paths to module config options
+     * Path to module general config options
      */
-    const XML_PATH_SETTINGS = 'carriers/shippit/';
+    const XML_PATH_SETTINGS = 'shippit/general/';
+
     const AUTHORITY_TO_LEAVE_ID = 'shippit_authority_to_leave';
     const DELIVERY_INSTRUCTIONS_ID = 'shippit_delivery_instructions';
     
@@ -47,22 +48,6 @@ class Shippit_Shippit_Helper_Data extends Mage_Core_Helper_Abstract
         }
     }
 
-    public function getCarrierCode()
-    {
-        return self::CARRIER_CODE;
-    }
-
-    public function getModuleVersion()
-    {
-        $version = (string) Mage::getConfig()
-            ->getNode()
-            ->modules
-            ->Shippit_Shippit
-            ->version;
-
-        return $version;
-    }
-
     /**
      * @return bool
      */
@@ -86,78 +71,27 @@ class Shippit_Shippit_Helper_Data extends Mage_Core_Helper_Abstract
         return self::getStoreConfig('debug_active', true);
     }
 
-    public function getSyncMode()
+    /**
+     * Begin Helpers not related to configuration values retrieval
+     */
+
+    public function getCarrierCode()
     {
-        return self::getStoreConfig('sync_mode');
+        return self::CARRIER_CODE;
     }
 
-    public function isSendAllOrdersActive()
+    public function getModuleVersion()
     {
-        return self::getStoreConfig('send_all_orders_active', true);
+        $version = (string) Mage::getConfig()
+            ->getNode()
+            ->modules
+            ->Shippit_Shippit
+            ->version;
+
+        return $version;
     }
 
-    public function getTitle()
-    {
-        return self::getStoreConfig('title');
-    }
-
-    public function getAllowedMethods()
-    {
-        return explode(',', self::getStoreConfig('allowed_methods'));
-    }
-
-    public function getMaxTimeslots()
-    {
-        return self::getStoreConfig('max_timeslots');
-    }
-
-    public function isProductLocationActive()
-    {
-        return self::getStoreConfig('product_location_active', true);
-    }
-
-    public function getProductLocationAttributeCode()
-    {
-        return self::getStoreConfig('product_location_attribute_code');
-    }
-
-    public function isEnabledProductActive()
-    {
-        return self::getStoreConfig('enabled_product_active', true);
-    }
-
-    public function getEnabledProductIds()
-    {
-        return explode(',', self::getStoreConfig('enabled_product_ids'));
-    }
-
-    public function isEnabledProductAttributeActive()
-    {
-        return self::getStoreConfig('enabled_product_attribute_active', true);
-    }
-
-    public function getEnabledProductAttributeCode()
-    {
-        return self::getStoreConfig('enabled_product_attribute_code');
-    }
-
-    public function getEnabledProductAttributeValue()
-    {
-        return self::getStoreConfig('enabled_product_attribute_value');
-    }
-
-    public function getSyncModeRealtime()
-    {
-        return self::SYNC_MODE_REALTIME;
-    }
-
-    public function getSyncModeScheduled()
-    {
-        return self::SYNC_MODE_CRON;
-    }
-
-    // Begin helper methods for authority to leave
-    //    and delivery instructions fields
+    // Helper methods for authority to leave and delivery instructions fields
 
     public function getAuthorityToLeaveId()
     {

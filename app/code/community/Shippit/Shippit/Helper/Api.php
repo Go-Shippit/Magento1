@@ -28,7 +28,7 @@ class Shippit_Shippit_Helper_Api extends Mage_Core_Helper_Abstract
     public function __construct()
     {
         $this->helper = Mage::helper('shippit');
-        $this->logger = Mage::getSingleton('shippit/logger');
+        $this->logger = Mage::getModel('shippit/logger');
 
         // We use Zend_HTTP_Client instead of Varien_Http_Client,
         // as Varien_Http_Client does not handle PUT requests correctly
@@ -44,7 +44,7 @@ class Shippit_Shippit_Helper_Api extends Mage_Core_Helper_Abstract
 
     public function getApiEndpoint()
     {
-        $environment = Mage::helper('shippit')->getEnvironment();
+        $environment = $this->helper->getEnvironment();
 
         if ($environment == 'production') {
             return self::API_ENDPOINT_PRODUCTION;
@@ -82,12 +82,12 @@ class Shippit_Shippit_Helper_Api extends Mage_Core_Helper_Abstract
             $apiResponse = $apiRequest->request($method);
 
             // debug logging
-            $this->prepareBugsnagReport($uri, $requestData, $apiResponse);
+            $this->prepareMatadata($uri, $requestData, $apiResponse);
             $this->logger->log('API Request', "Request to $uri");
         }
         catch (Exception $e) {
-            $this->prepareBugsnagReport($uri, $requestData, $apiResponse);
-            $this->logger->log('API Request Error', 'An API Request Error Occurred');
+            $this->prepareMatadata($uri, $requestData, $apiResponse);
+            $this->logger->log('API Request Error', 'An API Request Error Occurred', Zend_Log::ERR);
 
             throw Mage::Exception('Shippit_Shippit', 'An API Communication Error Occurred - ' . "\n" . $e->getTraceAsString());
         }
@@ -96,7 +96,7 @@ class Shippit_Shippit_Helper_Api extends Mage_Core_Helper_Abstract
             $message = 'API Response Error' . "\n";
             $message .= 'Response: ' . $apiResponse->getStatus() . ' - ' . $apiResponse->getMessage() . "\n";
             
-            $this->prepareBugsnagReport($uri, $requestData, $apiResponse);
+            $this->prepareMatadata($uri, $requestData, $apiResponse);
             $this->logger->log('API Response Error', 'An API Response Error Occurred');
 
             throw Mage::Exception('Shippit_Shippit', $message);
@@ -107,29 +107,32 @@ class Shippit_Shippit_Helper_Api extends Mage_Core_Helper_Abstract
         return $apiResponseBody;
     }
 
-    protected function prepareBugsnagReport($uri, $requestData, $apiResponse = null)
+    protected function prepareMatadata($uri, $requestData, $apiResponse = null)
     {
         if ($this->logger->bugsnag) {
             // get the core meta data
             $metaData = Mage::helper('shippit/bugsnag')->getMetaData();
-
-            // add the request meta data
-            $requestMetaData = array(
-                'api_request' => array(
-                    'request_uri' => $uri,
-                    'request_body' => $requestData,
-                )
-            );
-
-            if (!is_null($apiResponse)) {
-                $requestMetaData['api_request']['response_code'] = $apiResponse->getStatus();
-                $requestMetaData['api_request']['response_body'] = json_decode($apiResponse->getBody());
-            }
-
-            $metaData = array_merge($metaData, $requestMetaData);
-
-            $this->logger->setMetaData($metaData);
         }
+        else {
+            $metaData = array();
+        }
+
+        // add the request meta data
+        $requestMetaData = array(
+            'api_request' => array(
+                'request_uri' => $uri,
+                'request_body' => $requestData,
+            )
+        );
+
+        if (!is_null($apiResponse)) {
+            $requestMetaData['api_request']['response_code'] = $apiResponse->getStatus();
+            $requestMetaData['api_request']['response_body'] = json_decode($apiResponse->getBody());
+        }
+
+        $metaData = array_merge($metaData, $requestMetaData);
+
+        $this->logger->setMetaData($metaData);
     }
 
     public function getQuote(Varien_Object $requestData)

@@ -14,6 +14,11 @@
  *  @license    http://www.shippit.com/terms
  */
 
+// Core Class responsible for Managing the process of syncing orders
+// with the Shippit Platform. Handles both cron job processing and immediate
+// request processing, ensuring it transitions orders into the failed state
+// when exceeding the maximum number of attempts. 
+
 class Shippit_Shippit_Model_Api_Order extends Mage_Core_Model_Abstract
 {
     protected $api;
@@ -22,7 +27,7 @@ class Shippit_Shippit_Model_Api_Order extends Mage_Core_Model_Abstract
 
     public function __construct()
     {
-        $this->helper = Mage::helper('shippit');
+        $this->helper = Mage::helper('shippit/sync_order');
         $this->itemsHelper = Mage::helper('shippit/order_items');
         $this->api = Mage::helper('shippit/api');
         $this->logger = Mage::getModel('shippit/logger');
@@ -43,7 +48,7 @@ class Shippit_Shippit_Model_Api_Order extends Mage_Core_Model_Abstract
             $syncOrders = $this->getSyncOrders($store);
 
             foreach ($syncOrders as $syncOrder) {
-                $this->sync($order);
+                $this->sync($syncOrder);
             }
 
             // Stop Store Emulation
@@ -86,21 +91,19 @@ class Shippit_Shippit_Model_Api_Order extends Mage_Core_Model_Abstract
     
     public function sync($syncOrder, $displayNotifications = false)
     {
-        // get the order attached to the syncOrder object
-        $order = $syncOrder->getOrder();
-        // get the order items attached to the syncOrder queue
-        $items = $syncOrder->getItemsCollection();
-
-        // Build the order request
-        $orderRequest = Mage::getModel('shippit/request_api_order')
-            ->setOrder($order)
-            ->setItems($items);
-
         try {
+            // Add attempt
+            $syncOrder->setAttemptCount($syncOrder->getAttemptCount() + 1);
+
+            // Build the order request
+            $orderRequest = Mage::getModel('shippit/request_api_order')
+                ->processSyncOrder($syncOrder);
+                
             $apiResponse = $this->api->sendOrder($orderRequest);
 
             // Add the order tracking details to
             // the order comments and save
+            $order = $syncOrder->getOrder();
             $comment = $this->helper->__('Order Synced with Shippit - ' . $apiResponse->tracking_number);
             $order->addStatusHistoryComment($comment)
                 ->setIsVisibleOnFront(false)
@@ -123,9 +126,9 @@ class Shippit_Shippit_Model_Api_Order extends Mage_Core_Model_Abstract
             $this->logger->log('API - Order Sync Request Failed', $e->getMessage(), Zend_Log::ERR);
             $this->logger->logException($e);
 
-            // Fail the sync item if it's breached the max attempts
+            // Update the sync status to failed if it's breached the max attempts
             if ($syncOrder->getAttemptCount() > Shippit_Shippit_Model_Sync_Order::SYNC_MAX_ATTEMPTS) {
-                $syncItem->setStatus(Shippit_Shippit_Model_Sync_Order::STATUS_FAILED);
+                $syncOrder->setStatus(Shippit_Shippit_Model_Sync_Order::STATUS_FAILED);
             }
 
             // save the sync item attempt count
@@ -134,7 +137,7 @@ class Shippit_Shippit_Model_Api_Order extends Mage_Core_Model_Abstract
             if ($displayNotifications) {
                 Mage::getSingleton('adminhtml/session')
                     ->addError(
-                        $this->helper->__('Order ' . $order->getIncrementId() . ' was not Synced with Shippit - ' . $e->getMessage())
+                        $this->helper->__('Order ' . $syncOrder->getOrder()->getIncrementId() . ' was not Synced with Shippit - ' . $e->getMessage())
                     );
             }
 

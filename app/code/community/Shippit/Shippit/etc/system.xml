@@ -17,11 +17,18 @@
 -->
 <config>
     <sections>
-        <carriers>
+        <shippit translate="label" module="shippit">
+            <label>Shippit</label>
+            <tab>sales</tab>
+            <frontend_type>text</frontend_type>
+            <sort_order>340</sort_order>
+            <show_in_default>1</show_in_default>
+            <show_in_website>1</show_in_website>
+            <show_in_store>1</show_in_store>
             <groups>
-                <shippit translate="label" module="shippit">
-                    <label>Shippit</label>
-                    <sort_order>1</sort_order>
+                <general translate="label" module="shippit">
+                    <label>General Settings</label>
+                    <sort_order>10</sort_order>
                     <show_in_default>1</show_in_default>
                     <show_in_website>1</show_in_website>
                     <show_in_store>1</show_in_store>
@@ -61,24 +68,154 @@
                             <show_in_website>1</show_in_website>
                             <show_in_store>0</show_in_store>
                         </debug_active>
-                        <sync_mode translate="label">
-                            <label>Sync Mode</label>
+                    </fields>
+                </general>
+                <checkout>
+                    <label>Checkout Options</label>
+                    <sort_order>20</sort_order>
+                    <show_in_default>1</show_in_default>
+                    <show_in_website>1</show_in_website>
+                    <show_in_store>1</show_in_store>
+                    <fields>
+                        <authority_to_leave_active translate="label">
+                            <label>Display Authority To Leave</label>
+                            <frontend_type>select</frontend_type>
+                            <source_model>adminhtml/system_config_source_yesno</source_model>
+                            <sort_order>10</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>0</show_in_store>
+                        </authority_to_leave_active>
+                        <delivery_instructions_active>
+                            <label>Display Delivery Instructions</label>
+                            <frontend_type>select</frontend_type>
+                            <source_model>adminhtml/system_config_source_yesno</source_model>
+                            <sort_order>20</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>0</show_in_store>
+                        </delivery_instructions_active>
+                    </fields>
+                </checkout>
+                <sync_order translate="label" module="shippit">
+                    <label>Order Sync</label>
+                    <sort_order>30</sort_order>
+                    <show_in_default>1</show_in_default>
+                    <show_in_website>1</show_in_website>
+                    <show_in_store>1</show_in_store>
+                    <fields>
+                        <active translate="label">
+                            <label>Enabled</label>
+                            <frontend_type>select</frontend_type>
+                            <source_model>adminhtml/system_config_source_yesno</source_model>
+                            <sort_order>10</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>0</show_in_store>
+                        </active>
+                        <mode translate="label">
+                            <label>Mode</label>
                             <frontend_type>select</frontend_type>
                             <source_model>shippit/system_config_source_shippit_sync_mode</source_model>
+                            <sort_order>20</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>0</show_in_store>
+                        </mode>
+                        <all_orders translate="label">
+                            <label>Send All Orders to Shippit</label>
+                            <frontend_type>select</frontend_type>
+                            <source_model>adminhtml/system_config_source_yesno</source_model>
+                            <sort_order>30</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>0</show_in_store>
+                            <comment>By Default, only orders with a Shippit Shipping method, or a Shipping Method Mapping (below) are sent to Shippit</comment>
+                        </all_orders>
+                        <product_location_active translate="label comment">
+                            <label>Send Product Location to Shippit</label>
+                            <frontend_type>select</frontend_type>
+                            <source_model>adminhtml/system_config_source_yesno</source_model>
+                            <sort_order>40</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>0</show_in_store>
+                            <comment>Send the product stock location to Shippit</comment>
+                        </product_location_active>
+                        <product_location_attribute_code translate="label comment">
+                            <label>Product Location Attribute Code</label>
+                            <frontend_type>select</frontend_type>
+                            <source_model>shippit/system_config_source_catalog_attributes</source_model>
                             <sort_order>50</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
                             <show_in_store>0</show_in_store>
-                        </sync_mode>
-                        <send_all_orders_active translate="label">
-                            <label>Send All Orders to Shippit</label>
-                            <frontend_type>select</frontend_type>
-                            <source_model>adminhtml/system_config_source_yesno</source_model>
+                            <comment>The Product Attribute to be used for location information on Shippit Pick Slips</comment>
+                            <depends>
+                                <product_location_active>1</product_location_active>
+                            </depends>
+                        </product_location_attribute_code>
+                        <shipping_method_mapping translate="label comment">
+                            <label>Shipping Method Mapping</label>
+                            <frontend_model>shippit/adminhtml_system_config_form_field_sync_order_shippingMethodMapping</frontend_model>
+                            <backend_model>adminhtml/system_config_backend_serialized_array</backend_model>
                             <sort_order>60</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                            <comment>A mapping of the Magento Shipping Methods to Shippit Services classes</comment>
+                        </shipping_method_mapping>
+                    </fields>
+                </sync_order>
+                <sync_shipping>
+                    <label>Shipping Sync</label>
+                    <sort_order>40</sort_order>
+                    <show_in_default>1</show_in_default>
+                    <show_in_website>1</show_in_website>
+                    <show_in_store>1</show_in_store>
+                    <fields>
+                        <active translate="label">
+                            <label>Enabled</label>
+                            <frontend_type>select</frontend_type>
+                            <source_model>adminhtml/system_config_source_yesno</source_model>
+                            <sort_order>10</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
                             <show_in_store>0</show_in_store>
-                        </send_all_orders_active>
+                        </active>
+                        <update_template_active>
+                            <label>Update Shipping Template</label>
+                            <frontend_type>select</frontend_type>
+                            <source_model>adminhtml/system_config_source_yesno</source_model>
+                            <sort_order>20</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>0</show_in_store>
+                            <comments>Updates the shipping template to include the tracking link to Shippit</comments>
+                        </update_template_active>
+                    </fields>
+                </sync_shipping>
+            </groups>
+        </shippit>
+
+        <carriers>
+            <groups>
+                <shippit translate="label" module="shippit">
+                    <label>Shippit</label>
+                    <sort_order>1</sort_order>
+                    <show_in_default>1</show_in_default>
+                    <show_in_website>1</show_in_website>
+                    <show_in_store>1</show_in_store>
+                    <fields>
+                        <active translate="label">
+                            <label>Enabled</label>
+                            <frontend_type>select</frontend_type>
+                            <source_model>adminhtml/system_config_source_yesno</source_model>
+                            <sort_order>10</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>0</show_in_store>
+                        </active>
                         <title translate="label">
                             <label>Title</label>
                             <frontend_type>text</frontend_type>
@@ -106,29 +243,6 @@
                             <show_in_website>1</show_in_website>
                             <show_in_store>0</show_in_store>
                         </max_timeslots>
-                        <product_location_active translate="label comment">
-                            <label>Send Product Location to Shippit</label>
-                            <frontend_type>select</frontend_type>
-                            <source_model>adminhtml/system_config_source_yesno</source_model>
-                            <sort_order>100</sort_order>
-                            <show_in_default>1</show_in_default>
-                            <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
-                            <comment>Send the product stock location to Shippit</comment>
-                        </product_location_active>
-                        <product_location_attribute_code translate="label comment">
-                            <label>Product Location Attribute Code</label>
-                            <frontend_type>select</frontend_type>
-                            <source_model>shippit/system_config_source_catalog_attributes</source_model>
-                            <sort_order>110</sort_order>
-                            <show_in_default>1</show_in_default>
-                            <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
-                            <comment>The Product Attribute to be used for location information on Shippit Pick Slips</comment>
-                            <depends>
-                                <product_location_active>1</product_location_active>
-                            </depends>
-                        </product_location_attribute_code>
                         <enabled_product_active translate="label comment">
                             <label>Filter by Enabled Products</label>
                             <frontend_type>select</frontend_type>

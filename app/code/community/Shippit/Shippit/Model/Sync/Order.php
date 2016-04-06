@@ -35,8 +35,9 @@ class Shippit_Shippit_Model_Sync_Order extends Mage_Core_Model_Abstract
 
     public function addRequest($request)
     {
-        $this->setOrderId($request->getOrderId());
-        $this->addItems($request->getItems());
+        $this->setOrderId($request->getOrderId())
+            ->addItems($request->getItems())
+            ->setShippingMethod($request->getShippingMethod());
 
         return $this;
     }

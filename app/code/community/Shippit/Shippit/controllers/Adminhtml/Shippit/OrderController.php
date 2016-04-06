@@ -79,6 +79,14 @@ class Shippit_Shippit_Adminhtml_Shippit_OrderController extends Mage_Adminhtml_C
 
         $apiOrder = Mage::getSingleton('shippit/api_order');
 
+        // reset the status of all items and attempts
+        foreach ($syncOrders as $syncOrder) {
+            $syncOrder->setStatus(Shippit_Shippit_Model_Sync_Order::STATUS_PENDING)
+                ->setTrackNumber(null)
+                ->setSyncedAt(null)
+                ->save();
+        }
+
         foreach ($syncOrders as $syncOrder) {
             $apiOrder->sync($syncOrder, true);
         }

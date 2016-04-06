@@ -14,6 +14,9 @@
  *  @license    http://www.shippit.com/terms
  */
 
+// Creates an API Request based on
+// passed data or a sync order object
+
 class Shippit_Shippit_Model_Request_Api_Order extends Varien_Object
 {
     protected $helper;
@@ -30,6 +33,8 @@ class Shippit_Shippit_Model_Request_Api_Order extends Varien_Object
     const DELIVERY_INSTRUCTIONS     = 'delivery_instructions';
     const USER_ATTRIBUTES           = 'user_attributes';
     const COURIER_TYPE              = 'courier_type';
+    const DELIVERY_DATE             = 'delivery_date';
+    const DELIVERY_WINDOW           = 'delivery_window';
     const RECEIVER_NAME             = 'receiver_name';
     const RECEIVER_CONTACT_NUMBER   = 'receiver_contact_number';
     const DELIVERY_ADDRESS          = 'delivery_address';
@@ -38,11 +43,33 @@ class Shippit_Shippit_Model_Request_Api_Order extends Varien_Object
     const DELIVERY_STATE            = 'delivery_state';
     const PARCEL_ATTRIBUTES         = 'parcel_attributes';
 
+    // Shippit Service Class API Mappings
+    const SHIPPING_SERVICE_STANDARD = 'CouriersPlease';
+    const SHIPPING_SERVICE_EXPRESS  = 'eparcelexpress';
+    const SHIPPING_SERVICE_PREMIUM  = 'Bonds';
+
     public function __construct() {
-        $this->helper = Mage::helper('shippit');
+        $this->helper = Mage::helper('shippit/sync_order');
         $this->api = Mage::helper('shippit/api');
         $this->carrierCode = $this->helper->getCarrierCode();
         $this->itemsHelper = Mage::helper('shippit/order_items');
+    }
+
+    public function processSyncOrder(Shippit_Shippit_Model_Sync_Order $syncOrder)
+    {
+        // get the order attached to the syncOrder object
+        $order = $syncOrder->getOrder();
+        // get the shipping method attached to the syncOrder object
+        $shippingMethod = $syncOrder->getShippingMethod();
+        // get the order items attached to the syncOrder queue
+        $items = $syncOrder->getItemsCollection();
+
+        // Build the order request
+        $orderRequest = $this->setOrder($order)
+            ->setItems($items)
+            ->setShippingMethod($shippingMethod);
+
+        return $this;
     }
 
     /**
@@ -67,7 +94,6 @@ class Shippit_Shippit_Model_Request_Api_Order extends Varien_Object
             ->setAuthorityToLeave($order->getShippitAuthorityToLeave())
             ->setDeliveryInstructions($order->getShippitDeliveryInstructions())
             ->setUserAttributes($billingAddress->getEmail(), $billingAddress->getFirstname(), $billingAddress->getLastname())
-            ->setCourierType()
             ->setReceiverName($shippingAddress->getName())
             ->setReceiverContactNumber($shippingAddress->getTelephone())
             ->setDeliveryAddress(implode(' ', $shippingAddress->getStreet()))
@@ -111,19 +137,21 @@ class Shippit_Shippit_Model_Request_Api_Order extends Varien_Object
         // reset the order reference
         $this->order = null;
 
-        // reseet the request data
-        $this->setRetailerInvoice(null)
-            ->setAuthorityToLeave(null)
-            ->setDeliveryInstructions(null)
-            ->setUserAttributes(null)
-            ->setCourierType(null)
-            ->setReceiverName(null)
-            ->setReceiverContactNumber(null)
-            ->setDeliveryAddress(null)
-            ->setDeliverySuburb(null)
-            ->setDeliveryPostcode(null)
-            ->setDeliveryState(null)
-            ->setParcelAttributes(null);
+        // reset the request data
+        $this->setData(self::RETAILER_INVOICE, null)
+            ->setData(self::AUTHORITY_TO_LEAVE, null)
+            ->setData(self::DELIVERY_INSTRUCTIONS, null)
+            ->setData(self::USER_ATTRIBUTES, null)
+            ->setData(self::COURIER_TYPE, null)
+            ->setData(self::DELIVERY_DATE, null)
+            ->setData(self::DELIVERY_WINDOW, null)
+            ->setData(self::RECEIVER_NAME, null)
+            ->setData(self::RECEIVER_CONTACT_NUMBER, null)
+            ->setData(self::DELIVERY_ADDRESS, null)
+            ->setData(self::DELIVERY_SUBURB, null)
+            ->setData(self::DELIVERY_POSTCODE, null)
+            ->setData(self::DELIVERY_STATE, null)
+            ->setData(self::PARCEL_ATTRIBUTES, null);
     }
 
     /**
@@ -234,42 +262,144 @@ class Shippit_Shippit_Model_Request_Api_Order extends Varien_Object
     }
 
     /**
-     * Set the Courier Type
+     * Get the Courier Type
      *
-     * @param string|null $courierType
+     * @return array|null
+     */
+    public function setCourierType($courierType)
+    {
+        return $this->setData(self::COURIER_TYPE, $courierType);
+    }
+
+    /**
+     * Get the Delivery Date
+     *
+     * @return string|null
+     */
+    public function getDeliveryDate()
+    {
+        return $this->getData(self::DELIVERY_DATE);
+    }
+
+    /**
+     * Set the Delivery Date
+     *
+     * @param string $deliveryDate   Delivery Date
+     * @return string
+     */
+    public function setDeliveryDate($deliveryDate)
+    {
+        return $this->setData(self::DELIVERY_DATE, $deliveryDate);
+    }
+
+    /**
+     * Get the Delivery Window
+     *
+     * @return string|null
+     */
+    public function getDeliveryWindow()
+    {
+        return $this->getData(self::DELIVERY_WINDOW);
+    }
+
+    /**
+     * Set the Delivery Window
+     *
+     * @param string $deliveryWindow   Delivery Window
+     * @return string
+     */
+    public function setDeliveryWindow($deliveryWindow)
+    {
+        return $this->setData(self::DELIVERY_WINDOW, $deliveryWindow);
+    }
+
+    /**
+     * Set the Shipping Method Values
+     *
+     * - Values may include the courier_type, delivery_date and delivery_window
+     *
+     * @param string|null $shippingMethod
      * @return array
      */
-    public function setCourierType($courierType = null)
+    public function setShippingMethod($shippingMethod = null)
     {
-        if (!is_null($courierType)) {
-            return $this->setData(self::COURIER_TYPE, $courierType);
+        // if the order is a premium delivery,
+        // get the special delivery attributes
+        if ($shippingMethod == 'premium') {
+            $deliveryDate = $this->_getOrderDeliveryDate($this->order);
+            $deliveryWindow = $this->_getOrderDeliveryWindow($this->order);
         }
-        // determine the courier from the order shipping method
-        else {
-            $shippingMethod = $this->order->getShippingMethod();
 
-            // If the shipping method is a shippit method,
-            // processing using the selected shipping options
-            if (strpos($shippingMethod, $this->carrierCode) !== FALSE) {
-                $shippingOptions = str_replace($this->carrierCode . '_', '', $shippingMethod);
-                $shippingOptions = explode('_', $shippingOptions);
-                $courierData = array();
-                
-                if (isset($shippingOptions[0])) {
-                    if ($shippingOptions[0] == 'Bonds') {
-                        return $this->setData(self::COURIER_TYPE, $shippingOptions[0])
-                            ->setDeliveryDate($shippingOptions[1])
-                            ->setDeliveryWindow($shippingOptions[2]);
-                    }
-                    else {
-                        return $this->setData(self::COURIER_TYPE, $shippingOptions[0]);
-                    }
+        // set the courier details based on the shipping method
+        if ($shippingMethod == 'standard') {
+            return $this->setCourierType(self::SHIPPING_SERVICE_STANDARD);
+        }
+        elseif ($shippingMethod == 'express') {
+            return $this->setCourierType(self::SHIPPING_SERVICE_EXPRESS);
+        }
+        elseif ($shippingMethod == 'premium' && isset($deliveryDate) && isset($deliveryWindow)) {
+            return $this->setCourierType(self::SHIPPING_SERVICE_PREMIUM)
+                ->setDeliveryDate($deliveryDate)
+                ->setDeliveryWindow($deliveryWindow);
+        }
+        else {
+            return $this->setData(self::COURIER_TYPE, self::SHIPPING_SERVICE_STANDARD);
+        }
+    }
+
+    private function _getOrderDeliveryDate($order)
+    {
+        $shippingMethod = $order->getShippingMethod();
+
+        // If the shipping method is a shippit method,
+        // processing using the selected shipping options
+        if (strpos($shippingMethod, $this->carrierCode) !== FALSE) {
+            $shippingOptions = str_replace($this->carrierCode . '_', '', $shippingMethod);
+            $shippingOptions = explode('_', $shippingOptions);
+            $courierData = array();
+            
+            if (isset($shippingOptions[0])) {
+                if ($shippingOptions[0] == 'Bonds') {
+                    return $shippingOptions[1];
+                }
+                else {
+                    return null;
                 }
             }
-            // Otherwise, use the default "CouriersPlease" courier type
             else {
-                return $this->setData(self::COURIER_TYPE, 'CouriersPlease');
+                return null;
             }
+        }
+        else {
+            return null;
+        }
+    }
+
+    private function _getOrderDeliveryWindow($order)
+    {
+        $shippingMethod = $order->getShippingMethod();
+
+        // If the shipping method is a shippit method,
+        // processing using the selected shipping options
+        if (strpos($shippingMethod, $this->carrierCode) !== FALSE) {
+            $shippingOptions = str_replace($this->carrierCode . '_', '', $shippingMethod);
+            $shippingOptions = explode('_', $shippingOptions);
+            $courierData = array();
+            
+            if (isset($shippingOptions[0])) {
+                if ($shippingOptions[0] == 'Bonds') {
+                    return $shippingOptions[2];
+                }
+                else {
+                    return null;
+                }
+            }
+            else {
+                return null;
+            }
+        }
+        else {
+            return null;
         }
     }
 

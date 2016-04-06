@@ -19,7 +19,7 @@ class Shippit_Shippit_Model_Observer_Shippit extends Mage_Core_Model_Abstract
     protected $helper;
 
     public function __construct() {
-        $this->helper = Mage::helper('shippit');
+        $this->helper = Mage::helper('shippit/sync_order');
 
         return parent::__construct();
     }
@@ -41,6 +41,7 @@ class Shippit_Shippit_Model_Observer_Shippit extends Mage_Core_Model_Abstract
 
         $apiKey = $observer->getEvent()->getApiKey();
         $syncMode = $observer->getEvent()->getSyncMode();
+        $shippingMethod = $observer->getEvent()->getShippingMethod();
 
         $displayNotifications = $observer->getEvent()->getDisplayNotifcations();
 
@@ -49,7 +50,7 @@ class Shippit_Shippit_Model_Observer_Shippit extends Mage_Core_Model_Abstract
         }
 
         // save the request to sync the order, and sync immediately if realtime
-        Mage::getModel('shippit/shippit')->addOrder($orderId, $items, $apiKey, $syncMode, $displayNotifications);
+        Mage::getModel('shippit/shippit')->addOrder($orderId, $items, $shippingMethod, $apiKey, $syncMode, $displayNotifications);
 
         return $this;
     }

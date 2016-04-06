@@ -40,6 +40,7 @@ class Shippit_Shippit_Model_Shipping_Carrier_Shippit_Methods
     {
         $methods = array(
             'Standard' => 'Standard',
+            'Express' => 'Express',
             'Premium' => 'Premium',
         );
 

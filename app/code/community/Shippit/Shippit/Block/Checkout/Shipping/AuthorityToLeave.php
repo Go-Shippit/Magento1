@@ -16,6 +16,15 @@
 
 class Shippit_Shippit_Block_Checkout_Shipping_AuthorityToLeave extends Mage_Core_Block_Template
 {
+    protected $helper;
+
+    public function __construct()
+    {
+        $this->helper = Mage::helper('shippit/checkout');
+
+        parent::__construct();
+    }
+
     /**
      * Get label text for the authority to leave field
      *
@@ -61,5 +70,19 @@ class Shippit_Shippit_Block_Checkout_Shipping_AuthorityToLeave extends Mage_Core
         else {
             return false;
         }
+    }
+
+    /**
+     * Render Authority to Leave Block
+     *
+     * @return string
+     */
+    protected function _toHtml()
+    {
+        if (!$this->helper->isAuthorityToLeaveActive()) {
+            return '';
+        }
+
+        return parent::_toHtml();
     }
 }

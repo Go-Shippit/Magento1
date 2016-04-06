@@ -16,31 +16,47 @@
 
 class Shippit_Shippit_Model_Observer_System_Config
 {
+    protected $helper;
+    protected $syncShippingHelper;
+    protected $api;
+
+    public function __construct()
+    {
+        $this->helper = Mage::helper('shippit');
+        $this->syncShippingHelper = Mage::helper('shippit/sync_shipping');
+        $this->api = Mage::helper('shippit/api');
+    }
+
     public function checkApiKey(Varien_Event_Observer $observer)
     {
-        if (Mage::app()->getRequest()->getParam('section') != 'carriers') {
+        $request = Mage::app()->getRequest();
+
+        if ($request->getParam('section') != 'shippit') {
             return;
         }
 
         try {
-            $api = Mage::helper('shippit/api');
             $apiKeyValid = false;
 
-            $merchant = $api->getMerchant();
+            $merchant = $this->api->getMerchant();
 
             if (property_exists($merchant, 'error')) {
                 if ($merchant->error == 'invalid_merchant_account') {
                     Mage::getSingleton('adminhtml/session')->addError(
-                        Mage::helper('shippit')->__('Shippit configuration error: Please check the API Key')
+                        $this->helper->__('Shippit configuration error: Please check the API Key')
                     );
                 }
                 else {
                     Mage::getSingleton('adminhtml/session')->addError(
-                        Mage::helper('shippit')->__('Shippit API error: ' . $merchant->error)
+                        $this->helper->__('Shippit API error: ' . $merchant->error)
                     );
                 }
             }
             else {
+                Mage::getSingleton('adminhtml/session')->addSuccess(
+                    $this->helper->__('Shippit API Key Validated')
+                );
+                
                 $apiKeyValid = true;
             }
         }
@@ -48,33 +64,40 @@ class Shippit_Shippit_Model_Observer_System_Config
             Mage::getSingleton('adminhtml/session')->addError('Shippit API error: An error occured while communicating with the Shippit API');
         }
 
-        if ($apiKeyValid) {
-            try {
-                $apiKey = Mage::helper('shippit')->getApiKey();
+        if ($apiKeyValid && $this->syncShippingHelper->isActive()) {
+            $this->registerWebhook();
+        }
+    }
 
-                $webhookUrl = Mage::getUrl('shippit/order/update/', array(
-                    'api_key' => $apiKey,
-                    '_secure' => true,
-                ));
-                
-                $requestData = new Varien_Object;
-                $requestData->setWebhookUrl($webhookUrl);
-                $merchant = $api->putMerchant($requestData, true);
+    public function registerWebhook()
+    {
+        try {
+            $apiKey = $this->helper->getApiKey();
 
-                if (property_exists($merchant, 'error')) {
-                    Mage::getSingleton('adminhtml/session')->addError(
-                        Mage::helper('shippit')->__('Shippit Webhook Registration Error: An error occured while registering the webhook with Shippit' . $merchant->error)
-                    );
-                }
-                else {
-                    Mage::getSingleton('adminhtml/session')->addSuccess(
-                        Mage::helper('shippit')->__('Shippit Webhook Registered: ' . $webhookUrl)
-                    );
-                }
+            $webhookUrl = Mage::getUrl('shippit/order/update/', array(
+                'api_key' => $apiKey,
+                '_secure' => true,
+            ));
+            
+            $requestData = new Varien_Object;
+            $requestData->setWebhookUrl($webhookUrl);
+            $merchant = $this->api->putMerchant($requestData, true);
+
+            if (property_exists($merchant, 'error')) {
+                Mage::getSingleton('adminhtml/session')->addError(
+                    $this->helper->__('Shippit Webhook Registration Error: An error occured while registering the webhook with Shippit' . $merchant->error)
+                );
             }
-            catch (Exception $e) {
-                Mage::getSingleton('adminhtml/session')->addError('Shippit Webhook Registration Error: An unknown error occured while registering the webhook with Shippit ' . $e->getMessage());
+            else {
+                Mage::getSingleton('adminhtml/session')->addSuccess(
+                    $this->helper->__('Shippit Webhook Registered: ' . $webhookUrl)
+                );
             }
+        }
+        catch (Exception $e) {
+            Mage::getSingleton('adminhtml/session')->addError(
+                $this->helper->__('Shippit Webhook Registration Error: An unknown error occured while registering the webhook with Shippit ' . $e->getMessage())
+            );
         }
 
         return;

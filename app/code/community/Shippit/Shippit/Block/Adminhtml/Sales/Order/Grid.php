@@ -32,6 +32,7 @@ class Shippit_Shippit_Block_Adminhtml_Sales_Order_Grid extends Mage_Adminhtml_Bl
             ->addFieldToSelect(
                 array(
                     'sync_id',
+                    'shipping_method',
                     'track_number',
                     'synced_at',
                     'sync_status' => 'status'
@@ -45,12 +46,9 @@ class Shippit_Shippit_Block_Adminhtml_Sales_Order_Grid extends Mage_Adminhtml_Bl
                 array(
                     'increment_id'         => 'increment_id',
                     'grand_total'          => 'grand_total',
-                    'shipping_description' => 'shipping_description',
                     'order_state'          => 'state',
                     'order_status'         => 'status',
                     'created_at'           => 'created_at',
-                    'customer_firstname'   => 'customer_firstname',
-                    'customer_lastname'    => 'customer_lastname',
                 )
             )
             ->addFilterToMap(
@@ -87,9 +85,6 @@ class Shippit_Shippit_Block_Adminhtml_Sales_Order_Grid extends Mage_Adminhtml_Bl
  
         $this->addColumn('increment_id', array(
             'header' => $helper->__('Order #'),
-            // @TODO: add link to the order page
-            // 'getter' => 'getOrder',
-            // 'frame_callback' => array($this, 'decorateOrderIncrement'),
             'index'  => 'increment_id',
         ));
  
@@ -97,16 +92,6 @@ class Shippit_Shippit_Block_Adminhtml_Sales_Order_Grid extends Mage_Adminhtml_Bl
             'header' => $helper->__('Purchased On'),
             'type'   => 'datetime',
             'index'  => 'created_at'
-        ));
- 
-        $this->addColumn('customer_firstname', array(
-            'header' => $helper->__('Firstname'),
-            'index'  => 'customer_firstname'
-        ));
-
-        $this->addColumn('customer_lastname', array(
-            'header' => $helper->__('Lastname'),
-            'index'  => 'customer_lastname'
         ));
 
         $this->addColumn('items', array(
@@ -125,7 +110,8 @@ class Shippit_Shippit_Block_Adminhtml_Sales_Order_Grid extends Mage_Adminhtml_Bl
  
         $this->addColumn('shipping_method', array(
             'header' => $helper->__('Shipping Method'),
-            'index'  => 'shipping_description'
+            'index'  => 'shipping_method',
+            'frame_callback' => array($this, 'decorateShippingMethod')
         ));
  
         $this->addColumn('order_state', array(
@@ -188,26 +174,11 @@ class Shippit_Shippit_Block_Adminhtml_Sales_Order_Grid extends Mage_Adminhtml_Bl
  
         return parent::_prepareColumns();
     }
-
-    // public function decorateOrderIncrement($order)
-    // {
-    //     $orderUrl = $this->getUrl(
-    //         'admin/sales_order/view',
-    //         array(
-    //             'id' => $order->getId()
-    //         )
-    //     );
-
-    //     $orderIncrement = $order->getIncrementId();
-
-    //     $link = sprintf(
-    //         '<a href="%s" title="View Order" target="_blank">%s</a>',
-    //         $url,
-    //         $orderIncrement
-    //     );
-        
-    //     return $link;
-    // }
+    
+    public function decorateShippingMethod($value)
+    {
+        return ucfirst($value);
+    }
 
     public function decorateTrackNumber($value)
     {

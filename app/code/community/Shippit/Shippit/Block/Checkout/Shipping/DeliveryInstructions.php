@@ -16,6 +16,15 @@
 
 class Shippit_Shippit_Block_Checkout_Shipping_DeliveryInstructions extends Mage_Core_Block_Template
 {
+    protected $helper;
+    
+    public function __construct()
+    {
+        $this->helper = Mage::helper('shippit/checkout');
+
+        parent::__construct();
+    }
+
     /**
      * Get label text for the field
      *
@@ -56,5 +65,19 @@ class Shippit_Shippit_Block_Checkout_Shipping_DeliveryInstructions extends Mage_
         $quote = $this->_getQuote();
 
         return $quote->getShippitDeliveryInstructions();
+    }
+
+    /**
+     * Render Delivery Instructions Block
+     *
+     * @return string
+     */
+    protected function _toHtml()
+    {
+        if (!$this->helper->isDeliveryInstructionsActive()) {
+            return '';
+        }
+
+        return parent::_toHtml();
     }
 }

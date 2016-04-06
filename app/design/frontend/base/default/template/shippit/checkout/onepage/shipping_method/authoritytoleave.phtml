@@ -15,12 +15,14 @@
 */
 ?>
 
-<ul class="form-list">
-    <li class="control">
-        <!-- Shippit Authority To Leave Checkbox -->
-        <input name="<?php echo $this->getFieldId() ?>" type="checkbox" title="<?php echo $this->getLabelText() ?>" class="checkbox" id="<?php echo $this->getFieldId() ?>" <?php echo ($this->getValue() ? 'checked' : '') ?> />
-        <label for="<?php echo $this->getFieldId() ?>">
-            <?php echo $this->getLabelText() ?>
-        </label>
-    </li>
-</ul>
+<div id="onepage-checkout-shipping-method-shippit-authoritytoleave">
+    <ul class="form-list">
+        <li class="control">
+            <!-- Shippit Authority To Leave Checkbox -->
+            <input name="<?php echo $this->getFieldId() ?>" type="checkbox" title="<?php echo $this->getLabelText() ?>" class="checkbox" id="<?php echo $this->getFieldId() ?>" <?php echo ($this->getValue() ? 'checked' : '') ?> />
+            <label for="<?php echo $this->getFieldId() ?>">
+                <?php echo $this->getLabelText() ?>
+            </label>
+        </li>
+    </ul>
+</div>

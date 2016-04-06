@@ -100,7 +100,7 @@ class Shippit_Shippit_Helper_Order_Items extends Mage_Core_Helper_Abstract
     public function getLocationAttributeCode()
     {
         if (is_null($this->locationAttributeCode)) {
-            $helper = Mage::helper('shippit');
+            $helper = Mage::helper('shippit/sync_order');
             
             if (!$helper->isProductLocationActive()) {
                 $this->locationAttributeCode = false;

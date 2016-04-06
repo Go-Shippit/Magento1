@@ -30,20 +30,15 @@ class Shippit_Shippit_Model_Shipping_Carrier_Shippit extends Mage_Shipping_Model
     protected $helper;
     protected $api;
     protected $logger;
-    protected $bugsnag;
 
     /**
      * Attach the helper as a class variable
      */
     public function __construct()
     {
-        $this->helper = Mage::helper('shippit');
+        $this->helper = Mage::helper('shippit/carrier');
         $this->api = Mage::helper('shippit/api');
-        $this->logger = Mage::getSingleton('shippit/logger');
-
-        if ($this->helper->isDebugActive()) {
-            $this->bugsnag = Mage::helper('shippit/bugsnag')->init();
-        }
+        $this->logger = Mage::getModel('shippit/logger');
 
         return parent::__construct();
     }
@@ -101,12 +96,6 @@ class Shippit_Shippit_Model_Shipping_Carrier_Shippit extends Mage_Shipping_Model
             $shippingQuotes = $this->api->getQuote($quoteRequest);
         }
         catch (Exception $e) {
-            if ($this->helper->isDebugActive() && $this->bugsnag) {
-                $this->bugsnag->notifyError('API - Quote Request', $e->getMessage());
-            }
-
-            $this->logger->logException($e);
-        
             return false;
         }
 
@@ -120,6 +109,7 @@ class Shippit_Shippit_Model_Shipping_Carrier_Shippit extends Mage_Shipping_Model
         $allowedMethods = $this->helper->getAllowedMethods();
 
         $isPremiumAvailable = in_array('Premium', $allowedMethods);
+        $isExpressAvailable = in_array('Express', $allowedMethods);
         $isStandardAvailable = in_array('Standard', $allowedMethods);
 
         // Process the response and return available options
@@ -129,8 +119,11 @@ class Shippit_Shippit_Model_Shipping_Carrier_Shippit extends Mage_Shipping_Model
                     && $isPremiumAvailable) {
                     $this->_addPremiumQuote($rateResult, $shippingQuote);
                 }
-                elseif ($shippingQuote->courier_type != 'Bonds'
-                    && $isStandardAvailable) {
+                elseif ($shippingQuote->courier_type == 'eparcelexpress'
+                    && $isExpressAvailable) {
+                    $this->_addExpressQuote($rateResult, $shippingQuote);
+                }
+                elseif ($isStandardAvailable) {
                     $this->_addStandardQuote($rateResult, $shippingQuote);
                 }
             }
@@ -144,9 +137,24 @@ class Shippit_Shippit_Model_Shipping_Carrier_Shippit extends Mage_Shipping_Model
         foreach ($shippingQuote->quotes as $shippingQuoteQuote) {
             $rateResultMethod = Mage::getModel('shipping/rate_result_method');
             $rateResultMethod->setCarrier($this->_code)
-                ->setCarrierTitle($shippingQuote->courier_type)
-                ->setMethod($shippingQuote->courier_type)
+                ->setCarrierTitle('Shippit')
+                ->setMethod('Standard')
                 ->setMethodTitle('Standard')
+                ->setCost($shippingQuoteQuote->price)
+                ->setPrice($shippingQuoteQuote->price);
+
+            $rateResult->append($rateResultMethod);
+        }
+    }
+
+    private function _addExpressQuote(&$rateResult, $shippingQuote)
+    {
+        foreach ($shippingQuote->quotes as $shippingQuoteQuote) {
+            $rateResultMethod = Mage::getModel('shipping/rate_result_method');
+            $rateResultMethod->setCarrier($this->_code)
+                ->setCarrierTitle('Shippit')
+                ->setMethod('Express')
+                ->setMethodTitle('Express')
                 ->setCost($shippingQuoteQuote->price)
                 ->setPrice($shippingQuoteQuote->price);
 
@@ -156,7 +164,7 @@ class Shippit_Shippit_Model_Shipping_Carrier_Shippit extends Mage_Shipping_Model
 
     private function _addPremiumQuote(&$rateResult, $shippingQuote)
     {
-        $maxTimeslots = Mage::helper('shippit')->getMaxTimeslots();
+        $maxTimeslots = $this->helper->getMaxTimeslots();
         $timeslotCount = 0;
 
         foreach ($shippingQuote->quotes as $shippingQuoteQuote) {
@@ -170,7 +178,7 @@ class Shippit_Shippit_Model_Shipping_Carrier_Shippit extends Mage_Shipping_Model
                 && property_exists($shippingQuoteQuote, 'delivery_window')
                 && property_exists($shippingQuoteQuote, 'delivery_window_desc')) {
                 $timeslotCount++;
-                $carrierTitle = $shippingQuote->courier_type;
+                $carrierTitle = 'Premium';
                 $method = $shippingQuote->courier_type . '_' . $shippingQuoteQuote->delivery_date . '_' . $shippingQuoteQuote->delivery_window;
                 $methodTitle = 'Premium' . ' - Delivered ' . $shippingQuoteQuote->delivery_date. ', Between ' . $shippingQuoteQuote->delivery_window_desc;
             }
@@ -208,7 +216,7 @@ class Shippit_Shippit_Model_Shipping_Carrier_Shippit extends Mage_Shipping_Model
 
     public function getAllowedMethods()
     {
-        $configAllowedMethods = Mage::helper('shippit')->getAllowedMethods();
+        $configAllowedMethods = $this->helper->getAllowedMethods();
         $availableMethods = Mage::getModel('shippit/shipping_carrier_shippit_methods')->getMethods();
 
         $allowedMethods = array();
@@ -335,24 +343,13 @@ class Shippit_Shippit_Model_Shipping_Carrier_Shippit extends Mage_Shipping_Model
 
     private function _getParcelAttributes($request)
     {
-        $items = $request->getAllItems();
-        $parcelAttributes = array();
-
-        foreach ($items as $item) {
-            // Skip special product types
-            if ($item->getProduct()->getTypeId() == Mage_Catalog_Model_Product_Type::TYPE_CONFIGURABLE
-                || $item->getProduct()->getTypeId() == Mage_Catalog_Model_Product_Type::TYPE_BUNDLE
-                || $item->getProduct()->getTypeId() == Mage_Catalog_Model_Product_Type::TYPE_GROUPED
-                || $item->getProduct()->getTypeId() == Mage_Catalog_Model_Product_Type::TYPE_VIRTUAL) {
-                continue;
-            }
-
-            $parcelAttributes[] = array(
-                'qty' => $item->getQty(),
-                'weight' => $item->getWeight()
-            );
-        }
-
+        $parcelAttributes = array(
+            array(
+                'qty' => $request->getPackageQty(),
+                'weight' => ($request->getPackageWeight() / $request->getPackageQty())
+            )
+        );
+        
         return $parcelAttributes;
     }
 }
