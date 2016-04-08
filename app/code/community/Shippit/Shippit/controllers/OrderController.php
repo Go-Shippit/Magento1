@@ -46,8 +46,9 @@ class Shippit_Shippit_OrderController extends Mage_Core_Controller_Front_Action
                 'request_body' => $request
             )
         );
-        
+
         $this->logger->setMetaData($metaData);
+        $this->logger->log('Shipment Sync Request Recieved');
 
         if (!$this->helper->isActive()) {
             $this->logger->log('Shipping Sync is not active');

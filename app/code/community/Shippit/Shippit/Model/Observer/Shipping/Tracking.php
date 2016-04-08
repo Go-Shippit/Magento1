@@ -27,7 +27,7 @@ class Shippit_Shippit_Model_Observer_Shipping_Tracking
         $block = $observer->getBlock();
 
         if ($block->getTemplate() == 'email/order/shipment/track.phtml'
-            && Mage::helper('shippit/sync_shipment')->isUpdateTemplateActive()) {
+            && Mage::helper('shippit/sync_shipping')->isUpdateTemplateActive()) {
             $block->setTemplate('shippit/email/order/shipment/track.phtml');
         }
     }

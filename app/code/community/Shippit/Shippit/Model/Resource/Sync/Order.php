@@ -39,10 +39,10 @@ class Shippit_Shippit_Model_Resource_Sync_Order extends Mage_Core_Model_Resource
     /**
      * Save related items to the Sync Order
      *
-     * @param Varien_Object $customer
+     * @param Mage_Core_Model_Abstract $customer
      * @return Mage_Eav_Model_Entity_Abstract
      */
-    protected function _afterSave(Varien_Object $syncOrder)
+    protected function _afterSave(Mage_Core_Model_Abstract $syncOrder)
     {
         $this->_saveItems($syncOrder);
 
