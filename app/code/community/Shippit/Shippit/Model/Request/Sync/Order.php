@@ -130,7 +130,7 @@ class Shippit_Shippit_Model_Request_Sync_Order extends Varien_Object
 
         // if the shipping method passed is not a standard shippit service class, attempt to get a service class based on the configured mapping
         if (!in_array($shippingMethod, $validShippingMethods)) {
-            $shippingMethod = $this->helper->getShippingMethodMapping($shippingMethod);
+            $shippingMethod = $this->helper->getShippitShippingMethod($shippingMethod);
         }
 
         if (in_array($shippingMethod, $validShippingMethods)) {
