@@ -99,16 +99,33 @@ class Shippit_Shippit_OrderController extends Mage_Core_Controller_Front_Action
             return $this->getResponse()->setBody($response);
         }
 
+        // attempt to get the order using the reference provided
+        $order = $this->_getOrder($orderIncrementId);
+
+        if (!$order->getId()) {
+            $response = $this->_prepareResponse(false, self::ERROR_ORDER_MISSING);
+
+            return $this->getResponse()->setBody($response);
+        }
+
+        if (!$order->canShip()) {
+            $response = $this->_prepareResponse(false, self::ERROR_ORDER_STATUS);
+
+            return $this->getResponse()->setBody($response);
+        }
+
         try {
             $shipmentRequest = Mage::getModel('shippit/request_api_shipment')
-                ->setOrderByIncrementId($orderIncrementId)
+                ->setOrder($order)
                 ->processItems($products);
 
-            $order = $shipmentRequest->getOrder();
-            $items = $shipmentRequest->getItems();
-
             // create the shipment
-            $response = $this->_createShipment($order, $items, $courierName, $trackingNumber);
+            $response = $this->_createShipment(
+                $shipmentRequest->getOrder(),
+                $shipmentRequest->getItems(),
+                $courierName,
+                $trackingNumber
+            );
 
             return $this->getResponse()->setBody($response);
         }
@@ -140,11 +157,6 @@ class Shippit_Shippit_OrderController extends Mage_Core_Controller_Front_Action
         return Mage::helper('core')->jsonEncode($response);
     }
 
-    private function _getOrder($orderIncrementId)
-    {
-        return Mage::getModel('sales/order')->load($orderIncrementId, 'increment_id');
-    }
-
     private function _checkApiKey($apiKey)
     {
         $configuredApiKey = Mage::helper('shippit')->getApiKey();
@@ -154,6 +166,11 @@ class Shippit_Shippit_OrderController extends Mage_Core_Controller_Front_Action
         }
         
         return true;
+    }
+
+    private function _getOrder($orderIncrementId)
+    {
+        return Mage::getModel('sales/order')->load($orderIncrementId, 'increment_id');
     }
 
     private function _createShipment($order, $items, $courierName, $trackingNumber)
@@ -188,14 +205,17 @@ class Shippit_Shippit_OrderController extends Mage_Core_Controller_Front_Action
             }
             catch (Mage_Core_Exception $e) {
                 $this->logger->log('Shipment Sync Error - ' . self::ERROR_SHIPMENT_FAILED);
+
                 return $this->_prepareResponse(false, self::ERROR_SHIPMENT_FAILED);
             }
 
             $this->logger->log('Shipment Sync Successful - ' . self::SUCCESS_SHIPMENT_CREATED);
+
             return $this->_prepareResponse(true, self::SUCCESS_SHIPMENT_CREATED);
         }
 
         $this->logger->log('Shipment Sync Error - ' . self::ERROR_SHIPMENT_FAILED);
+
         return $this->_prepareResponse(false, self::ERROR_SHIPMENT_FAILED);
     }
 }
