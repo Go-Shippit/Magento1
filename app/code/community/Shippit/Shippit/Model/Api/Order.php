@@ -17,7 +17,7 @@
 // Core Class responsible for Managing the process of syncing orders
 // with the Shippit Platform. Handles both cron job processing and immediate
 // request processing, ensuring it transitions orders into the failed state
-// when exceeding the maximum number of attempts. 
+// when exceeding the maximum number of attempts.
 
 class Shippit_Shippit_Model_Api_Order extends Mage_Core_Model_Abstract
 {

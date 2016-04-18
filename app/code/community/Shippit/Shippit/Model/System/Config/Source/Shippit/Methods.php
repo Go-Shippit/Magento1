@@ -14,16 +14,16 @@
 *  @license    http://www.shippit.com/terms
 */
 
-class Shippit_Shippit_Model_Shipping_Carrier_Shippit_Methods
+class Shippit_Shippit_Model_System_Config_Source_Shippit_Methods
 {
     /**
      * Returns code => code pairs of attributes for all product attributes
      *
      * @return array
      */
-    public function toOptionArray()
+    public function toOptionArray($includePriority = true)
     {
-        $methods = $this->getMethods();
+        $methods = $this->getMethods($includePriority);
         $methodOptions = array();
 
         foreach ($methods as $methodValue => $methodLabel) {
@@ -36,13 +36,16 @@ class Shippit_Shippit_Model_Shipping_Carrier_Shippit_Methods
         return $methodOptions;
     }
 
-    public function getMethods()
+    public function getMethods($includePriority = true)
     {
         $methods = array(
-            'Standard' => 'Standard',
-            'Express' => 'Express',
-            'Premium' => 'Premium',
+            'standard' => 'Standard',
+            'express' => 'Express',
         );
+
+        if ($includePriority) {
+            $methods['priority'] = 'Priority';
+        }
 
         return $methods;
     }

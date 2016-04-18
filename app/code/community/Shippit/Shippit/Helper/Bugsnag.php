@@ -2,9 +2,9 @@
 
 class Shippit_Shippit_Helper_Bugsnag extends Mage_Core_Helper_Abstract
 {
-    private $apiKey = false;
     private $severites = 'fatal,error';
     private $client = false;
+    private $shippitBugsnagApiKey = 'b2873ea2ae95a3c9f2cb63ca1557abb5';
 
     public function init()
     {
@@ -19,32 +19,33 @@ class Shippit_Shippit_Helper_Bugsnag extends Mage_Core_Helper_Abstract
             }
 
             // Allow override of bugsnag key
+            // this can be your own bugsnag api key, or an empty string
+            // to disable bugsnag logging if required
             $apiKey = Mage::getStoreConfig('shippit/bugsnag/api_key');
 
-            // if we have a value in shippit_bugsnag_api_key, use it
-            if (!is_null($apiKey)) {
-                $this->apiKey = $apiKey;
+            // If no api key is provided, use the shippit bugsnag api key
+            if (is_null($apiKey)) {
+                $apiKey = $this->shippitBugsnagApiKey;
             }
-            // otherwise, report to the shippit bugsnag account
-            else {
-                $this->apiKey = 'b2873ea2ae95a3c9f2cb63ca1557abb5';
+            // Otherwise, if the api key is an empty value,
+            // don't run bugsnag and return early
+            elseif (empty($apiKey)) {
+                return $this->client;
             }
 
-            if (!empty($this->apiKey)) {
-                $this->client = new Bugsnag_Client($this->apiKey);
-                $this->client->setReleaseStage($this->getReleaseStage())
-                     ->setErrorReportingLevel($this->getErrorReportingLevel())
-                     ->setMetaData($this->getMetaData());
-                
-                $this->client->setNotifier($this->getNotiferData());
-                
-                set_error_handler(
-                    array($this->client, "errorHandler")
-                );
-                set_exception_handler(
-                    array($this->client, "exceptionHandler")
-                );
-            }
+            $this->client = new Bugsnag_Client($apiKey);
+            $this->client->setReleaseStage($this->getReleaseStage())
+                 ->setErrorReportingLevel($this->getErrorReportingLevel())
+                 ->setMetaData($this->getMetaData());
+            
+            $this->client->setNotifier($this->getNotiferData());
+            
+            set_error_handler(
+                array($this->client, "errorHandler")
+            );
+            set_exception_handler(
+                array($this->client, "exceptionHandler")
+            );
         }
 
         return $this->client;

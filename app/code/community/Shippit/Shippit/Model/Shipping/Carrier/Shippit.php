@@ -108,16 +108,16 @@ class Shippit_Shippit_Model_Shipping_Carrier_Shippit extends Mage_Shipping_Model
     {
         $allowedMethods = $this->helper->getAllowedMethods();
 
-        $isPremiumAvailable = in_array('Premium', $allowedMethods);
-        $isExpressAvailable = in_array('Express', $allowedMethods);
-        $isStandardAvailable = in_array('Standard', $allowedMethods);
+        $isPriorityAvailable = in_array('priority', $allowedMethods);
+        $isExpressAvailable = in_array('express', $allowedMethods);
+        $isStandardAvailable = in_array('standard', $allowedMethods);
 
         // Process the response and return available options
         foreach ($shippingQuotes as $shippingQuoteKey => $shippingQuote) {
             if ($shippingQuote->success) {
                 if ($shippingQuote->courier_type == 'Bonds'
-                    && $isPremiumAvailable) {
-                    $this->_addPremiumQuote($rateResult, $shippingQuote);
+                    && $isPriorityAvailable) {
+                    $this->_addPriorityQuote($rateResult, $shippingQuote);
                 }
                 elseif ($shippingQuote->courier_type == 'eparcelexpress'
                     && $isExpressAvailable) {
@@ -138,7 +138,7 @@ class Shippit_Shippit_Model_Shipping_Carrier_Shippit extends Mage_Shipping_Model
             $rateResultMethod = Mage::getModel('shipping/rate_result_method');
             $rateResultMethod->setCarrier($this->_code)
                 ->setCarrierTitle('Shippit')
-                ->setMethod('Standard')
+                ->setMethod('standard')
                 ->setMethodTitle('Standard')
                 ->setCost($shippingQuoteQuote->price)
                 ->setPrice($shippingQuoteQuote->price);
@@ -153,7 +153,7 @@ class Shippit_Shippit_Model_Shipping_Carrier_Shippit extends Mage_Shipping_Model
             $rateResultMethod = Mage::getModel('shipping/rate_result_method');
             $rateResultMethod->setCarrier($this->_code)
                 ->setCarrierTitle('Shippit')
-                ->setMethod('Express')
+                ->setMethod('express')
                 ->setMethodTitle('Express')
                 ->setCost($shippingQuoteQuote->price)
                 ->setPrice($shippingQuoteQuote->price);
@@ -162,7 +162,7 @@ class Shippit_Shippit_Model_Shipping_Carrier_Shippit extends Mage_Shipping_Model
         }
     }
 
-    private function _addPremiumQuote(&$rateResult, $shippingQuote)
+    private function _addPriorityQuote(&$rateResult, $shippingQuote)
     {
         $maxTimeslots = $this->helper->getMaxTimeslots();
         $timeslotCount = 0;
@@ -178,14 +178,14 @@ class Shippit_Shippit_Model_Shipping_Carrier_Shippit extends Mage_Shipping_Model
                 && property_exists($shippingQuoteQuote, 'delivery_window')
                 && property_exists($shippingQuoteQuote, 'delivery_window_desc')) {
                 $timeslotCount++;
-                $carrierTitle = 'Premium';
-                $method = $shippingQuote->courier_type . '_' . $shippingQuoteQuote->delivery_date . '_' . $shippingQuoteQuote->delivery_window;
-                $methodTitle = 'Premium' . ' - Delivered ' . $shippingQuoteQuote->delivery_date. ', Between ' . $shippingQuoteQuote->delivery_window_desc;
+                $carrierTitle = 'Priority';
+                $method = 'priority_' . $shippingQuoteQuote->delivery_date . '_' . $shippingQuoteQuote->delivery_window;
+                $methodTitle = 'Priority' . ' - Delivered ' . $shippingQuoteQuote->delivery_date. ', Between ' . $shippingQuoteQuote->delivery_window_desc;
             }
             else {
-                $carrierTitle = $shippingQuote->courier_type;
-                $method = $shippingQuote->courier_type;
-                $methodTitle = 'Premium';
+                $carrierTitle = 'Shippit';
+                $method = 'priority';
+                $methodTitle = 'Priority';
             }
 
             $rateResultMethod->setCarrier($this->_code)
@@ -217,13 +217,13 @@ class Shippit_Shippit_Model_Shipping_Carrier_Shippit extends Mage_Shipping_Model
     public function getAllowedMethods()
     {
         $configAllowedMethods = $this->helper->getAllowedMethods();
-        $availableMethods = Mage::getModel('shippit/shipping_carrier_shippit_methods')->getMethods();
+        $availableMethods = Mage::getModel('shippit/system_config_source_shippit_methods')->getMethods();
 
         $allowedMethods = array();
 
         foreach ($availableMethods as $methodValue => $methodLabel) {
             if (in_array($methodValue, $configAllowedMethods)) {
-                $allowedMethods[$methodValue] = $methodLabel;
+                $allowedMethods[$methodValue] = 'Shippit ' . $methodLabel;
             }
         }
 

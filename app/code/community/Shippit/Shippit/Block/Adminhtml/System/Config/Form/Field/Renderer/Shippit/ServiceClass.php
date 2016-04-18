@@ -1,11 +1,29 @@
 <?php
+/**
+*  Shippit Pty Ltd
+*
+*  NOTICE OF LICENSE
+*
+*  This source file is subject to the terms
+*  that is available through the world-wide-web at this URL:
+*  http://www.shippit.com/terms
+*
+*  @category   Shippit
+*  @copyright  Copyright (c) 2016 by Shippit Pty Ltd (http://www.shippit.com)
+*  @author     Matthew Muscat <matthew@mamis.com.au>
+*  @license    http://www.shippit.com/terms
+*/
 
 class Shippit_Shippit_Block_Adminhtml_System_Config_Form_Field_Renderer_Shippit_ServiceClass extends Mage_Core_Block_Abstract
 {
     protected function _toHtml()
     {
         $column = $this->getColumn();
-        $options = Mage::getModel('shippit/system_config_source_shippit_serviceClass')->toOptionArray();
+
+        // Premium Services are not presented here
+        // as they are only available via live quoting
+        // due to service availabilty requirements
+        $options = Mage::getModel('shippit/system_config_source_shippit_methods')->toOptionArray(false);
 
         foreach ($options as $option) {
             $optionsHtml[] = '<option value="' . $option['value'] . '">' . $option['label'] . "</option>";
