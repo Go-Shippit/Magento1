@@ -20,7 +20,7 @@ class Shippit_Shippit_Block_Adminhtml_System_Config_Form_Field_Renderer_Shippit_
     {
         $column = $this->getColumn();
 
-        // Premium Services are not presented here
+        // Priority Services are not presented here
         // as they are only available via live quoting
         // due to service availabilty requirements
         $options = Mage::getModel('shippit/system_config_source_shippit_methods')->toOptionArray(false);

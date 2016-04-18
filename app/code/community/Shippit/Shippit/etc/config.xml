@@ -18,7 +18,7 @@
 <config>
     <modules>
         <Shippit_Shippit>
-            <version>4.1.7</version>
+            <version>4.1.8</version>
         </Shippit_Shippit>
     </modules>
 
@@ -265,7 +265,7 @@
                 <model>shippit/shipping_carrier_shippit</model>
                 <active>0</active>
                 <debug_active>0</debug_active>
-                <allowed_methods>Standard,Express,Premium</allowed_methods>
+                <allowed_methods>standard,express,priority</allowed_methods>
                 <title>Shippit</title>
                 <max_timeslots/>
                 <enabled_product_active>0</enabled_product_active>

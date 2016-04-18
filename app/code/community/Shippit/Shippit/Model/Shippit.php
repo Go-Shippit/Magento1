@@ -28,7 +28,7 @@ class Shippit_Shippit_Model_Shippit extends Mage_Core_Model_Abstract
      * Adds the order to the request queue, and if the mode is requested as realtime,
      * attempts to sync the record immediately.
      *
-     * Note: Premium shipping services are only available via live quoting
+     * Note: Priority shipping services are only available via live quoting
      *
      * @param integer $entityId             The order entity_id
      * @param array   $items                An array of the items to be included

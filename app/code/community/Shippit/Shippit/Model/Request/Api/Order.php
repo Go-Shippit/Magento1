@@ -46,7 +46,7 @@ class Shippit_Shippit_Model_Request_Api_Order extends Varien_Object
     // Shippit Service Class API Mappings
     const SHIPPING_SERVICE_STANDARD = 'CouriersPlease';
     const SHIPPING_SERVICE_EXPRESS  = 'eparcelexpress';
-    const SHIPPING_SERVICE_PREMIUM  = 'Bonds';
+    const SHIPPING_SERVICE_PRIORITY = 'Bonds';
 
     public function __construct() {
         $this->helper = Mage::helper('shippit/sync_order');
@@ -323,9 +323,9 @@ class Shippit_Shippit_Model_Request_Api_Order extends Varien_Object
      */
     public function setShippingMethod($shippingMethod = null)
     {
-        // if the order is a premium delivery,
+        // if the order is a priority delivery,
         // get the special delivery attributes
-        if ($shippingMethod == 'premium') {
+        if ($shippingMethod == 'priority') {
             $deliveryDate = $this->_getOrderDeliveryDate($this->order);
             $deliveryWindow = $this->_getOrderDeliveryWindow($this->order);
         }
@@ -337,8 +337,8 @@ class Shippit_Shippit_Model_Request_Api_Order extends Varien_Object
         elseif ($shippingMethod == 'express') {
             return $this->setCourierType(self::SHIPPING_SERVICE_EXPRESS);
         }
-        elseif ($shippingMethod == 'premium' && isset($deliveryDate) && isset($deliveryWindow)) {
-            return $this->setCourierType(self::SHIPPING_SERVICE_PREMIUM)
+        elseif ($shippingMethod == 'priority' && isset($deliveryDate) && isset($deliveryWindow)) {
+            return $this->setCourierType(self::SHIPPING_SERVICE_PRIORITY)
                 ->setDeliveryDate($deliveryDate)
                 ->setDeliveryWindow($deliveryWindow);
         }
@@ -359,7 +359,7 @@ class Shippit_Shippit_Model_Request_Api_Order extends Varien_Object
             $courierData = array();
             
             if (isset($shippingOptions[0])) {
-                if ($shippingOptions[0] == 'Bonds') {
+                if ($shippingOptions[0] == 'priority') {
                     return $shippingOptions[1];
                 }
                 else {
@@ -387,7 +387,7 @@ class Shippit_Shippit_Model_Request_Api_Order extends Varien_Object
             $courierData = array();
             
             if (isset($shippingOptions[0])) {
-                if ($shippingOptions[0] == 'Bonds') {
+                if ($shippingOptions[0] == 'priority') {
                     return $shippingOptions[2];
                 }
                 else {

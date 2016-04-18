@@ -137,7 +137,7 @@ class Shippit_Shippit_Model_Shipping_Carrier_Shippit extends Mage_Shipping_Model
         foreach ($shippingQuote->quotes as $shippingQuoteQuote) {
             $rateResultMethod = Mage::getModel('shipping/rate_result_method');
             $rateResultMethod->setCarrier($this->_code)
-                ->setCarrierTitle('Shippit')
+                ->setCarrierTitle($this->helper->getTitle())
                 ->setMethod('standard')
                 ->setMethodTitle('Standard')
                 ->setCost($shippingQuoteQuote->price)
@@ -152,7 +152,7 @@ class Shippit_Shippit_Model_Shipping_Carrier_Shippit extends Mage_Shipping_Model
         foreach ($shippingQuote->quotes as $shippingQuoteQuote) {
             $rateResultMethod = Mage::getModel('shipping/rate_result_method');
             $rateResultMethod->setCarrier($this->_code)
-                ->setCarrierTitle('Shippit')
+                ->setCarrierTitle($this->helper->getTitle())
                 ->setMethod('express')
                 ->setMethodTitle('Express')
                 ->setCost($shippingQuoteQuote->price)
@@ -178,12 +178,12 @@ class Shippit_Shippit_Model_Shipping_Carrier_Shippit extends Mage_Shipping_Model
                 && property_exists($shippingQuoteQuote, 'delivery_window')
                 && property_exists($shippingQuoteQuote, 'delivery_window_desc')) {
                 $timeslotCount++;
-                $carrierTitle = 'Priority';
+                $carrierTitle = $this->helper->getTitle();
                 $method = 'priority_' . $shippingQuoteQuote->delivery_date . '_' . $shippingQuoteQuote->delivery_window;
                 $methodTitle = 'Priority' . ' - Delivered ' . $shippingQuoteQuote->delivery_date. ', Between ' . $shippingQuoteQuote->delivery_window_desc;
             }
             else {
-                $carrierTitle = 'Shippit';
+                $carrierTitle = $this->helper->getTitle();
                 $method = 'priority';
                 $methodTitle = 'Priority';
             }
@@ -223,7 +223,7 @@ class Shippit_Shippit_Model_Shipping_Carrier_Shippit extends Mage_Shipping_Model
 
         foreach ($availableMethods as $methodValue => $methodLabel) {
             if (in_array($methodValue, $configAllowedMethods)) {
-                $allowedMethods[$methodValue] = 'Shippit ' . $methodLabel;
+                $allowedMethods[$methodValue] = $this->helper->getTitle() . ' ' . $methodLabel;
             }
         }
 

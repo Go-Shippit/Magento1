@@ -84,10 +84,10 @@ class Shippit_Shippit_Model_Observer_Order_Sync
 
             try {
                 // If the sync mode is realtime,
-                // or the shipping method is premium
+                // or the shipping method is priority
                 // - attempt realtime sync now
                 if ($this->helper->getMode() == Shippit_Shippit_Helper_Data::SYNC_MODE_REALTIME
-                    || $shippitShippingMethod == 'premium') {
+                    || $shippitShippingMethod == 'priority') {
                     $this->_syncOrder($syncOrder);
                 }
             }

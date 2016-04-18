@@ -33,4 +33,16 @@ Mage::getConfig()->saveConfig(
     0
 );
 
+/**
+ * Migrate sync orders data from v4.1.6 to v4.1.7
+ */
+
+$syncOrders = Mage::getModel('shippit/sync_order')->getCollection()
+    ->addFieldToFilter('shipping_method', array('eq' => 'premium'));
+
+foreach ($syncOrders as $syncOrder) {
+    $syncOrder->setShippingMethod('priority')
+        ->save();
+}
+
 $installer->endSetup();

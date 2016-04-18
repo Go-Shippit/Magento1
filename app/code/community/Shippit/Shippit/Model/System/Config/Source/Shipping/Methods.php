@@ -16,12 +16,18 @@
 
 class Shippit_Shippit_Model_System_Config_Source_Shipping_Methods
 {
-    public function toOptionArray()
+    public function toOptionArray($excludeShippit = false)
     {
         $optionsArray = array();
         $carriers = Mage::getSingleton('shipping/config')->getAllCarriers();
 
         foreach ($carriers as $carrierCode => $carrier) {
+            // if the carrier is shippit, exclude it from the
+            // returned results
+            if ($excludeShippit && $carrierCode == 'shippit') {
+                continue;
+            }
+
             if ($methods = $carrier->getAllowedMethods()) {
                 if (!$methodTitle = Mage::getStoreConfig("carriers/$carrierCode/title")) {
                     $methodTitle = $carrierCode;
