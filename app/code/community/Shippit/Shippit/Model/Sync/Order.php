@@ -76,7 +76,7 @@ class Shippit_Shippit_Model_Sync_Order extends Mage_Core_Model_Abstract
     {
         if (is_null($this->_itemsCollection) || !$useCache) {
             $this->_itemsCollection = Mage::getResourceModel('shippit/sync_order_item_collection');
-            $this->_itemsCollection->setOrder($this);
+            $this->_itemsCollection->addSyncOrderFilter($this);
         }
 
         return $this->_itemsCollection;

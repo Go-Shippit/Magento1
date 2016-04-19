@@ -27,7 +27,7 @@ class Shippit_Shippit_Model_Resource_Sync_Order_Item_Collection extends Mage_Cor
      * Filter the items collection by the SyncOrder
      * @param Shippit_Shippit_Model_Sync_Order $syncOrder The Sync Order Object
      */
-    public function setOrder(Mage_Core_Model_Abstract $syncOrder)
+    public function addSyncOrderFilter(Mage_Core_Model_Abstract $syncOrder)
     {
         $syncOrderId = $syncOrder->getSyncId();
 

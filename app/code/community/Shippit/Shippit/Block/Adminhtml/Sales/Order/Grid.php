@@ -98,10 +98,10 @@ class Shippit_Shippit_Block_Adminhtml_Sales_Order_Grid extends Mage_Adminhtml_Bl
         ));
 
         $this->addColumn('items', array(
+            'filter' => false,
             'header' => $helper->__('Items'),
-            // @TODO: strlen error reported in system log
             'getter' => 'getItems',
-            'frame_callback' => array($this, 'decorateItems')
+            'renderer' => 'shippit/adminhtml_sales_order_items'
         ));
  
         $this->addColumn('grand_total', array(
@@ -208,39 +208,6 @@ class Shippit_Shippit_Block_Adminhtml_Sales_Order_Grid extends Mage_Adminhtml_Bl
             $value
         );
         return $cell;
-    }
-
-    public function decorateItems($items)
-    {
-        if (empty($items)) {
-            return 'All Items';
-        }
-
-        $table = '<table class="data-table orders-table" cellspacing="0">';
-        $table .= '<thead>';
-        $table .= '<tr>';
-            $table .= '<th>Sku</th>';
-            $table .= '<th>Title</th>';
-            $table .= '<th>Qty</th>';
-            $table .= '<th>Location</th>';
-        $table .= '</tr>';
-        $table .= '</thead>';
-
-        $table .= '<tbody>';
-        
-        foreach ($items as $item) {
-            $table .= '<tr>';
-            $table .= '<td>' . $item->getSku() . '</td>';
-            $table .= '<td>' . $item->getTitle() . '</td>';
-            $table .= '<td>' . $item->getQty() . '</td>';
-            $table .= '<td>' . ($item->getLocation() ? $item->getLocation() : 'N/A') . '</td>';
-            $table .= '</tr>';
-        }
-
-        $table .= '</tbody>';
-        $table .= '</table>';
-
-        return $table;
     }
 
     public function getGridSeverity($value)
