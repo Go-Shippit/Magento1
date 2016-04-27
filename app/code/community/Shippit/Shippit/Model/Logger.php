@@ -26,10 +26,7 @@ class Shippit_Shippit_Model_Logger
     {
         $this->helper = Mage::helper('shippit');
         $this->debugMode = $this->helper->isDebugActive();
-
-        if ($this->debugMode) {
-            $this->bugsnag = Mage::helper('shippit/bugsnag')->init();
-        }
+        $this->bugsnag = Mage::helper('shippit/bugsnag')->init();
     }
 
     public function log($errorType, $message, $level = Zend_Log::DEBUG)
