@@ -569,7 +569,8 @@ class Shippit_Shippit_Model_Request_Api_Order extends Varien_Object
             'sku' => $sku,
             'title' => $title,
             'qty' => $qty,
-            'weight' => $weight,
+            // if a 0 weight is provided, stub the weight to 0.2kg
+            'weight' => ($weight == 0 ? 0.2 : $weight),
             'location' => $location
         );
 
