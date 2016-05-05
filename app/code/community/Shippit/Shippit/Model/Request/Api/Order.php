@@ -37,6 +37,7 @@ class Shippit_Shippit_Model_Request_Api_Order extends Varien_Object
     const DELIVERY_WINDOW           = 'delivery_window';
     const RECEIVER_NAME             = 'receiver_name';
     const RECEIVER_CONTACT_NUMBER   = 'receiver_contact_number';
+    const DELIVERY_COMPANY          = 'delivery_company';
     const DELIVERY_ADDRESS          = 'delivery_address';
     const DELIVERY_SUBURB           = 'delivery_suburb';
     const DELIVERY_POSTCODE         = 'delivery_postcode';
@@ -96,6 +97,7 @@ class Shippit_Shippit_Model_Request_Api_Order extends Varien_Object
             ->setUserAttributes($billingAddress->getEmail(), $billingAddress->getFirstname(), $billingAddress->getLastname())
             ->setReceiverName($shippingAddress->getName())
             ->setReceiverContactNumber($shippingAddress->getTelephone())
+            ->setDeliveryCompany($shippingAddress->getCompany())
             ->setDeliveryAddress(implode(' ', $shippingAddress->getStreet()))
             ->setDeliverySuburb($shippingAddress->getCity())
             ->setDeliveryPostcode($shippingAddress->getPostcode())
@@ -147,6 +149,7 @@ class Shippit_Shippit_Model_Request_Api_Order extends Varien_Object
             ->setData(self::DELIVERY_WINDOW, null)
             ->setData(self::RECEIVER_NAME, null)
             ->setData(self::RECEIVER_CONTACT_NUMBER, null)
+            ->setData(self::DELIVERY_COMPANY, null)
             ->setData(self::DELIVERY_ADDRESS, null)
             ->setData(self::DELIVERY_SUBURB, null)
             ->setData(self::DELIVERY_POSTCODE, null)
@@ -443,6 +446,27 @@ class Shippit_Shippit_Model_Request_Api_Order extends Varien_Object
     public function setReceiverContactNumber($receiverContactNumber)
     {
         return $this->setData(self::RECEIVER_CONTACT_NUMBER, $receiverContactNumber);
+    }
+
+    /**
+     * Get the Delivery Company
+     *
+     * @return string|null
+     */
+    public function getDeliveryCompany()
+    {
+        return $this->getData(self::DELIVERY_COMPANY);
+    }
+
+    /**
+     * Set the Delivery Company
+     *
+     * @param string $deliveryCompany   Delivery Company
+     * @return string
+     */
+    public function setDeliveryCompany($deliveryCompany)
+    {
+        return $this->setData(self::DELIVERY_COMPANY, $deliveryCompany);
     }
 
     /**

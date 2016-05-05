@@ -63,7 +63,7 @@ class Shippit_Shippit_Model_Logger
             return $this;
         }
 
-        return $this->bugsnag->notifyException($exception);
+        return $this->bugsnag->notifyException($exception, $this->metaData);
     }
 
     public function _getBugsnagErrorLevel($level)
