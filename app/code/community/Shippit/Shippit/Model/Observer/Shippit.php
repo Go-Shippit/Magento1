@@ -43,7 +43,7 @@ class Shippit_Shippit_Model_Observer_Shippit extends Mage_Core_Model_Abstract
         $syncMode = $observer->getEvent()->getSyncMode();
         $shippingMethod = $observer->getEvent()->getShippingMethod();
 
-        $displayNotifications = $observer->getEvent()->getDisplayNotifcations();
+        $displayNotifications = $observer->getEvent()->getDisplayNotifications();
 
         if (empty($displayNotifications)) {
             $displayNotifications = false;

@@ -37,7 +37,8 @@ class Shippit_Shippit_Model_Sync_Order extends Mage_Core_Model_Abstract
     {
         $this->setOrderId($request->getOrderId())
             ->addItems($request->getItems())
-            ->setShippingMethod($request->getShippingMethod());
+            ->setShippingMethod($request->getShippingMethod())
+            ->setApiKey($request->getApiKey());
 
         return $this;
     }
