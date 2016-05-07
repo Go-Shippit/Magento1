@@ -94,7 +94,7 @@ class Shippit_Shippit_Model_Request_Api_Order extends Varien_Object
         $this->setRetailerInvoice($order->getIncrementId())
             ->setAuthorityToLeave($order->getShippitAuthorityToLeave())
             ->setDeliveryInstructions($order->getShippitDeliveryInstructions())
-            ->setUserAttributes($billingAddress->getEmail(), $billingAddress->getFirstname(), $billingAddress->getLastname())
+            ->setUserAttributes($order->getCustomerEmail(), $billingAddress->getFirstname(), $billingAddress->getLastname())
             ->setReceiverName($shippingAddress->getName())
             ->setReceiverContactNumber($shippingAddress->getTelephone())
             ->setDeliveryCompany($shippingAddress->getCompany())
