@@ -74,7 +74,7 @@ class Shippit_Shippit_Model_Api_Order extends Mage_Core_Model_Abstract
                 'left'
             )
             ->addFieldToFilter('main_table.status', Shippit_Shippit_Model_Sync_Order::STATUS_PENDING)
-            ->addFieldToFilter('main_table.attempt_count', array('lt' => Shippit_Shippit_Model_Sync_Order::SYNC_MAX_ATTEMPTS))
+            ->addFieldToFilter('main_table.attempt_count', array('lteq' => Shippit_Shippit_Model_Sync_Order::SYNC_MAX_ATTEMPTS))
             ->addFieldToFilter('order.state', array('eq' => Mage_Sales_Model_Order::STATE_PROCESSING))
             ->addFieldToFilter('order.store_id', array('eq' => $storeId));
     }
