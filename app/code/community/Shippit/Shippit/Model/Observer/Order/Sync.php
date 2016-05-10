@@ -20,13 +20,11 @@ class Shippit_Shippit_Model_Observer_Order_Sync
     private $_hasAttemptedSync = false;
 
     protected $helper;
-    protected $carrierCode;
 
     public function __construct()
     {
         $this->helper = Mage::helper('shippit/sync_order');
         $this->logger = Mage::getModel('shippit/logger');
-        $this->carrierCode = $this->helper->getCarrierCode();
     }
     
     /**

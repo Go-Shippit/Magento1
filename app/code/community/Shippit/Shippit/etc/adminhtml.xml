@@ -30,9 +30,6 @@
 
     <acl>
         <resources>
-            <all>
-                <title>Allow everything</title>
-            </all>
             <admin>
                 <children>
                     <sales>

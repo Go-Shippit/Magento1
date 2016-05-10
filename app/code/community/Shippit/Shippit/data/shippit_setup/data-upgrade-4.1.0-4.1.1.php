@@ -26,21 +26,45 @@ $configKeys = array(
 );
 
 $configOptions = array(
-    'active' => 'general/active',
-    'api_key' => 'general/api_key',
-    'environment' => 'general/environment',
-    'debug_active' => 'general/debug_active',
-    'sync_mode' => 'sync_order/mode',
-    'send_all_orders_active' => 'sync_order/send_all_orders_active',
-    'product_location_active' => 'sync_order/product_location_active',
-    'product_location_attribute_code' => 'sync_order/product_location_attribute_code'
+    'active' => array(
+        'shippit/general/active',
+        'shippit/sync_order/active',
+        'shippit/checkout/authority_to_leave_active',
+        'shippit/checkout/delivery_instructions_active',
+        'shippit/sync_shipping/active',
+        'shippit/sync_shipping/update_template_active'
+    ),
+    'api_key' => 'shippit/general/api_key',
+    'environment' => 'shippit/general/environment',
+    'debug_active' => 'shippit/general/debug_active',
+    'sync_mode' => 'shippit/sync_order/mode',
+    'send_all_orders_active' => 'shippit/sync_order/send_all_orders_active',
+    'product_location_active' => 'shippit/sync_order/product_location_active',
+    'product_location_attribute_code' => 'shippit/sync_order/product_location_attribute_code'
 );
 
 foreach ($configOptions as $configOptionOldKey => $configOptionNewKey) {
     $configOptionValue = Mage::getStoreConfig('carriers/shippit/' . $configOptionOldKey);
 
     if (!is_null($configOptionValue)) {
-        Mage::getConfig()->saveConfig('shippit/' . $configOptionNewKey, $configOptionValue, 'default', 0);
+        if (is_array($configOptionNewKey)) {
+            foreach ($configOptionNewKey as $configOptionNewKeyItem) {
+                Mage::getConfig()->saveConfig(
+                    $configOptionNewKeyItem,
+                    $configOptionValue,
+                    'default',
+                    0
+                );
+            }
+        }
+        else {
+            Mage::getConfig()->saveConfig(
+                $configOptionNewKey,
+                $configOptionValue,
+                'default',
+                0
+            );
+        }
     }
 }
 

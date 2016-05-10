@@ -18,7 +18,7 @@
 <config>
     <modules>
         <Shippit_Shippit>
-            <version>4.2.3</version>
+            <version>4.2.4</version>
         </Shippit_Shippit>
     </modules>
 
@@ -241,8 +241,8 @@
             </general>
 
             <checkout>
-                <authority_to_leave>1</authority_to_leave>
-                <delivery_instructions>1</delivery_instructions>
+                <authority_to_leave_active>1</authority_to_leave_active>
+                <delivery_instructions_active>1</delivery_instructions_active>
             </checkout>
 
             <sync_order>
