@@ -23,6 +23,6 @@ class Shippit_Shippit_Model_Sync_Order_Item extends Mage_Core_Model_Abstract
 
     public function addItem($item)
     {
-    	return $this->setData($item);
+        return $this->setData($item);
     }
 }

@@ -95,7 +95,14 @@ class Shippit_Shippit_Model_Request_Sync_Order extends Varien_Object
             $itemLocation = $this->itemsHelper->getLocation($item);
 
             if ($itemQty > 0) {
-                $this->addItem($item->getSku(), $item->getName(), $itemQty, $itemWeight, $itemLocation);
+                $this->addItem(
+                    $item->getSku(),
+                    $item->getName(),
+                    $itemQty,
+                    $itemWeight,
+                    $itemLocation
+                );
+
                 $itemsAdded++;
             }
         }
