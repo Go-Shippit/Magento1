@@ -1,17 +1,17 @@
 <?php
 /**
- *  Shippit Pty Ltd
+ * Shippit Pty Ltd
  *
- *  NOTICE OF LICENSE
+ * NOTICE OF LICENSE
  *
- *  This source file is subject to the terms
- *  that is available through the world-wide-web at this URL:
- *  http://www.shippit.com/terms
+ * This source file is subject to the terms
+ * that is available through the world-wide-web at this URL:
+ * http://www.shippit.com/terms
  *
- *  @category   Shippit
- *  @copyright  Copyright (c) 2016 by Shippit Pty Ltd (http://www.shippit.com)
- *  @author     Matthew Muscat <matthew@mamis.com.au>
- *  @license    http://www.shippit.com/terms
+ * @category   Shippit
+ * @copyright  Copyright (c) 2016 by Shippit Pty Ltd (http://www.shippit.com)
+ * @author     Matthew Muscat <matthew@mamis.com.au>
+ * @license    http://www.shippit.com/terms
  */
 
 // Core Class responsible for Managing the process of syncing orders
@@ -99,7 +99,7 @@ class Shippit_Shippit_Model_Api_Order extends Mage_Core_Model_Abstract
             $orderRequest = Mage::getModel('shippit/request_api_order')
                 ->processSyncOrder($syncOrder);
                 
-            $apiResponse = $this->api->sendOrder($orderRequest);
+            $apiResponse = $this->api->sendOrder($orderRequest, $syncOrder->getApiKey());
 
             // Add the order tracking details to
             // the order comments and save

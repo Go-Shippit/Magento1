@@ -1,18 +1,18 @@
 <?xml version="1.0"?>
 <!--
 /**
- *  Shippit Pty Ltd
+ * Shippit Pty Ltd
  *
- *  NOTICE OF LICENSE
+ * NOTICE OF LICENSE
  *
- *  This source file is subject to the terms
- *  that is available through the world-wide-web at this URL:
- *  http://www.shippit.com/terms
+ * This source file is subject to the terms
+ * that is available through the world-wide-web at this URL:
+ * http://www.shippit.com/terms
  *
- *  @category   Shippit
- *  @copyright  Copyright (c) 2016 by Shippit Pty Ltd (http://www.shippit.com)
- *  @author     Matthew Muscat <matthew@mamis.com.au>
- *  @license    http://www.shippit.com/terms
+ * @category   Shippit
+ * @copyright  Copyright (c) 2016 by Shippit Pty Ltd (http://www.shippit.com)
+ * @author     Matthew Muscat <matthew@mamis.com.au>
+ * @license    http://www.shippit.com/terms
  */
 -->
 <config>
@@ -38,8 +38,22 @@
                                 <title>Shippit Orders</title>
                                 <sort_order>10</sort_order>
                             </shippit_orders>
+
+                            <order>
+                                <children>
+                                    <actions>
+                                        <children>
+                                            <shippit_order_send>
+                                                <title>Send Order to Shippit</title>
+                                                <sort_order>100</sort_order>
+                                            </shippit_order_send>
+                                        </children>
+                                    </actions>
+                                </children>
+                            </order>
                         </children>
                     </sales>
+
                     <system>
                         <children>
                             <config>
