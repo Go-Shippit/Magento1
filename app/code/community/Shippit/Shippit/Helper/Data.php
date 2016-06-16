@@ -83,10 +83,7 @@ class Shippit_Shippit_Helper_Data extends Mage_Core_Helper_Abstract
     public function getModuleVersion()
     {
         $version = (string) Mage::getConfig()
-            ->getNode()
-            ->modules
-            ->Shippit_Shippit
-            ->version;
+            ->getNode('modules/Shippit_Shippit/version');
 
         return $version;
     }

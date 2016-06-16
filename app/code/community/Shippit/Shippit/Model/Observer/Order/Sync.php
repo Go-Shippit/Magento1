@@ -52,11 +52,6 @@ class Shippit_Shippit_Model_Observer_Order_Sync
 
         $shippingCountry = $order->getShippingAddress()->getCountryId();
 
-        // Ensure the order is destined for Australia
-        if ($shippingCountry != 'AU') {
-            return $this;
-        }
-
         $shippingMethod = $order->getShippingMethod();
         $shippitShippingMethod = $this->helper->getShippitShippingMethod($shippingMethod);
 

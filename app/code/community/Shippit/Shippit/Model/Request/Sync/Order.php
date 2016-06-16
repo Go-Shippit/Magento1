@@ -99,6 +99,7 @@ class Shippit_Shippit_Model_Request_Sync_Order extends Varien_Object
                     $item->getSku(),
                     $item->getName(),
                     $itemQty,
+                    $item->getBasePrice(),
                     $itemWeight,
                     $itemLocation
                 );
@@ -132,6 +133,7 @@ class Shippit_Shippit_Model_Request_Sync_Order extends Varien_Object
         $validShippingMethods = array(
             'standard',
             'express',
+            'international',
             'priority'
         );
 
@@ -161,7 +163,7 @@ class Shippit_Shippit_Model_Request_Sync_Order extends Varien_Object
      * Add a parcel with attributes
      *
      */
-    public function addItem($sku, $title, $qty, $weight = 0, $location = null)
+    public function addItem($sku, $title, $qty, $price, $weight = 0, $location = null)
     {
         $items = $this->getItems();
 
@@ -173,6 +175,7 @@ class Shippit_Shippit_Model_Request_Sync_Order extends Varien_Object
             'sku' => $sku,
             'title' => $title,
             'qty' => $qty,
+            'price' => $price,
             'weight' => $weight,
             'location' => $location
         );
