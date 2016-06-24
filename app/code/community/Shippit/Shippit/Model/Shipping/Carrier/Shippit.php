@@ -168,7 +168,7 @@ class Shippit_Shippit_Model_Shipping_Carrier_Shippit extends Mage_Shipping_Model
         $timeslotCount = 0;
 
         foreach ($shippingQuote->quotes as $shippingQuoteQuote) {
-            if (!empty($maxTimeslots)&& $maxTimeslots <= $timeslotCount) {
+            if (!empty($maxTimeslots) && $maxTimeslots <= $timeslotCount) {
                 break;
             }
 

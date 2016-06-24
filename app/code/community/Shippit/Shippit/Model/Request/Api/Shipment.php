@@ -116,13 +116,15 @@ class Shippit_Shippit_Model_Request_Api_Shipment extends Varien_Object
 
     public function getItems()
     {
+        $items = $this->getData(self::ITEMS);
+        
         // if no items have been added, assume all items are to be marked as shipped
-        if (empty($this->getData(self::ITEMS))) {
+        if (empty($items)) {
             return array();
         }
         // otherwise, only mark the items and qtys specified as shipped
         else {
-            return $this->getData(self::ITEMS);
+            return $items;
         }
     }
 
