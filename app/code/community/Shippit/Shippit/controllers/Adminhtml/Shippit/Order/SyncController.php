@@ -27,6 +27,15 @@ class Shippit_Shippit_Adminhtml_Shippit_Order_SyncController extends Mage_Adminh
             return;
         }
 
+        $order = Mage::getModel('sales/order')->load($orderId);
+
+        if (!$order) {
+            $this->_getSession()->addError($this->__('The order could not be found'));
+            $this->_redirect('adminhtml/sales_order');
+
+            return;
+        }
+
         try {
             Mage::dispatchEvent(
                 'shippit_add_order',
@@ -34,6 +43,7 @@ class Shippit_Shippit_Adminhtml_Shippit_Order_SyncController extends Mage_Adminh
                     'entity_id' => $orderId,
                     'sync_mode' => 'realtime',
                     'display_notifications' => true,
+                    'shipping_method' => $order->getShippingMethod()
                 )
             );
 
@@ -71,12 +81,19 @@ class Shippit_Shippit_Adminhtml_Shippit_Order_SyncController extends Mage_Adminh
             return;
         }
 
+        $orders = Mage::getModel('sales/order')
+            ->getCollection()
+            ->addAttributeToSelect('entity_id')
+            ->addAttributeToSelect('shipping_method')
+            ->addAttributeToFilter('entity_id', array('in' => $orderIds));
+
         try {
-            foreach ($orderIds as $orderId) {
+            foreach ($orders as $order) {
                 Mage::dispatchEvent(
                     'shippit_add_order',
                     array(
-                        'entity_id' => $orderId
+                        'entity_id' => $order->getId(),
+                        'shipping_method' => $order->getShippingMethod()
                     )
                 );
             }
