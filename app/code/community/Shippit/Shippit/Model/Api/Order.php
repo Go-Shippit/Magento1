@@ -92,6 +92,14 @@ class Shippit_Shippit_Model_Api_Order extends Mage_Core_Model_Abstract
     public function sync($syncOrder, $displayNotifications = false)
     {
         try {
+            $order = $syncOrder->getOrder();
+
+            // If the order is destined for international, override the shipping method as international
+            if ($order->getShippingAddress()->getCountry() != 'AU'
+                && $syncOrder->getShippingMethod() != 'international') {
+                $syncOrder->setShippingMethod('international');
+            }
+
             // Add attempt
             $syncOrder->setAttemptCount($syncOrder->getAttemptCount() + 1);
 
@@ -103,7 +111,6 @@ class Shippit_Shippit_Model_Api_Order extends Mage_Core_Model_Abstract
 
             // Add the order tracking details to
             // the order comments and save
-            $order = $syncOrder->getOrder();
             $comment = $this->helper->__('Order Synced with Shippit - ' . $apiResponse->tracking_number);
             $order->addStatusHistoryComment($comment)
                 ->setIsVisibleOnFront(false)

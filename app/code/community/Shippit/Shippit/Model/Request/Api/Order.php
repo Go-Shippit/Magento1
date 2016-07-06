@@ -106,6 +106,34 @@ class Shippit_Shippit_Model_Request_Api_Order extends Varien_Object
             ->setDeliveryState($shippingAddress->getRegionCode())
             ->setDeliveryCountry($shippingAddress->getCountry());
 
+        $this->setOrderAfter($order);
+
+        return $this;
+    }
+
+    public function setOrderAfter($order)
+    {
+        $deliveryState = $this->getDeliveryState();
+
+        // If the delivery state is empty
+        // Attempt to retrieve from the postcode lookup for AU Addresses
+        if (empty($deliveryState) && $this->getDeliveryCountry() == 'AU') {
+            $postcodeState = $this->helper->getStateFromPostcode($this->getDeliveryPostcode());
+        
+            if ($postcodeState) {
+                $this->setData(self::DELIVERY_STATE, $postcodeState);
+            }
+        }
+
+        $deliveryState = $this->getDeliveryState();
+        $deliverySuburb = $this->getDeliverySuburb();
+        
+        // If the delivery state is empty
+        // Copy the suburb field to the state field
+        if (empty($deliveryState) && !empty($deliverySuburb)) {
+            $this->setData(self::DELIVERY_STATE, $deliverySuburb);
+        }
+
         return $this;
     }
 
@@ -557,10 +585,6 @@ class Shippit_Shippit_Model_Request_Api_Order extends Varien_Object
      */
     public function setDeliveryState($deliveryState)
     {
-        if (empty($deliveryState)) {
-            $deliveryState = $this->helper->getStateFromPostcode($this->getDeliveryPostcode());
-        }
-
         return $this->setData(self::DELIVERY_STATE, $deliveryState);
     }
 

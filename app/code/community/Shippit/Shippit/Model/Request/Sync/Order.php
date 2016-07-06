@@ -99,7 +99,7 @@ class Shippit_Shippit_Model_Request_Sync_Order extends Varien_Object
                     $item->getSku(),
                     $item->getName(),
                     $itemQty,
-                    $item->getBasePrice(),
+                    $rootItem->getBasePrice(),
                     $itemWeight,
                     $itemLocation
                 );
