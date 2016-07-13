@@ -17,22 +17,32 @@
 class Shippit_Shippit_Model_System_Config_Source_Shippit_Sync_SendAllOrders
 {
     const ALL = 'all';
-    const ALL_AU = 'all_au';
-    const NO = 'no';
+    const ALL_LABEL = 'Yes - All Orders';
 
+    const ALL_AU = 'all_au';
+    const ALL_AU_LABEL = 'Yes - All Australian Orders';
+
+    const NO = 'no';
+    const NO_LABEL = 'No';
+
+    /**
+     * Options getter
+     *
+     * @return array
+     */
     public function toOptionArray()
     {
         $optionsArray = array(
             array(
-                'label' => 'Yes - All Orders',
+                'label' => self::ALL_LABEL,
                 'value' => self::ALL
             ),
             array(
-                'label' => 'Yes - All Australia Orders',
+                'label' => self::ALL_AU_LABEL,
                 'value' => self::ALL_AU
             ),
             array(
-                'label' => 'No',
+                'label' => self::NO_LABEL,
                 'value' => self::NO
             )
         );
