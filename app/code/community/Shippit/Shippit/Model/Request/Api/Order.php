@@ -42,12 +42,14 @@ class Shippit_Shippit_Model_Request_Api_Order extends Varien_Object
     const DELIVERY_SUBURB           = 'delivery_suburb';
     const DELIVERY_POSTCODE         = 'delivery_postcode';
     const DELIVERY_STATE            = 'delivery_state';
+    const DELIVERY_COUNTRY          = 'delivery_country_code';
     const PARCEL_ATTRIBUTES         = 'parcel_attributes';
 
     // Shippit Service Class API Mappings
-    const SHIPPING_SERVICE_STANDARD = 'CouriersPlease';
-    const SHIPPING_SERVICE_EXPRESS  = 'eparcelexpress';
-    const SHIPPING_SERVICE_PRIORITY = 'Bonds';
+    const SHIPPING_SERVICE_STANDARD        = 'CouriersPlease';
+    const SHIPPING_SERVICE_EXPRESS         = 'eparcelexpress';
+    const SHIPPING_SERVICE_PRIORITY        = 'Bonds';
+    const SHIPPING_SERVICE_INTERNATIONAL   = 'Dhl';
 
     public function __construct() {
         $this->helper = Mage::helper('shippit/sync_order');
@@ -101,7 +103,36 @@ class Shippit_Shippit_Model_Request_Api_Order extends Varien_Object
             ->setDeliveryAddress(implode(' ', $shippingAddress->getStreet()))
             ->setDeliverySuburb($shippingAddress->getCity())
             ->setDeliveryPostcode($shippingAddress->getPostcode())
-            ->setDeliveryState($shippingAddress->getRegionCode());
+            ->setDeliveryState($shippingAddress->getRegionCode())
+            ->setDeliveryCountry($shippingAddress->getCountry());
+
+        $this->setOrderAfter($order);
+
+        return $this;
+    }
+
+    public function setOrderAfter($order)
+    {
+        $deliveryState = $this->getDeliveryState();
+
+        // If the delivery state is empty
+        // Attempt to retrieve from the postcode lookup for AU Addresses
+        if (empty($deliveryState) && $this->getDeliveryCountry() == 'AU') {
+            $postcodeState = $this->helper->getStateFromPostcode($this->getDeliveryPostcode());
+        
+            if ($postcodeState) {
+                $this->setData(self::DELIVERY_STATE, $postcodeState);
+            }
+        }
+
+        $deliveryState = $this->getDeliveryState();
+        $deliverySuburb = $this->getDeliverySuburb();
+        
+        // If the delivery state is empty
+        // Copy the suburb field to the state field
+        if (empty($deliveryState) && !empty($deliverySuburb)) {
+            $this->setData(self::DELIVERY_STATE, $deliverySuburb);
+        }
 
         return $this;
     }
@@ -125,6 +156,7 @@ class Shippit_Shippit_Model_Request_Api_Order extends Varien_Object
                     $item->getSku(),
                     $item->getTitle(),
                     $item->getQty(),
+                    $item->getPrice(),
                     $item->getWeight(),
                     $item->getLocation()
                 );
@@ -345,6 +377,9 @@ class Shippit_Shippit_Model_Request_Api_Order extends Varien_Object
                 ->setDeliveryDate($deliveryDate)
                 ->setDeliveryWindow($deliveryWindow);
         }
+        elseif ($shippingMethod == 'international') {
+            return $this->setCourierType(self::SHIPPING_SERVICE_INTERNATIONAL);
+        }
         else {
             return $this->setData(self::COURIER_TYPE, self::SHIPPING_SERVICE_STANDARD);
         }
@@ -550,12 +585,30 @@ class Shippit_Shippit_Model_Request_Api_Order extends Varien_Object
      */
     public function setDeliveryState($deliveryState)
     {
-        if (empty($deliveryState)) {
-            $deliveryState = $this->helper->getStateFromPostcode($this->getDeliveryPostcode());
-        }
-
         return $this->setData(self::DELIVERY_STATE, $deliveryState);
     }
+
+    /**
+     * Get the Delivery Country
+     *
+     * @return string|null
+     */
+    public function getDeliveryCountry()
+    {
+        return $this->getData(self::DELIVERY_COUNTRY);
+    }
+
+    /**
+     * Set the Delivery Country
+     *
+     * @param string $deliveryCountry   Delivery Country
+     * @return string
+     */
+    public function setDeliveryCountry($deliveryCountry)
+    {
+        return $this->setData(self::DELIVERY_COUNTRY, $deliveryCountry);
+    }
+
     /**
      * Get the Parcel Attributes
      *
@@ -581,7 +634,7 @@ class Shippit_Shippit_Model_Request_Api_Order extends Varien_Object
      * Add a parcel with attributes
      *
      */
-    public function addItem($sku, $title, $qty, $weight = 0, $location = null)
+    public function addItem($sku, $title, $qty, $price, $weight = 0, $location = null)
     {
         $parcelAttributes = $this->getParcelAttributes();
 
@@ -593,6 +646,7 @@ class Shippit_Shippit_Model_Request_Api_Order extends Varien_Object
             'sku' => $sku,
             'title' => $title,
             'qty' => $qty,
+            'price' => $price,
             // if a 0 weight is provided, stub the weight to 0.2kg
             'weight' => ($weight == 0 ? 0.2 : $weight),
             'location' => $location

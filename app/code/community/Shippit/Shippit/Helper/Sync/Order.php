@@ -57,9 +57,9 @@ class Shippit_Shippit_Helper_Sync_Order extends Shippit_Shippit_Helper_Data
         return self::getStoreConfig('mode');
     }
 
-    public function isSendAllOrdersActive()
+    public function getSendAllOrders()
     {
-        return self::getStoreConfig('send_all_orders_active', true);
+        return self::getStoreConfig('send_all_orders');
     }
 
     public function isProductLocationActive()

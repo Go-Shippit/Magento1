@@ -47,6 +47,8 @@ class Shippit_Shippit_Model_System_Config_Source_Shippit_Methods
             $methods['priority'] = 'Priority';
         }
 
+        $methods['international'] = 'International';
+
         return $methods;
     }
 }

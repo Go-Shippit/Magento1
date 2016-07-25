@@ -33,6 +33,15 @@
                     <show_in_website>1</show_in_website>
                     <show_in_store>1</show_in_store>
                     <fields>
+                        <version translate="label">
+                            <label>Version</label>
+                            <frontend_type>text</frontend_type>
+                            <frontend_model>shippit/adminhtml_system_config_form_fieldset_version</frontend_model>
+                            <sort_order>1</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                        </version>
                         <active translate="label">
                             <label>Enabled</label>
                             <frontend_type>select</frontend_type>
@@ -132,16 +141,16 @@
                             <show_in_website>1</show_in_website>
                             <show_in_store>0</show_in_store>
                         </mode>
-                        <send_all_orders_active translate="label comment">
+                        <send_all_orders translate="label comment">
                             <label>Send All Orders to Shippit</label>
                             <frontend_type>select</frontend_type>
-                            <source_model>adminhtml/system_config_source_yesno</source_model>
+                            <source_model>shippit/system_config_source_shippit_sync_sendAllOrders</source_model>
                             <sort_order>40</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
                             <show_in_store>0</show_in_store>
                             <comment>By Default, only orders with a Shippit Shipping method, or a Shipping Method Mapping (below) are sent to Shippit</comment>
-                        </send_all_orders_active>
+                        </send_all_orders>
                         <product_location_active translate="label comment">
                             <label>Send Product Location to Shippit</label>
                             <frontend_type>select</frontend_type>

@@ -50,19 +50,14 @@ class Shippit_Shippit_Model_Observer_Order_Sync
             return $this;
         }
 
-        $shippingCountry = $order->getShippingAddress()->getCountryId();
-
-        // Ensure the order is destined for Australia
-        if ($shippingCountry != 'AU') {
-            return $this;
-        }
-
         $shippingMethod = $order->getShippingMethod();
         $shippitShippingMethod = $this->helper->getShippitShippingMethod($shippingMethod);
+        $shippingCountry = $order->getShippingAddress()->getCountryId();
 
         // If send all orders,
         // or shippit shipping class present
-        if (($this->helper->isSendAllOrdersActive())
+        if (($this->helper->getSendAllOrders() == Shippit_Shippit_Model_System_Config_Source_Shippit_Sync_SendAllOrders::ALL
+            || $this->helper->getSendAllOrders() == Shippit_Shippit_Model_System_Config_Source_Shippit_Sync_SendAllOrders::ALL_AU && $shippingCountry == 'AU')
             || $shippitShippingMethod !== FALSE) {
 
             try {
