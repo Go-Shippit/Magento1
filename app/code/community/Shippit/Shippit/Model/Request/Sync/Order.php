@@ -36,7 +36,7 @@ class Shippit_Shippit_Model_Request_Sync_Order extends Varien_Object
 
     public function __construct() {
         $this->helper = Mage::helper('shippit/sync_order');
-        $this->itemsHelper = Mage::helper('shippit/order_items');
+        $this->itemsHelper = Mage::helper('shippit/sync_order_items');
     }
 
     /**
@@ -176,7 +176,7 @@ class Shippit_Shippit_Model_Request_Sync_Order extends Varien_Object
             'title' => $title,
             'qty' => $qty,
             'price' => $price,
-            'weight' => $weight,
+            'weight' => $this->itemsHelper->getWeight($weight),
             'location' => $location
         );
 

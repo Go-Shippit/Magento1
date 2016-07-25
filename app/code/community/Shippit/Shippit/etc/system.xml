@@ -151,11 +151,21 @@
                             <show_in_store>0</show_in_store>
                             <comment>By Default, only orders with a Shippit Shipping method, or a Shipping Method Mapping (below) are sent to Shippit</comment>
                         </send_all_orders>
+                        <product_unit_weight translate="label comment">
+                            <label>Product Weight Unit</label>
+                            <frontend_type>select</frontend_type>
+                            <source_model>shippit/system_config_source_catalog_unit_weight</source_model>
+                            <sort_order>50</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>0</show_in_store>
+                            <comment>The unit of measurement used for the product weight</comment>
+                        </product_unit_weight>
                         <product_location_active translate="label comment">
                             <label>Send Product Location to Shippit</label>
                             <frontend_type>select</frontend_type>
                             <source_model>adminhtml/system_config_source_yesno</source_model>
-                            <sort_order>50</sort_order>
+                            <sort_order>60</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
                             <show_in_store>0</show_in_store>
@@ -165,7 +175,7 @@
                             <label>Product Location Attribute Code</label>
                             <frontend_type>select</frontend_type>
                             <source_model>shippit/system_config_source_catalog_attributes</source_model>
-                            <sort_order>60</sort_order>
+                            <sort_order>70</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
                             <show_in_store>0</show_in_store>
@@ -178,7 +188,7 @@
                             <label>Shipping Method Mapping</label>
                             <frontend_model>shippit/adminhtml_system_config_form_field_sync_order_shippingMethodMapping</frontend_model>
                             <backend_model>adminhtml/system_config_backend_serialized_array</backend_model>
-                            <sort_order>70</sort_order>
+                            <sort_order>80</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
                             <show_in_store>1</show_in_store>

@@ -62,6 +62,11 @@ class Shippit_Shippit_Helper_Sync_Order extends Shippit_Shippit_Helper_Data
         return self::getStoreConfig('send_all_orders');
     }
 
+    public function getProductUnitWeight()
+    {
+        return self::getStoreConfig('product_unit_weight');
+    }
+
     public function isProductLocationActive()
     {
         return self::getStoreConfig('product_location_active', true);

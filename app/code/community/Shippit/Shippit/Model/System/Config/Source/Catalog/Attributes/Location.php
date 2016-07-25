@@ -37,8 +37,7 @@ class Shippit_Shippit_Model_System_Config_Source_Catalog_Attributes_Location
             'value' => ''
         );
 
-        foreach ($attributes as $attribute)
-        {
+        foreach ($attributes as $attribute) {
             $attributeArray[] = array(
                 'label' => $attribute->getAttributeCode(),
                 'value' => $attribute->getAttributeCode()

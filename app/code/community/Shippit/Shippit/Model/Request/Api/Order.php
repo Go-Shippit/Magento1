@@ -55,7 +55,7 @@ class Shippit_Shippit_Model_Request_Api_Order extends Varien_Object
         $this->helper = Mage::helper('shippit/sync_order');
         $this->api = Mage::helper('shippit/api');
         $this->carrierCode = $this->helper->getCarrierCode();
-        $this->itemsHelper = Mage::helper('shippit/order_items');
+        $this->itemsHelper = Mage::helper('shippit/sync_order_items');
     }
 
     public function processSyncOrder(Shippit_Shippit_Model_Sync_Order $syncOrder)
