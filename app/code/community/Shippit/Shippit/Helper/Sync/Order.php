@@ -106,7 +106,7 @@ class Shippit_Shippit_Helper_Sync_Order extends Shippit_Shippit_Helper_Data
 
                 // allows for legacy capability where
                 // "priority" was referred to as "premium"
-                if ($method == 'priority' || $method = 'premium') {
+                if ($method == 'priority' || $method == 'premium') {
                     return 'priority';
                 }
                 elseif ($method == 'express') {
