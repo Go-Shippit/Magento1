@@ -130,13 +130,13 @@ class Shippit_Shippit_Helper_Sync_Order extends Shippit_Shippit_Helper_Data
         return false;
     }
 
-    public function isSyncByOrderStatusActive()
+    public function isFilterOrderStatusActive()
     {
-        return self::getStoreConfig('sync_by_order_status_active');
+        return self::getStoreConfig('filter_order_status_active');
     }
     
-    public function getOrderSyncStatusMapping()
+    public function getFilterOrderStatus()
     {
-        return self::getStoreConfig('order_sync_status_mapping');
+        return explode(',', self::getStoreConfig('filter_order_status'));
     }
 }

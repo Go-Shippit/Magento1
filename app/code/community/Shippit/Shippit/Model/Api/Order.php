@@ -78,10 +78,19 @@ class Shippit_Shippit_Model_Api_Order extends Mage_Core_Model_Abstract
             ->addFieldToFilter('order.state', array('eq' => Mage_Sales_Model_Order::STATE_PROCESSING))
             ->addFieldToFilter('order.store_id', array('eq' => $storeId));
 
-        // Check if sync by order status is active and if so add the order status mappings to filter
-        if ($this->helper->isSyncByOrderStatusActive()) {
-            $orderStatusMapping = explode(',', $this->helper->getOrderSyncStatusMapping());
-            $syncOrders->addFieldToFilter('order.status', array('in' => $orderStatusMapping));
+        // Check if order status filtering is active
+        if ($this->helper->isFilterOrderStatusActive()) {
+            $filterStatus = $this->helper->getFilterOrderStatus();
+
+            // ensure there is a filtering value present
+            if (!empty($filterStatus)) {
+                $syncOrders->addFieldToFilter(
+                    'order.status',
+                    array(
+                        'in' => $filterStatus
+                    )
+                );
+            }
         }
 
         return $syncOrders;

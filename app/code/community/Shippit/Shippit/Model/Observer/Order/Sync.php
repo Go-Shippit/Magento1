@@ -82,18 +82,6 @@ class Shippit_Shippit_Model_Observer_Order_Sync
                 if ($this->helper->getMode() == Shippit_Shippit_Helper_Data::SYNC_MODE_REALTIME
                     || $shippitShippingMethod == 'priority') {
                     
-                    // Check if sync by order status is active
-                    if ($this->helper->isSyncByOrderStatusActive()) {
-
-                        // Get the available status mappings and turn into array
-                        $orderStatusMapping = explode(',',$this->helper->getOrderSyncStatusMapping());
-
-                        // If current status is not in the mapping return
-                        if (!in_array($order->getStatus(), $orderStatusMapping)) {
-                            return;
-                        }
-                    }
-                    
                     $this->_syncOrder($syncOrder);
                 }
             }
@@ -108,13 +96,7 @@ class Shippit_Shippit_Model_Observer_Order_Sync
 
     private function _syncOrder($syncOrder)
     {
-        $order = $syncOrder->getOrder();
-
-        if (!$this->_hasAttemptedSync
-            // ensure the order is in the processing state
-            && $order->getState() == Mage_Sales_Model_Order::STATE_PROCESSING
-            // ensure the sync order is in the pending state
-            && $syncOrder->getStatus() == Shippit_Shippit_Model_Sync_Order::STATUS_PENDING) {
+        if ($this->_canSync($syncOrder)) {
             $this->_hasAttemptedSync = true;
             
             // attempt the sync
@@ -125,5 +107,40 @@ class Shippit_Shippit_Model_Observer_Order_Sync
         else {
             return false;
         }
+    }
+
+    /**
+     * Determines hether the sync order can be sent now
+     *
+     * @param  Object $syncOrder The sync order object being evaluated
+     * @return Boolean           True or false
+     */
+    private function _canSync($syncOrder)
+    {
+        $order = $syncOrder->getOrder();
+
+        if ($this->_hasAttemptedSync) {
+            return false;
+        }
+
+        if ($order->getState() !== Mage_Sales_Model_Order::STATE_PROCESSING) {
+            return false;
+        }
+
+        if ($syncOrder->getStatus() == Shippit_Shippit_Model_Sync_Order::STATUS_PENDING) {
+            return false;
+        }
+
+        // Check if sync by order status is active
+        if ($this->helper->isFilterOrderStatusActive()) {
+            $filterStatus = $this->helper->getFilterOrderStatus();
+            $orderStatus = $order->getStatus();
+
+            if (!in_array($orderStatus, $filterStatus)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

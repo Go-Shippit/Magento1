@@ -14,17 +14,19 @@
  * @license    http://www.shippit.com/terms
  */
 
-class Shippit_Shippit_Model_System_Config_Source_Shippit_MaxTimeslots
+class Shippit_Shippit_Model_System_Config_Source_Order_Status_Processing
 {
     public function toOptionArray()
     {
         $optionsArray = array();
 
-        $orderStatusCollection = Mage::getModel('sales/order_status')->getResourceCollection()->getData();
+        $statuses = Mage::getSingleton('sales/order_config')
+            ->getStateStatuses(Mage_Sales_Model_Order::STATE_PROCESSING);
 
-        foreach($orderStatusCollection as $orderStatus) {
-            $optionsArray[] = array (
-                'value' => $orderStatus['status'], 'label' => $orderStatus['label']
+        foreach ($statuses as $statusCode => $statusLabel) {
+            $optionsArray[] = array(
+                'value' => $statusCode,
+                'label' => $statusLabel
             );
         }
         
