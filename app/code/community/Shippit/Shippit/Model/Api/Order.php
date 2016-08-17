@@ -80,7 +80,8 @@ class Shippit_Shippit_Model_Api_Order extends Mage_Core_Model_Abstract
 
         // Check if sync by order status is active and if so add the order status mappings to filter
         if ($this->helper->isSyncByOrderStatusActive()) {
-            $syncOrders->addFieldToFilter('order.status', array('in' => $this->helper->getOrderSyncStatusMapping()));
+            $orderStatusMapping = explode(',', $this->helper->getOrderSyncStatusMapping());
+            $syncOrders->addFieldToFilter('order.status', array('in' => $orderStatusMapping));
         }
 
         return $syncOrders;
