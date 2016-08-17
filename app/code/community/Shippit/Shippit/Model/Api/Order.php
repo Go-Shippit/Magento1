@@ -64,7 +64,7 @@ class Shippit_Shippit_Model_Api_Order extends Mage_Core_Model_Abstract
     {
         $storeId = $this->getStoreId($store);
 
-        return Mage::getModel('shippit/sync_order')
+        $syncOrders = Mage::getModel('shippit/sync_order')
             ->getCollection()
             ->join(
                 array('order' => 'sales/order'),
@@ -77,6 +77,13 @@ class Shippit_Shippit_Model_Api_Order extends Mage_Core_Model_Abstract
             ->addFieldToFilter('main_table.attempt_count', array('lteq' => Shippit_Shippit_Model_Sync_Order::SYNC_MAX_ATTEMPTS))
             ->addFieldToFilter('order.state', array('eq' => Mage_Sales_Model_Order::STATE_PROCESSING))
             ->addFieldToFilter('order.store_id', array('eq' => $storeId));
+
+        // Check if sync by order status is active and if so add the order status mappings to filter
+        if ($this->helper->isSyncByOrderStatusActive()) {
+            $syncOrders->addFieldToFilter('order.status', array('in' => $this->helper->getOrderSyncStatusMapping()));
+        }
+
+        return $syncOrders;
     }
 
     private function getStoreId($store)

@@ -81,6 +81,19 @@ class Shippit_Shippit_Model_Observer_Order_Sync
                 // - attempt realtime sync now
                 if ($this->helper->getMode() == Shippit_Shippit_Helper_Data::SYNC_MODE_REALTIME
                     || $shippitShippingMethod == 'priority') {
+                    
+                    // Check if sync by order status is active
+                    if ($this->helper->isSyncByOrderStatusActive()) {
+
+                        // Get the available status mappings and turn into array
+                        $orderStatusMapping = explode(',',$this->helper->getOrderSyncStatusMapping());
+
+                        // If current status is not in the mapping return
+                        if (!in_array($order->getStatus(), $orderStatusMapping)) {
+                            return;
+                        }
+                    }
+                    
                     $this->_syncOrder($syncOrder);
                 }
             }

@@ -129,4 +129,14 @@ class Shippit_Shippit_Helper_Sync_Order extends Shippit_Shippit_Helper_Data
         // All options have failed, return false
         return false;
     }
+
+    public function isSyncByOrderStatusActive()
+    {
+        return self::getStoreConfig('sync_by_order_status_active');
+    }
+    
+    public function getOrderSyncStatusMapping()
+    {
+        return self::getStoreConfig('order_sync_status_mapping');
+    }
 }
