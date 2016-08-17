@@ -79,9 +79,12 @@ class Shippit_Shippit_Model_Observer_Order_Sync
                 // If the sync mode is realtime,
                 // or the shipping method is priority
                 // - attempt realtime sync now
-                if ($this->helper->getMode() == Shippit_Shippit_Helper_Data::SYNC_MODE_REALTIME
-                    || $shippitShippingMethod == 'priority') {
-                    
+                if (($this->helper->getMode() == Shippit_Shippit_Helper_Data::SYNC_MODE_REALTIME
+                    || $shippitShippingMethod == 'priority')
+                    // we use the order object passed in the event
+                    // handler, as the syncOrder object does yet
+                    // have the order status details in the DB
+                    && $this->_canSync($syncOrder, $order)) {
                     $this->_syncOrder($syncOrder);
                 }
             }
@@ -96,17 +99,12 @@ class Shippit_Shippit_Model_Observer_Order_Sync
 
     private function _syncOrder($syncOrder)
     {
-        if ($this->_canSync($syncOrder)) {
-            $this->_hasAttemptedSync = true;
-            
-            // attempt the sync
-            $syncOrderResult = Mage::getModel('shippit/api_order')->sync($syncOrder);
+        $this->_hasAttemptedSync = true;
+        
+        // attempt the sync
+        $syncOrderResult = Mage::getModel('shippit/api_order')->sync($syncOrder);
 
-            return $syncOrderResult;
-        }
-        else {
-            return false;
-        }
+        return $syncOrderResult;
     }
 
     /**
@@ -115,10 +113,8 @@ class Shippit_Shippit_Model_Observer_Order_Sync
      * @param  Object $syncOrder The sync order object being evaluated
      * @return Boolean           True or false
      */
-    private function _canSync($syncOrder)
+    private function _canSync($syncOrder, $order)
     {
-        $order = $syncOrder->getOrder();
-
         if ($this->_hasAttemptedSync) {
             return false;
         }
