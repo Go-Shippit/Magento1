@@ -46,7 +46,7 @@ class Shippit_Shippit_Model_Observer_Order_Sync
         $order = $observer->getEvent()->getOrder();
 
         // Ensure we have an order
-        if (!$order || !$order->getId()) {
+        if (!$order || !$order->getId() || $order->getIsVirtual()) {
             return $this;
         }
 
@@ -108,7 +108,7 @@ class Shippit_Shippit_Model_Observer_Order_Sync
     }
 
     /**
-     * Determines hether the sync order can be sent now
+     * Determines whether the sync order can be sent now
      *
      * @param  Object $syncOrder The sync order object being evaluated
      * @return Boolean           True or false

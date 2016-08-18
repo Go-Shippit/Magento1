@@ -21,9 +21,9 @@ class Shippit_Shippit_Model_System_Config_Source_Shippit_Methods
      *
      * @return array
      */
-    public function toOptionArray($includePriority = true)
+    public function toOptionArray()
     {
-        $methods = $this->getMethods($includePriority);
+        $methods = $this->getMethods();
         $methodOptions = array();
 
         foreach ($methods as $methodValue => $methodLabel) {
@@ -36,18 +36,14 @@ class Shippit_Shippit_Model_System_Config_Source_Shippit_Methods
         return $methodOptions;
     }
 
-    public function getMethods($includePriority = true)
+    public function getMethods()
     {
         $methods = array(
             'standard' => 'Standard',
             'express' => 'Express',
+            'priority' => 'Priority',
+            'international' => 'International'
         );
-
-        if ($includePriority) {
-            $methods['priority'] = 'Priority';
-        }
-
-        $methods['international'] = 'International';
 
         return $methods;
     }

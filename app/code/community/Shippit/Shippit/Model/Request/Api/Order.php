@@ -358,13 +358,6 @@ class Shippit_Shippit_Model_Request_Api_Order extends Varien_Object
      */
     public function setShippingMethod($shippingMethod = null)
     {
-        // if the order is a priority delivery,
-        // get the special delivery attributes
-        if ($shippingMethod == 'priority') {
-            $deliveryDate = $this->_getOrderDeliveryDate($this->order);
-            $deliveryWindow = $this->_getOrderDeliveryWindow($this->order);
-        }
-
         // set the courier details based on the shipping method
         if ($shippingMethod == 'standard') {
             return $this->setCourierType(self::SHIPPING_SERVICE_STANDARD);
@@ -372,10 +365,17 @@ class Shippit_Shippit_Model_Request_Api_Order extends Varien_Object
         elseif ($shippingMethod == 'express') {
             return $this->setCourierType(self::SHIPPING_SERVICE_EXPRESS);
         }
-        elseif ($shippingMethod == 'priority' && isset($deliveryDate) && isset($deliveryWindow)) {
-            return $this->setCourierType(self::SHIPPING_SERVICE_PRIORITY)
-                ->setDeliveryDate($deliveryDate)
-                ->setDeliveryWindow($deliveryWindow);
+        elseif ($shippingMethod == 'priority') {
+            // get the special delivery attributes
+            $deliveryDate = $this->_getOrderDeliveryDate($this->order);
+            $deliveryWindow = $this->_getOrderDeliveryWindow($this->order);
+            
+            if (!empty($deliveryDate) && !empty($deliveryWindow)) {
+                $this->setDeliveryDate($deliveryDate);
+                $this->setDeliveryWindow($deliveryWindow);
+            }
+
+            return $this->setCourierType(self::SHIPPING_SERVICE_PRIORITY);
         }
         elseif ($shippingMethod == 'international') {
             return $this->setCourierType(self::SHIPPING_SERVICE_INTERNATIONAL);
