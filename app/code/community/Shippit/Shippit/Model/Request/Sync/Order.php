@@ -172,9 +172,9 @@ class Shippit_Shippit_Model_Request_Sync_Order extends Varien_Object
         $newItem = array(
             'sku' => $sku,
             'title' => $title,
-            'qty' => $qty,
-            'price' => $price,
-            'weight' => $this->itemsHelper->getWeight($weight),
+            'qty' => (float) $qty,
+            'price' => (float) $price,
+            'weight' => (float) $this->itemsHelper->getWeight($weight),
             'location' => $location
         );
 

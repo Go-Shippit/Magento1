@@ -645,10 +645,10 @@ class Shippit_Shippit_Model_Request_Api_Order extends Varien_Object
         $newParcel = array(
             'sku' => $sku,
             'title' => $title,
-            'qty' => $qty,
-            'price' => $price,
+            'qty' => (float) $qty,
+            'price' => (float) $price,
             // if a 0 weight is provided, stub the weight to 0.2kg
-            'weight' => ($weight == 0 ? 0.2 : $weight),
+            'weight' => (float) ($weight == 0 ? 0.2 : $weight),
             'location' => $location
         );
 
