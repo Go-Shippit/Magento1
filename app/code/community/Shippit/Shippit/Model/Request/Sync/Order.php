@@ -77,19 +77,16 @@ class Shippit_Shippit_Model_Request_Sync_Order extends Varien_Object
         $itemsAdded = 0;
 
         foreach ($itemsCollection as $item) {
-            if ($item->getHasChildren()) {
+            // Skip the item if...
+            // - it does not need to be shipped individually
+            // - it is a virtual item
+            if ($item->isDummy(true) || $item->getIsVirtual()) {
                 continue;
             }
 
             $requestedQty = $this->itemsHelper->getItemData($items, 'sku', $item->getSku(), 'qty');
-
-            /**
-             * Magento marks a shipment only for the parent item in the order
-             * get the parent item to determine the correct qty to ship
-             */
-            $rootItem = $this->_getRootItem($item);
-            
-            $itemQty = $this->itemsHelper->getQtyToShip($rootItem, $requestedQty);
+            $itemQty = $this->itemsHelper->getQtyToShip($item, $requestedQty);
+            $itemPrice = $this->_getItemPrice($item);
             $itemWeight = $item->getWeight();
 
             $itemLocation = $this->itemsHelper->getLocation($item);
@@ -99,7 +96,7 @@ class Shippit_Shippit_Model_Request_Sync_Order extends Varien_Object
                     $item->getSku(),
                     $item->getName(),
                     $itemQty,
-                    $rootItem->getBasePrice(),
+                    $itemPrice,
                     $itemWeight,
                     $itemLocation
                 );
@@ -113,6 +110,27 @@ class Shippit_Shippit_Model_Request_Sync_Order extends Varien_Object
         }
 
         return $this;
+    }
+
+    private function _getItemPrice($item)
+    {
+        $rootItem = $this->_getRootItem($item);
+        // Get the item price
+        // - If the root item is a bundle, use the item price
+        //   Otherwise, use the root item price
+        if ($rootItem->getProductType() == 'bundle') {
+            // if we are sending the bundle together
+            if ($rootItem->getId() == $item->getId()) {
+                return $rootItem->getPrice();
+            }
+            // if we are sending individually
+            else {
+                return $item->getPrice();
+            }
+        }
+        else {
+            return $rootItem->getBasePrice();
+        }
     }
 
     private function _getRootItem($item)
