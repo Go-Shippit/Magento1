@@ -39,17 +39,6 @@ class Shippit_Shippit_OrderController extends Mage_Core_Controller_Front_Action
 
     public function updateAction()
     {
-        $request = json_decode(file_get_contents('php://input'), true);
-
-        $metaData = array(
-            'api_request' => array(
-                'request_body' => $request
-            )
-        );
-
-        $this->logger->setMetaData($metaData);
-        $this->logger->log('Shipment Sync Request Recieved');
-
         if (!$this->helper->isActive()) {
             $this->logger->log('Shipping Sync is not active');
             $response = $this->_prepareResponse(false, self::ERROR_SYNC_DISABLED);
@@ -58,19 +47,7 @@ class Shippit_Shippit_OrderController extends Mage_Core_Controller_Front_Action
         }
 
         $apiKey = $this->getRequest()->getParam('api_key');
-        $orderIncrementId = $request['retailer_order_number'];
-        $orderShipmentState = $request['current_state'];
-
-        $courierName = $request['courier_name'];
-        $trackingNumber = $request['tracking_number'];
-
-        if (isset($request['products'])) {
-            $products = $request['products'];
-        }
-        else {
-            $products = array();
-        }
-
+        
         if (empty($apiKey)) {
             $response = $this->_prepareResponse(false, self::ERROR_API_KEY_MISSING);
             $this->logger->log('Shipment Sync Error - ' . self::ERROR_API_KEY_MISSING, Zend_Log::WARN);
@@ -83,6 +60,30 @@ class Shippit_Shippit_OrderController extends Mage_Core_Controller_Front_Action
             $this->logger->log('Shipment Sync Error - ' . self::ERROR_API_KEY_MISMATCH, Zend_Log::WARN);
 
             return $this->getResponse()->setBody($response);
+        }
+
+        $request = json_decode(file_get_contents('php://input'), true);
+
+        $metaData = array(
+            'api_request' => array(
+                'request_body' => $request
+            )
+        );
+
+        $this->logger->setMetaData($metaData);
+        $this->logger->log('Shipment Sync Request Recieved');
+
+        $orderIncrementId = $request['retailer_order_number'];
+        $orderShipmentState = $request['current_state'];
+
+        $courierName = $request['courier_name'];
+        $trackingNumber = $request['tracking_number'];
+
+        if (isset($request['products'])) {
+            $products = $request['products'];
+        }
+        else {
+            $products = array();
         }
 
         if (empty($request)) {
