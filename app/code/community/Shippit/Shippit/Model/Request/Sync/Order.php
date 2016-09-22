@@ -89,12 +89,14 @@ class Shippit_Shippit_Model_Request_Sync_Order extends Varien_Object
             $itemPrice = $this->_getItemPrice($item);
             $itemWeight = $item->getWeight();
 
-            $itemLocation = $this->itemsHelper->getLocation($item);
+            $childItem = $this->_getChildItem($item);
+            $itemName = $childItem->getName();
+            $itemLocation = $this->itemsHelper->getLocation($childItem);
 
             if ($itemQty > 0) {
                 $this->addItem(
                     $item->getSku(),
-                    $item->getName(),
+                    $itemName,
                     $itemQty,
                     $itemPrice,
                     $itemWeight,
@@ -115,28 +117,69 @@ class Shippit_Shippit_Model_Request_Sync_Order extends Varien_Object
     private function _getItemPrice($item)
     {
         $rootItem = $this->_getRootItem($item);
+
         // Get the item price
         // - If the root item is a bundle, use the item price
         //   Otherwise, use the root item price
         if ($rootItem->getProductType() == 'bundle') {
             // if we are sending the bundle together
             if ($rootItem->getId() == $item->getId()) {
-                return $rootItem->getPrice();
+                return $rootItem->getBasePriceInclTax();
             }
             // if we are sending individually
             else {
-                return $item->getPrice();
+                return $item->getBasePriceInclTax();
             }
         }
         else {
-            return $rootItem->getBasePrice();
+            return $rootItem->getBasePriceInclTax();
         }
     }
 
+    /**
+     * Returns the parent item of the item passed
+     *
+     * @param  Mage_Sales_Model_Order_Item $item
+     * @return Mage_Sales_Model_Order_Item
+     */
     private function _getRootItem($item)
     {
         if ($item->getParentItem()) {
             return $item->getParentItem();
+        }
+        else {
+            return $item;
+        }
+    }
+
+    /**
+     * Returns the first child item of the item passed
+     * - If the item is a bundle and is being shipped together
+     *   we return the bundle item, as it's the "shipped" product
+     *
+     * @param  Mage_Sales_Model_Order_Item $item
+     * @return Mage_Sales_Model_Order_Item
+     */
+    private function _getChildItem($item)
+    {
+        if ($item->getHasChildren()) {
+            $rootItem = $this->_getRootItem($item);
+
+            // Get the first child item
+            // - If the root item is a bundle, use the item
+            //   Otherwise, use the root item
+            if ($rootItem->getProductType() == 'bundle') {
+                // if we are sending the bundle together
+                if ($rootItem->getId() == $item->getId()) {
+                    return $rootItem;
+                }
+                else {
+                    return $item->getChildrenItems()[0];
+                }
+            }
+            else {
+                return $item->getChildrenItems()[0];
+            }
         }
         else {
             return $item;
