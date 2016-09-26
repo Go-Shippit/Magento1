@@ -115,16 +115,25 @@ class Shippit_Shippit_Model_Shipping_Carrier_Shippit extends Mage_Shipping_Model
         // Process the response and return available options
         foreach ($shippingQuotes as $shippingQuoteKey => $shippingQuote) {
             if ($shippingQuote->success) {
-                if ($shippingQuote->courier_type == 'Bonds'
-                    && $isPriorityAvailable) {
-                    $this->_addPriorityQuote($rateResult, $shippingQuote);
-                }
-                elseif ($shippingQuote->courier_type == 'eparcelexpress'
-                    && $isExpressAvailable) {
-                    $this->_addExpressQuote($rateResult, $shippingQuote);
-                }
-                elseif ($isStandardAvailable) {
-                    $this->_addStandardQuote($rateResult, $shippingQuote);
+                switch ($shippingQuote->service_level) {
+                    case 'priority':
+                        if ($isPriorityAvailable) {
+                            $this->_addPriorityQuote($rateResult, $shippingQuote);
+                        }
+                        
+                        break;
+                    case 'express':
+                        if ($isExpressAvailable) {
+                            $this->_addExpressQuote($rateResult, $shippingQuote);
+                        }
+                        
+                        break;
+                    case 'standard':
+                        if ($isStandardAvailable) {
+                            $this->_addStandardQuote($rateResult, $shippingQuote);
+                        }
+
+                        break;
                 }
             }
         }

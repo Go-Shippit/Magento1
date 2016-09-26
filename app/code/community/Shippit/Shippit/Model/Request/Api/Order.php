@@ -46,10 +46,10 @@ class Shippit_Shippit_Model_Request_Api_Order extends Varien_Object
     const PARCEL_ATTRIBUTES         = 'parcel_attributes';
 
     // Shippit Service Class API Mappings
-    const SHIPPING_SERVICE_STANDARD        = 'CouriersPlease';
-    const SHIPPING_SERVICE_EXPRESS         = 'eparcelexpress';
-    const SHIPPING_SERVICE_PRIORITY        = 'Bonds';
-    const SHIPPING_SERVICE_INTERNATIONAL   = 'Dhl';
+    const SHIPPING_SERVICE_STANDARD        = 'standard';
+    const SHIPPING_SERVICE_EXPRESS         = 'express';
+    const SHIPPING_SERVICE_PRIORITY        = 'priority';
+    const SHIPPING_SERVICE_INTERNATIONAL   = 'international';
 
     public function __construct() {
         $this->helper = Mage::helper('shippit/sync_order');
