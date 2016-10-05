@@ -39,80 +39,30 @@ class Shippit_Shippit_OrderController extends Mage_Core_Controller_Front_Action
 
     public function updateAction()
     {
-        if (!$this->helper->isActive()) {
-            $this->logger->log('Shipping Sync is not active');
-            $response = $this->_prepareResponse(false, self::ERROR_SYNC_DISABLED);
-
-            return $this->getResponse()->setBody($response);
+        if (!$this->_checkIsActive()) {
+            return;
         }
 
-        $apiKey = $this->getRequest()->getParam('api_key');
-        
-        if (empty($apiKey)) {
-            $response = $this->_prepareResponse(false, self::ERROR_API_KEY_MISSING);
-            $this->logger->log('Shipment Sync Error - ' . self::ERROR_API_KEY_MISSING, Zend_Log::WARN);
-
-            return $this->getResponse()->setBody($response);
-        }
-
-        if (!$this->_checkApiKey($apiKey)) {
-            $response = $this->_prepareResponse(false, self::ERROR_API_KEY_MISMATCH);
-            $this->logger->log('Shipment Sync Error - ' . self::ERROR_API_KEY_MISMATCH, Zend_Log::WARN);
-
-            return $this->getResponse()->setBody($response);
+        if (!$this->_checkApiKey()) {
+            return;
         }
 
         $request = json_decode(file_get_contents('php://input'), true);
 
-        $metaData = array(
-            'api_request' => array(
-                'request_body' => $request
-            )
-        );
+        $this->_logRequest($request);
 
-        $this->logger->setMetaData($metaData);
-        $this->logger->log('Shipment Sync Request Recieved');
-
-        $orderIncrementId = $request['retailer_order_number'];
-        $orderShipmentState = $request['current_state'];
-
-        $courierName = $request['courier_name'];
-        $trackingNumber = $request['tracking_number'];
-
-        if (isset($request['products'])) {
-            $products = $request['products'];
-        }
-        else {
-            $products = array();
+        if (!$this->_checkRequest($request)) {
+            return;
         }
 
-        if (empty($request)) {
-            $response = $this->_prepareResponse(false, self::ERROR_BAD_REQUEST);
-            $this->logger->log('Shipment Sync Error - ' . self::ERROR_BAD_REQUEST, Zend_Log::WARN);
+        // attempt to retrieve request data values for the shipment
+        $order = $this->_getOrder($request);
+        $products = $this->_getProducts($request);
+        $courierName = $this->_getCourierName($request);
+        $courierTrackingNumber = $this->_getTrackingNumber($request);
 
-            return $this->getResponse()->setBody($response);
-        }
-
-        if (empty($orderShipmentState) || $orderShipmentState != 'ready_for_pickup') {
-            $response = $this->_prepareResponse(true, self::NOTICE_SHIPMENT_STATUS);
-            $this->logger->log('Shipment Sync Error - ' . self::NOTICE_SHIPMENT_STATUS);
-
-            return $this->getResponse()->setBody($response);
-        }
-
-        // attempt to get the order using the reference provided
-        $order = $this->_getOrder($orderIncrementId);
-
-        if (!$order->getId()) {
-            $response = $this->_prepareResponse(false, self::ERROR_ORDER_MISSING);
-
-            return $this->getResponse()->setBody($response);
-        }
-
-        if (!$order->canShip()) {
-            $response = $this->_prepareResponse(false, self::ERROR_ORDER_STATUS);
-
-            return $this->getResponse()->setBody($response);
+        if (!$this->_checkOrder($order)) {
+            return;
         }
 
         try {
@@ -139,7 +89,169 @@ class Shippit_Shippit_OrderController extends Mage_Core_Controller_Front_Action
         }
     }
 
-    private function _prepareResponse($success, $message)
+    protected function _checkIsActive()
+    {
+        if (!$this->helper->isActive()) {
+            $response = $this->_prepareResponse(
+                false,
+                self::ERROR_SYNC_DISABLED
+            );
+
+            $this->getResponse()->setBody($response);
+
+            return false;
+        }
+
+        return true;
+    }
+
+    protected function _checkApiKey()
+    {
+        $apiKey = $this->getRequest()->getParam('api_key');
+        
+        if (empty($apiKey)) {
+            $response = $this->_prepareResponse(
+                false,
+                self::ERROR_API_KEY_MISSING,
+                Zend_Log::WARN
+            );
+
+            $this->getResponse()->setBody($response);
+
+            return false;
+        }
+
+        $configuredApiKey = Mage::helper('shippit')->getApiKey();
+        
+        if ($configuredApiKey != $apiKey) {
+            $response = $this->_prepareResponse(
+                false,
+                self::ERROR_API_KEY_MISMATCH,
+                Zend_Log::WARN
+            );
+            
+            $this->getResponse()->setBody($response);
+
+            return false;
+        }
+
+        return true;
+    }
+
+    protected function _logRequest($request = array())
+    {
+        $metaData = array(
+            'api_request' => array(
+                'request_body' => $request
+            )
+        );
+
+        $this->logger->setMetaData($metaData);
+        $this->logger->log('Shipment Sync Request Recieved');
+    }
+
+    protected function _checkRequest($request = array())
+    {
+        if (empty($request)) {
+            $response = $this->_prepareResponse(
+                false,
+                self::ERROR_BAD_REQUEST,
+                Zend_Log::WARN
+            );
+
+            $this->getResponse()->setBody($response);
+
+            return false;
+        }
+
+        if (!isset($request['current_state']) || empty($request['current_state']) || $request['current_state'] != 'ready_for_pickup') {
+            $response = $this->_prepareResponse(
+                true,
+                self::NOTICE_SHIPMENT_STATUS
+            );
+            
+            $this->getResponse()->setBody($response);
+
+            return false;
+        }
+
+        if (!isset($request['retailer_order_number']) || empty($request['retailer_order_number'])) {
+            $response = $this->_prepareResponse(
+                false,
+                self::ERROR_ORDER_MISSING
+            );
+            
+            $this->getResponse()->setBody($response);
+
+            return false;
+        }
+
+        return true;
+    }
+
+    protected function _checkOrder($order)
+    {
+        if (!$order->getId()) {
+            $response = $this->_prepareResponse(
+                false,
+                self::ERROR_ORDER_MISSING
+            );
+            
+            $this->getResponse()->setBody($response);
+
+            return false;
+        }
+
+        if (!$order->canShip()) {
+            $response = $this->_prepareResponse(
+                false,
+                self::ERROR_ORDER_STATUS
+            );
+
+            $this->getResponse()->setBody($response);
+
+            return false;
+        }
+
+        return true;
+    }
+
+    protected function _getOrder($request = array())
+    {
+        if (!isset($request['retailer_order_number'])) {
+            return false;
+        }
+     
+        $orderIncrementId = $request['retailer_order_number'];
+
+        return Mage::getModel('sales/order')->load($orderIncrementId, 'increment_id');
+    }
+
+    protected function _getProducts($request = array())
+    {
+        if (isset($request['products'])) {
+            return $request['products'];
+        }
+
+        return array();
+    }
+
+    protected function _getCourierName($request = array())
+    {
+        if (isset($request['courier_name'])) {
+            return 'Shippit - ' . $request['courier_name'];
+        }
+        else {
+            return 'Shippit';
+        }
+    }
+
+    protected function _getTrackingNumber($request = array())
+    {
+        return $request['tracking_number'];
+    }
+
+    protected function _prepareResponse($success, $message, $logLevel = Zend_Log::DEBUG)
     {
         $response = array(
             'success' => $success,
@@ -153,28 +265,20 @@ class Shippit_Shippit_OrderController extends Mage_Core_Controller_Front_Action
             )
         );
 
+        if ($success) {
+            $messageType = 'Shipment Sync Success';
+        }
+        else {
+            $messageType = 'Shipment Sync Error';
+        }
+
         $this->logger->setMetaData($metaData);
+        $this->logger->log($messageType, $message, $logLevel);
 
         return Mage::helper('core')->jsonEncode($response);
     }
 
-    private function _checkApiKey($apiKey)
-    {
-        $configuredApiKey = Mage::helper('shippit')->getApiKey();
-        
-        if ($configuredApiKey != $apiKey) {
-            return false;
-        }
-        
-        return true;
-    }
-
-    private function _getOrder($orderIncrementId)
-    {
-        return Mage::getModel('sales/order')->load($orderIncrementId, 'increment_id');
-    }
-
-    private function _createShipment($order, $items, $courierName, $trackingNumber)
+    protected function _createShipment($order, $items, $courierName, $trackingNumber)
     {
         $shipment = $order->prepareShipment($items);
 
@@ -187,7 +291,7 @@ class Shippit_Shippit_OrderController extends Mage_Core_Controller_Front_Action
             $track = Mage::getModel('sales/order_shipment_track')
                 ->setNumber($trackingNumber)
                 ->setCarrierCode(Shippit_Shippit_Helper_Data::CARRIER_CODE)
-                ->setTitle('Shippit - ' . $courierName);
+                ->setTitle($courierName);
 
             $shipment->addTrack($track)
                 ->register()
@@ -205,18 +309,21 @@ class Shippit_Shippit_OrderController extends Mage_Core_Controller_Front_Action
                 $shipment->sendEmail(true, $comment);
             }
             catch (Mage_Core_Exception $e) {
-                $this->logger->log('Shipment Sync Error - ' . self::ERROR_SHIPMENT_FAILED);
-
-                return $this->_prepareResponse(false, self::ERROR_SHIPMENT_FAILED);
+                return $this->_prepareResponse(
+                    false,
+                    self::ERROR_SHIPMENT_FAILED
+                );
             }
 
-            $this->logger->log('Shipment Sync Successful - ' . self::SUCCESS_SHIPMENT_CREATED);
-
-            return $this->_prepareResponse(true, self::SUCCESS_SHIPMENT_CREATED);
+            return $this->_prepareResponse(
+                true,
+                self::SUCCESS_SHIPMENT_CREATED
+            );
         }
 
-        $this->logger->log('Shipment Sync Error - ' . self::ERROR_SHIPMENT_FAILED);
-
-        return $this->_prepareResponse(false, self::ERROR_SHIPMENT_FAILED);
+        return $this->_prepareResponse(
+            false,
+            self::ERROR_SHIPMENT_FAILED
+        );
     }
 }
