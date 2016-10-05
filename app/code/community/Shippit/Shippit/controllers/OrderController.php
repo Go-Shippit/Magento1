@@ -39,7 +39,7 @@ class Shippit_Shippit_OrderController extends Mage_Core_Controller_Front_Action
 
     public function updateAction()
     {
-        if (!$this->_checkIsActive) {
+        if (!$this->_checkIsActive()) {
             return;
         }
 
@@ -139,7 +139,7 @@ class Shippit_Shippit_OrderController extends Mage_Core_Controller_Front_Action
         );
 
         $this->logger->setMetaData($metaData);
-        $this->logger->log('Shipment Sync Request Recieved');
+        $this->logger->log('Shipment Sync Request Recieved', self::NOTICE_SHIPMENT_STATUS);
     }
 
     protected function _checkRequest($request = array())
