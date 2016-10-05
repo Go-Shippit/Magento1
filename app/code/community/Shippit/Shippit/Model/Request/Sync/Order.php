@@ -174,11 +174,15 @@ class Shippit_Shippit_Model_Request_Sync_Order extends Varien_Object
                     return $rootItem;
                 }
                 else {
-                    return $item->getChildrenItems()[0];
+                    $items = $item->getChildrenItems();
+
+                    return reset($items);
                 }
             }
             else {
-                return $item->getChildrenItems()[0];
+                $items = $item->getChildrenItems();
+                
+                return reset($items);
             }
         }
         else {
