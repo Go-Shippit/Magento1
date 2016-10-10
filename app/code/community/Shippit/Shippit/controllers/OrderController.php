@@ -59,7 +59,7 @@ class Shippit_Shippit_OrderController extends Mage_Core_Controller_Front_Action
         $order = $this->_getOrder($request);
         $products = $this->_getProducts($request);
         $courierName = $this->_getCourierName($request);
-        $courierTrackingNumber = $this->_getTrackingNumber($request);
+        $trackingNumber = $this->_getTrackingNumber($request);
 
         if (!$this->_checkOrder($order)) {
             return;
@@ -248,7 +248,12 @@ class Shippit_Shippit_OrderController extends Mage_Core_Controller_Front_Action
 
     protected function _getTrackingNumber($request = array())
     {
-        return $request['tracking_number'];
+        if (isset($request['tracking_number'])) {
+            return $request['tracking_number'];
+        }
+        else {
+            return 'N/A';
+        }
     }
 
     protected function _prepareResponse($success, $message, $logLevel = Zend_Log::DEBUG)
