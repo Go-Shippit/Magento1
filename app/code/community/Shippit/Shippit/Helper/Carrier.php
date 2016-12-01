@@ -86,4 +86,14 @@ class Shippit_Shippit_Helper_Carrier extends Shippit_Shippit_Helper_Data
     {
         return self::getStoreConfig('enabled_product_attribute_value');
     }
+
+    public function getMargin()
+    {
+        return self::getStoreConfig('margin');
+    }
+
+    public function getMarginAmount()
+    {
+        return self::getStoreConfig('margin_amount');
+    }
 }
