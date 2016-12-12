@@ -68,7 +68,7 @@ class Shippit_Shippit_Helper_Bugsnag extends Mage_Core_Helper_Abstract
         $metaData = array();
 
         $metaData['magento'] = array(
-            'edition' => Mage::getEdition(),
+            'edition' => $this->getEdition(),
             'version' => Mage::getVersion(),
         );
         $metaData['module'] = $this->getModuleInfo();
@@ -111,5 +111,18 @@ class Shippit_Shippit_Helper_Bugsnag extends Mage_Core_Helper_Abstract
         }
 
         return $level;
+    }
+
+    private function getEdition()
+    {
+        $magentoVersion = Mage::getVersion();
+
+        if (version_compare($magentoVersion, '1.7.0', '<=')) {
+            return '';
+        }
+
+        else {
+            return Mage::getEdition();
+        }
     }
 }
