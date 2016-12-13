@@ -115,14 +115,13 @@ class Shippit_Shippit_Helper_Bugsnag extends Mage_Core_Helper_Abstract
 
     private function getEdition()
     {
-        $magentoVersion = Mage::getVersion();
+        $mage = new Mage;
 
-        if (version_compare($magentoVersion, '1.7.0', '<=')) {
-            return '';
-        }
-
-        else {
+        if (method_exists($mage, 'getEdition')) {
             return Mage::getEdition();
+        }
+        else {
+            return 'Unknown';
         }
     }
 }
