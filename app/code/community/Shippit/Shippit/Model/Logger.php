@@ -18,7 +18,7 @@ class Shippit_Shippit_Model_Logger
 {
     protected $helper;
     protected $debugMode;
-    
+
     public $bugsnag = false;
     protected $metaData = array();
 
@@ -37,7 +37,7 @@ class Shippit_Shippit_Model_Logger
             $this->bugsnagLog($errorType, $message, $level);
 
             Mage::log($errorType . "\n" . $message, $level, 'shippit.log');
-            
+
             if (!empty($this->metaData)) {
                 Mage::log($this->metaData, $level, 'shippit.log');
             }
@@ -84,7 +84,7 @@ class Shippit_Shippit_Model_Logger
         $this->bugsnagException($e);
 
         Mage::log($e->getMessage(), $level, 'shippit.log');
-        
+
         if (!empty($this->metaData)) {
             Mage::log($this->metaData, $level, 'shippit.log');
         }

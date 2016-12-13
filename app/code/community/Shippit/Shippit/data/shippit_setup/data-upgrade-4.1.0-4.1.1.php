@@ -89,7 +89,7 @@ foreach ($syncOrders as $syncOrder) {
         $shippingOptions = str_replace('shippit' . '_', '', $shippingMethod);
         $shippingOptions = explode('_', $shippingOptions);
         $courierData = array();
-        
+
         if (isset($shippingOptions[0])) {
             if ($shippingOptions[0] == 'Bonds') {
                 $shippitShippingMethod = 'premium';

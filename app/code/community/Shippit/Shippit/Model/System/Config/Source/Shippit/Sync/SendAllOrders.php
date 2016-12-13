@@ -46,7 +46,7 @@ class Shippit_Shippit_Model_System_Config_Source_Shippit_Sync_SendAllOrders
                 'value' => self::NO
             )
         );
-        
+
         return $optionsArray;
     }
 }

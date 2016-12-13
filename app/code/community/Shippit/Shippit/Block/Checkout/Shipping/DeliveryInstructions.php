@@ -17,7 +17,7 @@
 class Shippit_Shippit_Block_Checkout_Shipping_DeliveryInstructions extends Mage_Core_Block_Template
 {
     protected $helper;
-    
+
     public function __construct()
     {
         $this->helper = Mage::helper('shippit/checkout');

@@ -119,7 +119,7 @@ class Shippit_Shippit_Model_Request_Api_Order extends Varien_Object
         // Attempt to retrieve from the postcode lookup for AU Addresses
         if (empty($deliveryState) && $this->getDeliveryCountry() == 'AU') {
             $postcodeState = $this->helper->getStateFromPostcode($this->getDeliveryPostcode());
-        
+
             if ($postcodeState) {
                 $this->setData(self::DELIVERY_STATE, $postcodeState);
             }
@@ -127,7 +127,7 @@ class Shippit_Shippit_Model_Request_Api_Order extends Varien_Object
 
         $deliveryState = $this->getDeliveryState();
         $deliverySuburb = $this->getDeliverySuburb();
-        
+
         // If the delivery state is empty
         // Copy the suburb field to the state field
         if (empty($deliveryState) && !empty($deliverySuburb)) {
@@ -369,7 +369,7 @@ class Shippit_Shippit_Model_Request_Api_Order extends Varien_Object
             // get the special delivery attributes
             $deliveryDate = $this->_getOrderDeliveryDate($this->order);
             $deliveryWindow = $this->_getOrderDeliveryWindow($this->order);
-            
+
             if (!empty($deliveryDate) && !empty($deliveryWindow)) {
                 $this->setDeliveryDate($deliveryDate);
                 $this->setDeliveryWindow($deliveryWindow);
@@ -395,7 +395,7 @@ class Shippit_Shippit_Model_Request_Api_Order extends Varien_Object
             $shippingOptions = str_replace($this->carrierCode . '_', '', $shippingMethod);
             $shippingOptions = explode('_', $shippingOptions);
             $courierData = array();
-            
+
             if (isset($shippingOptions[0])) {
                 if ($shippingOptions[0] == 'priority') {
                     return $shippingOptions[1];
@@ -423,7 +423,7 @@ class Shippit_Shippit_Model_Request_Api_Order extends Varien_Object
             $shippingOptions = str_replace($this->carrierCode . '_', '', $shippingMethod);
             $shippingOptions = explode('_', $shippingOptions);
             $courierData = array();
-            
+
             if (isset($shippingOptions[0])) {
                 if ($shippingOptions[0] == 'priority') {
                     return $shippingOptions[2];

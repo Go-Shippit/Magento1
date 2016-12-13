@@ -38,7 +38,7 @@ class Shippit_Shippit_Helper_Carrier extends Shippit_Shippit_Helper_Data
             return Mage::getStoreConfig($path);
         }
     }
-    
+
     /**
      * @return bool
      */

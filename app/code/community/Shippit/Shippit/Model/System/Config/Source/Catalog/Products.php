@@ -27,7 +27,7 @@ class Shippit_Shippit_Model_System_Config_Source_Catalog_Products
             ->getCollection()
             ->addAttributeToSelect('name')
             ->setOrder('name', 'ASC');
-        
+
         foreach ($products as $product)
         {
             $productArray[] = array(
@@ -35,7 +35,7 @@ class Shippit_Shippit_Model_System_Config_Source_Catalog_Products
                 'value' => $product->getId()
             );
         }
-        
+
         return $productArray;
     }
 }

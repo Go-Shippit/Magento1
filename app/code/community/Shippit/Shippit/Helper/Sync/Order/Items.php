@@ -114,7 +114,7 @@ class Shippit_Shippit_Helper_Sync_Order_Items extends Shippit_Shippit_Helper_Syn
     {
         if (is_null($this->locationAttributeCode)) {
             $helper = Mage::helper('shippit/sync_order');
-            
+
             if (!$helper->isProductLocationActive()) {
                 $this->locationAttributeCode = false;
             }
@@ -129,7 +129,7 @@ class Shippit_Shippit_Helper_Sync_Order_Items extends Shippit_Shippit_Helper_Syn
     /**
      * Get the product attribute value, ensuring we get
      * the full text value if it's a select or multiselect attribute
-     * 
+     *
      * @param  object  $product        The Product Object
      * @param  string  $attributeCode  The Attribute Code
      * @return string                  The Product Attribute Value (full text)

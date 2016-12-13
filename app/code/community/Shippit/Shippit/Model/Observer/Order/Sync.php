@@ -26,7 +26,7 @@ class Shippit_Shippit_Model_Observer_Order_Sync
         $this->helper = Mage::helper('shippit/sync_order');
         $this->logger = Mage::getModel('shippit/logger');
     }
-    
+
     /**
      * Set the order to be synced with shippit
      * @param Varien_Event_Observer $observer [description]
@@ -100,7 +100,7 @@ class Shippit_Shippit_Model_Observer_Order_Sync
     private function _syncOrder($syncOrder)
     {
         $this->_hasAttemptedSync = true;
-        
+
         // attempt the sync
         $syncOrderResult = Mage::getModel('shippit/api_order')->sync($syncOrder);
 

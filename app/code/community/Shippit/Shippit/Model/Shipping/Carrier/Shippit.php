@@ -120,13 +120,13 @@ class Shippit_Shippit_Model_Shipping_Carrier_Shippit extends Mage_Shipping_Model
                         if ($isPriorityAvailable) {
                             $this->_addPriorityQuote($rateResult, $shippingQuote);
                         }
-                        
+
                         break;
                     case 'express':
                         if ($isExpressAvailable) {
                             $this->_addExpressQuote($rateResult, $shippingQuote);
                         }
-                        
+
                         break;
                     case 'standard':
                         if ($isStandardAvailable) {
@@ -261,7 +261,7 @@ class Shippit_Shippit_Model_Shipping_Carrier_Shippit extends Mage_Shipping_Model
 
     /**
      * Checks the request and ensures all products are either enabled, or part of the attributes elidgable
-     * 
+     *
      * @param  [type] $request The shipment request
      * @return boolean         True or false
      */
@@ -320,7 +320,7 @@ class Shippit_Shippit_Model_Shipping_Carrier_Shippit extends Mage_Shipping_Model
 
         $attributeCode = $this->helper->getEnabledProductAttributeCode();
         $attributeValue = $this->helper->getEnabledProductAttributeValue();
-        
+
         if (!empty($attributeCode) && !empty($attributeValue)) {
             $attributeProductCount = Mage::getModel('catalog/product')
                 ->getCollection()
@@ -358,7 +358,7 @@ class Shippit_Shippit_Model_Shipping_Carrier_Shippit extends Mage_Shipping_Model
                 'weight' => ($request->getPackageWeight() / $request->getPackageQty())
             )
         );
-        
+
         return $parcelAttributes;
     }
 }

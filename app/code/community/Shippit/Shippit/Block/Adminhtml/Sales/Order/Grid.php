@@ -25,7 +25,7 @@ class Shippit_Shippit_Block_Adminhtml_Sales_Order_Grid extends Mage_Adminhtml_Bl
         $this->setSaveParametersInSession(true);
         $this->setUseAjax(true);
     }
- 
+
     protected function _prepareCollection()
     {
         $collection = Mage::getResourceModel('shippit/sync_order_collection')
@@ -67,13 +67,13 @@ class Shippit_Shippit_Block_Adminhtml_Sales_Order_Grid extends Mage_Adminhtml_Bl
                 'order_status',
                 'order.status'
             );
- 
+
         $this->setCollection($collection);
         parent::_prepareCollection();
 
         return $this;
     }
- 
+
     protected function _prepareColumns()
     {
         $helper = Mage::helper('shippit');
@@ -85,12 +85,12 @@ class Shippit_Shippit_Block_Adminhtml_Sales_Order_Grid extends Mage_Adminhtml_Bl
             'column_css_class' => 'no-display',
             'header_css_class' => 'no-display'
         ));
- 
+
         $this->addColumn('increment_id', array(
             'header' => $helper->__('Order #'),
             'index'  => 'increment_id',
         ));
- 
+
         $this->addColumn('purchased_on', array(
             'header' => $helper->__('Purchased On'),
             'type'   => 'datetime',
@@ -103,14 +103,14 @@ class Shippit_Shippit_Block_Adminhtml_Sales_Order_Grid extends Mage_Adminhtml_Bl
             'getter' => 'getItems',
             'renderer' => 'shippit/adminhtml_sales_order_items'
         ));
- 
+
         $this->addColumn('grand_total', array(
             'header'        => $helper->__('Grand Total'),
             'index'         => 'grand_total',
             'type'          => 'currency',
             'currency_code' => $currency
         ));
- 
+
         $this->addColumn('service_class', array(
             'header' => $helper->__('Service Class'),
             'index'  => 'service_class',
@@ -118,7 +118,7 @@ class Shippit_Shippit_Block_Adminhtml_Sales_Order_Grid extends Mage_Adminhtml_Bl
             'type'   => 'options',
             'options' => Mage::getSingleton('shippit/system_config_source_shippit_methods')->getMethods(true)
         ));
- 
+
         $this->addColumn('order_state', array(
             'header'  => $helper->__('State'),
             'index'   => 'order_state',
@@ -176,10 +176,10 @@ class Shippit_Shippit_Block_Adminhtml_Sales_Order_Grid extends Mage_Adminhtml_Bl
                 'sortable' => false
             )
         ));
- 
+
         return parent::_prepareColumns();
     }
-    
+
     public function decorateServiceClass($value)
     {
         return ucfirst($value);
@@ -196,7 +196,7 @@ class Shippit_Shippit_Block_Adminhtml_Sales_Order_Grid extends Mage_Adminhtml_Bl
             $value,
             $value
         );
-        
+
         return $cell;
     }
 
@@ -262,7 +262,7 @@ class Shippit_Shippit_Block_Adminhtml_Sales_Order_Grid extends Mage_Adminhtml_Bl
     {
 
     }
- 
+
     public function getGridUrl()
     {
         return $this->getUrl('*/*/grid', array('_current'=>true));

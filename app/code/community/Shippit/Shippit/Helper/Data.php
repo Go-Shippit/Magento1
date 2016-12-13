@@ -23,13 +23,13 @@ class Shippit_Shippit_Helper_Data extends Mage_Core_Helper_Abstract
 
     const AUTHORITY_TO_LEAVE_ID = 'shippit_authority_to_leave';
     const DELIVERY_INSTRUCTIONS_ID = 'shippit_delivery_instructions';
-    
+
     const SYNC_MODE_REALTIME = 'realtime';
     const SYNC_MODE_CRON = 'cron';
     const SYNC_MODE_CUSTOM = 'custom';
 
     const CARRIER_CODE = 'shippit';
-    
+
     /**
      * Return store config value for key
      *

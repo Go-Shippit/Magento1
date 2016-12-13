@@ -32,7 +32,7 @@ class Shippit_Shippit_Model_Resource_Sync_Order extends Mage_Core_Model_Resource
         if (!$object->getId()) {
             $object->setCreatedAt(Mage::getSingleton('core/date')->gmtDate());
         }
-        
+
         return $this;
     }
 

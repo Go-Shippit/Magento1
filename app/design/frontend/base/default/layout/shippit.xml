@@ -1,5 +1,4 @@
 <?xml version="1.0"?>
-
 <!--
 /**
 *  Shippit Pty Ltd
@@ -16,7 +15,6 @@
 *  @license    http://www.shippit.com/terms
 */
 -->
-
 <layout version="0.1.0">
     <checkout_onepage_index>
         <reference name="checkout.onepage.shipping_method">

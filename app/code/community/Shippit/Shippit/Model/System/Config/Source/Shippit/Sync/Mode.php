@@ -32,7 +32,7 @@ class Shippit_Shippit_Model_System_Config_Source_Shippit_Sync_Mode
                 'value' => Shippit_Shippit_Helper_Data::SYNC_MODE_CUSTOM
             )
         );
-        
+
         return $optionsArray;
     }
 }

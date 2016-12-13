@@ -95,7 +95,7 @@ class Shippit_Shippit_Helper_Api extends Mage_Core_Helper_Abstract
         if ($exceptionOnResponseError && $apiResponse->isError()) {
             $message = 'API Response Error' . "\n";
             $message .= 'Response: ' . $apiResponse->getStatus() . ' - ' . $apiResponse->getMessage() . "\n";
-            
+
             $this->prepareMatadata($uri, $requestData, $apiResponse);
             $this->logger->log('API Response Error', 'An API Response Error Occurred');
 

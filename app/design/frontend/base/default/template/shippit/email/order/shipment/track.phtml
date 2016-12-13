@@ -30,7 +30,7 @@
         <?php
             $i++;
             $_trackingNumberDetail = $_item->getNumberDetail();
-            
+
             if ($_trackingNumberDetail && $_trackingNumberDetail instanceof Mage_Shipping_Model_Tracking_Result_Status) {
                 $_trackingUrl = $_trackingNumberDetail->getUrl();
             }

@@ -31,7 +31,7 @@ class Shippit_Shippit_Block_Adminhtml_System_Config_Form_Field_Sync_Order_Shippi
 
         $this->_addAfter = false;
         $this->_addButtonLabel = Mage::helper('shippit')->__('Add Mapping');
- 
+
         parent::__construct();
 
         // use the array template to auto populate the array of saved data

@@ -108,7 +108,7 @@ class Shippit_Shippit_OrderController extends Mage_Core_Controller_Front_Action
     protected function _checkApiKey()
     {
         $apiKey = $this->getRequest()->getParam('api_key');
-        
+
         if (empty($apiKey)) {
             $response = $this->_prepareResponse(
                 false,
@@ -122,14 +122,14 @@ class Shippit_Shippit_OrderController extends Mage_Core_Controller_Front_Action
         }
 
         $configuredApiKey = Mage::helper('shippit')->getApiKey();
-        
+
         if ($configuredApiKey != $apiKey) {
             $response = $this->_prepareResponse(
                 false,
                 self::ERROR_API_KEY_MISMATCH,
                 Zend_Log::WARN
             );
-            
+
             $this->getResponse()->setBody($response);
 
             return false;
@@ -169,7 +169,7 @@ class Shippit_Shippit_OrderController extends Mage_Core_Controller_Front_Action
                 true,
                 self::NOTICE_SHIPMENT_STATUS
             );
-            
+
             $this->getResponse()->setBody($response);
 
             return false;
@@ -180,7 +180,7 @@ class Shippit_Shippit_OrderController extends Mage_Core_Controller_Front_Action
                 false,
                 self::ERROR_ORDER_MISSING
             );
-            
+
             $this->getResponse()->setBody($response);
 
             return false;
@@ -196,7 +196,7 @@ class Shippit_Shippit_OrderController extends Mage_Core_Controller_Front_Action
                 false,
                 self::ERROR_ORDER_MISSING
             );
-            
+
             $this->getResponse()->setBody($response);
 
             return false;
@@ -221,7 +221,7 @@ class Shippit_Shippit_OrderController extends Mage_Core_Controller_Front_Action
         if (!isset($request['retailer_order_number'])) {
             return false;
         }
-     
+
         $orderIncrementId = $request['retailer_order_number'];
 
         return Mage::getModel('sales/order')->load($orderIncrementId, 'increment_id');

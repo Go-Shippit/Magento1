@@ -26,7 +26,7 @@ class Shippit_Shippit_Adminhtml_Shippit_OrderController extends Mage_Adminhtml_C
         $this->_addContent($this->getLayout()->createBlock('shippit/adminhtml_sales_order'));
         $this->renderLayout();
     }
- 
+
     public function gridAction()
     {
         $this->loadLayout(false);
@@ -60,7 +60,7 @@ class Shippit_Shippit_Adminhtml_Shippit_OrderController extends Mage_Adminhtml_C
             $this->_getSession()->addError($this->__('You must select at least 1 order to sync'));
 
             $this->_redirect('*/*/index');
-            
+
             return;
         }
 

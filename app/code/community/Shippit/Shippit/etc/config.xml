@@ -42,7 +42,7 @@
 
             <shippit_resource>
                 <class>Shippit_Shippit_Model_Resource</class>
-                
+
                 <entities>
                     <!-- Depreciated Node as of v4.1.0 -->
                     <order_sync>

@@ -29,7 +29,7 @@ class Shippit_Shippit_Model_System_Config_Source_Order_Status_Processing
                 'label' => $statusLabel
             );
         }
-        
+
         return $optionsArray;
     }
 }

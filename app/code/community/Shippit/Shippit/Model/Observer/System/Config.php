@@ -56,7 +56,7 @@ class Shippit_Shippit_Model_Observer_System_Config
                 Mage::getSingleton('adminhtml/session')->addSuccess(
                     $this->helper->__('Shippit API Key Validated')
                 );
-                
+
                 $apiKeyValid = true;
             }
         }
@@ -78,7 +78,7 @@ class Shippit_Shippit_Model_Observer_System_Config
                 'api_key' => $apiKey,
                 '_secure' => true,
             ));
-            
+
             $requestData = new Varien_Object;
             $requestData->setWebhookUrl($webhookUrl);
             $merchant = $this->api->putMerchant($requestData, true);

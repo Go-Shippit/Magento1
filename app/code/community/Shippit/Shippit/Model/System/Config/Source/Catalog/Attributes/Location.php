@@ -43,7 +43,7 @@ class Shippit_Shippit_Model_System_Config_Source_Catalog_Attributes_Location
                 'value' => $attribute->getAttributeCode()
             );
         }
-        
+
         return $attributeArray;
     }
 }

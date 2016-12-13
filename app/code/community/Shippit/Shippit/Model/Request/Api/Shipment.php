@@ -42,7 +42,7 @@ class Shippit_Shippit_Model_Request_Api_Shipment extends Varien_Object
     public function setOrderByIncrementId($orderIncrementId)
     {
         $order = Mage::getModel('sales/order')->load($orderIncrementId, 'increment_id');
-       
+
         return $this->setOrder($order);
     }
 
@@ -93,9 +93,9 @@ class Shippit_Shippit_Model_Request_Api_Shipment extends Varien_Object
              * get the parent item to determine the correct qty to ship
              */
             $rootItem = $this->_getRootItem($item);
-            
+
             $itemQty = $this->itemsHelper->getQtyToShip($rootItem, $requestedQty);
-            
+
             if ($itemQty > 0) {
                 $this->addItem($item->getId(), $itemQty);
             }
@@ -117,7 +117,7 @@ class Shippit_Shippit_Model_Request_Api_Shipment extends Varien_Object
     public function getItems()
     {
         $items = $this->getData(self::ITEMS);
-        
+
         // if no items have been added, assume all items are to be marked as shipped
         if (empty($items)) {
             return array();

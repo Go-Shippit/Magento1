@@ -28,7 +28,7 @@ class Shippit_Shippit_Model_System_Config_Source_Catalog_Unit_Weight
                 'value' => Shippit_Shippit_Helper_Sync_Order_Items::UNIT_WEIGHT_GRAMS
             )
         );
-        
+
         return $optionsArray;
     }
 }

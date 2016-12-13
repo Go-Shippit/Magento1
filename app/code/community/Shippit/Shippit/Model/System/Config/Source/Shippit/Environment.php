@@ -28,7 +28,7 @@ class Shippit_Shippit_Model_System_Config_Source_Shippit_Environment
                 'value' => 'staging'
             )
         );
-        
+
         return $optionsArray;
     }
 }

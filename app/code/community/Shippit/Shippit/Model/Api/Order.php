@@ -105,7 +105,7 @@ class Shippit_Shippit_Model_Api_Order extends Mage_Core_Model_Abstract
             return $store;
         }
     }
-    
+
     public function sync($syncOrder, $displayNotifications = false)
     {
         try {
@@ -123,7 +123,7 @@ class Shippit_Shippit_Model_Api_Order extends Mage_Core_Model_Abstract
             // Build the order request
             $orderRequest = Mage::getModel('shippit/request_api_order')
                 ->processSyncOrder($syncOrder);
-                
+
             $apiResponse = $this->api->sendOrder($orderRequest, $syncOrder->getApiKey());
 
             // Add the order tracking details to

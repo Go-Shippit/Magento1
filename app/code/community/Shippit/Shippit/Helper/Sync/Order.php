@@ -100,7 +100,7 @@ class Shippit_Shippit_Helper_Sync_Order extends Shippit_Shippit_Helper_Data
             $shippingOptions = str_replace(self::CARRIER_CODE . '_', '', $shippingMethod);
             $shippingOptions = explode('_', $shippingOptions);
             $courierData = array();
-            
+
             if (isset($shippingOptions[0])) {
                 $method = strtolower($shippingOptions[0]);
 
@@ -117,7 +117,7 @@ class Shippit_Shippit_Helper_Sync_Order extends Shippit_Shippit_Helper_Data
                 }
             }
         }
-        
+
         // Use the mapping values and attempt to get a value
         $shippingMethodMapping = $this->getShippingMethodMapping();
 
@@ -134,7 +134,7 @@ class Shippit_Shippit_Helper_Sync_Order extends Shippit_Shippit_Helper_Data
     {
         return self::getStoreConfig('filter_order_status_active');
     }
-    
+
     public function getFilterOrderStatus()
     {
         return explode(',', self::getStoreConfig('filter_order_status'));

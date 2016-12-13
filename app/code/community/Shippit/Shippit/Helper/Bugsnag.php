@@ -43,7 +43,7 @@ class Shippit_Shippit_Helper_Bugsnag extends Mage_Core_Helper_Abstract
             }
             else {
                 Mage::log('Shippit Bugsnag Error', 'Couldn\'t activate Bugsnag Error Monitoring due to missing Bugsnag PHP library!', null, 'shippit.log');
-                
+
                 return false;
             }
 
@@ -51,7 +51,7 @@ class Shippit_Shippit_Helper_Bugsnag extends Mage_Core_Helper_Abstract
             $this->client->setReleaseStage($this->getReleaseStage())
                  ->setErrorReportingLevel($this->getErrorReportingLevel())
                  ->setMetaData($this->getMetaData());
-            
+
             $this->client->setNotifier($this->getNotiferData());
         }
 
