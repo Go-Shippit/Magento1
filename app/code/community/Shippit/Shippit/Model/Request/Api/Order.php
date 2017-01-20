@@ -653,11 +653,20 @@ class Shippit_Shippit_Model_Request_Api_Order extends Varien_Object
             'price' => (float) $price,
             // if a 0 weight is provided, stub the weight to 0.2kg
             'weight' => (float) ($weight == 0 ? 0.2 : $weight),
-            'length' => (float) $length,
-            'width' => (float) $width,
-            'depth' => (float) $depth,
             'location' => $location
         );
+
+        // for dimensions, ensure the item has values for all dimensions
+        if (!empty((float) $length) && !empty((float) $width) && !empty((float) $depth)) {
+            $newParcel = array_merge(
+                $newParcel,
+                array(
+                    'length' => (float) $length,
+                    'width' => (float) $width,
+                    'depth' => (float) $depth
+                )
+            );
+        }
 
         $parcelAttributes[] = $newParcel;
 

@@ -226,7 +226,7 @@
                             <show_in_store>0</show_in_store>
                             <comment>The unit of measurement used for the product dimensions</comment>
                             <depends>
-                                <product_dimensions_active>1</product_dimensions_active>
+                                <product_dimension_active>1</product_dimension_active>
                             </depends>
                         </product_unit_dimension>
                         <product_dimension_length_attribute_code translate="label comment">
@@ -240,7 +240,7 @@
                             <show_in_store>0</show_in_store>
                             <comment>The Product Attribute to be used for length data</comment>
                             <depends>
-                                <product_dimensions_active>1</product_dimensions_active>
+                                <product_dimension_active>1</product_dimension_active>
                             </depends>
                         </product_dimension_length_attribute_code>
                         <product_dimension_width_attribute_code translate="label comment">
@@ -254,7 +254,7 @@
                             <show_in_store>0</show_in_store>
                             <comment>The Product Attribute to be used for width data</comment>
                             <depends>
-                                <product_dimensions_active>1</product_dimensions_active>
+                                <product_dimension_active>1</product_dimension_active>
                             </depends>
                         </product_dimension_width_attribute_code>
                         <product_dimension_depth_attribute_code translate="label comment">
@@ -268,7 +268,7 @@
                             <show_in_store>0</show_in_store>
                             <comment>The Product Attribute to be used for depth data</comment>
                             <depends>
-                                <product_dimensions_active>1</product_dimensions_active>
+                                <product_dimension_active>1</product_dimension_active>
                             </depends>
                         </product_dimension_depth_attribute_code>
                         <product_location_active translate="label comment">

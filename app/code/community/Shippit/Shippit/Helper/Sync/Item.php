@@ -175,7 +175,7 @@ class Shippit_Shippit_Helper_Sync_Item extends Shippit_Shippit_Helper_Data
     {
         // ensure the dimension is present and not empty
         if (empty($dimension)) {
-            return $dimension;
+            return null;
         }
 
         switch ($this->getProductUnitDimension()) {
@@ -198,11 +198,13 @@ class Shippit_Shippit_Helper_Sync_Item extends Shippit_Shippit_Helper_Data
         $attributeCode = $this->getProductDimensionWidthAttributeCode();
 
         if ($attributeCode) {
-            return $this->getAttributeValue($item->getProduct(), $attributeCode);
+            $attributeValue = $this->getAttributeValue($item->getProduct(), $attributeCode);
         }
         else {
-            return null;
+            $attributeValue = null;
         }
+
+        return $this->getDimension($attributeValue);
     }
 
     public function getLength($item)
@@ -210,11 +212,13 @@ class Shippit_Shippit_Helper_Sync_Item extends Shippit_Shippit_Helper_Data
         $attributeCode = $this->getProductDimensionLengthAttributeCode();
 
         if ($attributeCode) {
-            return $this->getAttributeValue($item->getProduct(), $attributeCode);
+            $attributeValue = $this->getAttributeValue($item->getProduct(), $attributeCode);
         }
         else {
-            return null;
+            $attributeValue = null;
         }
+
+        return $this->getDimension($attributeValue);
     }
 
     public function getDepth($item)
@@ -222,11 +226,13 @@ class Shippit_Shippit_Helper_Sync_Item extends Shippit_Shippit_Helper_Data
         $attributeCode = $this->getProductDimensionDepthAttributeCode();
 
         if ($attributeCode) {
-            return $this->getAttributeValue($item->getProduct(), $attributeCode);
+            $attributeValue = $this->getAttributeValue($item->getProduct(), $attributeCode);
         }
         else {
-            return null;
+            $attributeValue = null;
         }
+
+        return $this->getDimension($attributeValue);
     }
 
     public function getLocation($item)

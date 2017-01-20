@@ -91,9 +91,18 @@ class Shippit_Shippit_Model_Request_Sync_Order extends Varien_Object
 
             $childItem = $this->_getChildItem($item);
             $itemName = $childItem->getName();
-            $itemLength = $this->itemHelper->getLength($childItem);
-            $itemWidth = $this->itemHelper->getWidth($childItem);
-            $itemDepth = $this->itemHelper->getDepth($childItem);
+
+            if ($this->itemHelper->isProductDimensionActive()) {
+                $itemLength = $this->itemHelper->getLength($childItem);
+                $itemWidth = $this->itemHelper->getWidth($childItem);
+                $itemDepth = $this->itemHelper->getDepth($childItem);
+            }
+            else {
+                $itemLength = null;
+                $itemWidth = null;
+                $itemDepth = null;
+            }
+
             $itemLocation = $this->itemHelper->getLocation($childItem);
 
             if ($itemQty > 0) {
@@ -246,11 +255,20 @@ class Shippit_Shippit_Model_Request_Sync_Order extends Varien_Object
             'qty' => (float) $qty,
             'price' => (float) $price,
             'weight' => (float) $this->itemHelper->getWeight($weight),
-            'length' => (float) $length,
-            'width' => (float) $width,
-            'depth' => (float) $depth,
             'location' => $location
         );
+
+        // for dimensions, ensure the item has values for all dimensions
+        if (!empty((float) $length) && !empty((float) $width) && !empty((float) $depth)) {
+            $newItem = array_merge(
+                $newItem,
+                array(
+                    'length' => (float) $length,
+                    'width' => (float) $width,
+                    'depth' => (float) $depth
+                )
+            );
+        }
 
         $items[] = $newItem;
 
