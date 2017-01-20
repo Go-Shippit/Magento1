@@ -23,12 +23,12 @@ class Shippit_Shippit_Model_Api_Order extends Mage_Core_Model_Abstract
 {
     protected $api;
     protected $helper;
-    protected $itemsHelper;
+    protected $itemHelper;
 
     public function __construct()
     {
         $this->helper = Mage::helper('shippit/sync_order');
-        $this->itemsHelper = Mage::helper('shippit/sync_order_items');
+        $this->itemHelper = Mage::helper('shippit/sync_item');
         $this->api = Mage::helper('shippit/api');
         $this->logger = Mage::getModel('shippit/logger');
     }

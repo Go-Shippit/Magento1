@@ -17,25 +17,22 @@
 class Shippit_Shippit_Model_System_Config_Source_Catalog_Products
 {
     /**
-     * Returns code => code pairs of attributes for all product attributes
+     * Returns id, sku pairs of all products
      *
      * @return array
      */
     public function toOptionArray()
     {
-        $products = Mage::getModel('catalog/product')
-            ->getCollection()
-            ->addAttributeToSelect('name')
-            ->setOrder('name', 'ASC');
+        $resource = Mage::getSingleton('core/resource');
+        $readConnection = $resource->getConnection('core_read');
+        $table = $resource->getTableName('catalog/product');
 
-        foreach ($products as $product)
-        {
-            $productArray[] = array(
-                'label' => $product->getName(),
-                'value' => $product->getId()
-            );
-        }
+        // We utilise a direct SQL query fetch here to avoid
+        // loading a model for every product returned
+        $products = $readConnection->fetchAll(
+            'SELECT `sku` AS `label`, `entity_id` AS `value` FROM ' . $table
+        );
 
-        return $productArray;
+        return $products;
     }
 }

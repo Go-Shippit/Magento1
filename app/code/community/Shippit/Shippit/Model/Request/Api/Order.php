@@ -22,7 +22,7 @@ class Shippit_Shippit_Model_Request_Api_Order extends Varien_Object
     protected $helper;
     protected $api;
     protected $carrierCode;
-    protected $itemsHelper;
+    protected $itemHelper;
     protected $order;
 
     /**
@@ -51,11 +51,12 @@ class Shippit_Shippit_Model_Request_Api_Order extends Varien_Object
     const SHIPPING_SERVICE_PRIORITY        = 'priority';
     const SHIPPING_SERVICE_INTERNATIONAL   = 'international';
 
-    public function __construct() {
+    public function __construct()
+    {
         $this->helper = Mage::helper('shippit/sync_order');
         $this->api = Mage::helper('shippit/api');
         $this->carrierCode = $this->helper->getCarrierCode();
-        $this->itemsHelper = Mage::helper('shippit/sync_order_items');
+        $this->itemHelper = Mage::helper('shippit/sync_item');
     }
 
     public function processSyncOrder(Shippit_Shippit_Model_Sync_Order $syncOrder)
@@ -158,6 +159,9 @@ class Shippit_Shippit_Model_Request_Api_Order extends Varien_Object
                     $item->getQty(),
                     $item->getPrice(),
                     $item->getWeight(),
+                    $item->getLength(),
+                    $item->getWidth(),
+                    $item->getDepth(),
                     $item->getLocation()
                 );
             }
@@ -634,7 +638,7 @@ class Shippit_Shippit_Model_Request_Api_Order extends Varien_Object
      * Add a parcel with attributes
      *
      */
-    public function addItem($sku, $title, $qty, $price, $weight = 0, $location = null)
+    public function addItem($sku, $title, $qty, $price, $weight = 0, $length = null, $width = null, $depth = null, $location = null)
     {
         $parcelAttributes = $this->getParcelAttributes();
 
@@ -649,6 +653,9 @@ class Shippit_Shippit_Model_Request_Api_Order extends Varien_Object
             'price' => (float) $price,
             // if a 0 weight is provided, stub the weight to 0.2kg
             'weight' => (float) ($weight == 0 ? 0.2 : $weight),
+            'length' => (float) $length,
+            'width' => (float) $width,
+            'depth' => (float) $depth,
             'location' => $location
         );
 

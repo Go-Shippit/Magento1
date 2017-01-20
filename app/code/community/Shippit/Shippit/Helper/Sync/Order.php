@@ -52,6 +52,16 @@ class Shippit_Shippit_Helper_Sync_Order extends Shippit_Shippit_Helper_Data
         return parent::isActive() && self::getStoreConfig('manual_sync_active', true);
     }
 
+    public function isFilterOrderStatusActive()
+    {
+        return self::getStoreConfig('filter_order_status_active');
+    }
+
+    public function getFilterOrderStatus()
+    {
+        return explode(',', self::getStoreConfig('filter_order_status'));
+    }
+
     public function getMode()
     {
         return self::getStoreConfig('mode');
@@ -60,21 +70,6 @@ class Shippit_Shippit_Helper_Sync_Order extends Shippit_Shippit_Helper_Data
     public function getSendAllOrders()
     {
         return self::getStoreConfig('send_all_orders');
-    }
-
-    public function getProductUnitWeight()
-    {
-        return self::getStoreConfig('product_unit_weight');
-    }
-
-    public function isProductLocationActive()
-    {
-        return self::getStoreConfig('product_location_active', true);
-    }
-
-    public function getProductLocationAttributeCode()
-    {
-        return self::getStoreConfig('product_location_attribute_code');
     }
 
     public function getShippingMethodMapping()
@@ -91,7 +86,8 @@ class Shippit_Shippit_Helper_Sync_Order extends Shippit_Shippit_Helper_Data
         return $mappings;
     }
 
-    // Helper Methods
+    // BEGIN: Logic Helper Methods
+
     public function getShippitShippingMethod($shippingMethod)
     {
         // If the shipping method is a shippit method,
@@ -130,13 +126,5 @@ class Shippit_Shippit_Helper_Sync_Order extends Shippit_Shippit_Helper_Data
         return false;
     }
 
-    public function isFilterOrderStatusActive()
-    {
-        return self::getStoreConfig('filter_order_status_active');
-    }
-
-    public function getFilterOrderStatus()
-    {
-        return explode(',', self::getStoreConfig('filter_order_status'));
-    }
+    // END: Login Helper Methods
 }

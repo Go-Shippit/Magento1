@@ -19,7 +19,7 @@
 
 class Shippit_Shippit_Model_Request_Api_Shipment extends Varien_Object
 {
-    protected $itemsHelper;
+    protected $itemHelper;
     protected $items = null;
 
     const ORDER = 'order';
@@ -29,7 +29,7 @@ class Shippit_Shippit_Model_Request_Api_Shipment extends Varien_Object
     const ERROR_ORDER_STATUS = 'The order id requested has an status that is not available for shipping';
 
     public function __construct() {
-        $this->itemsHelper = Mage::helper('shippit/sync_order_items');
+        $this->itemHelper = Mage::helper('shippit/sync_item');
 
         return $this;
     }
@@ -77,7 +77,7 @@ class Shippit_Shippit_Model_Request_Api_Shipment extends Varien_Object
         // for the specific items that have been passed, ensure they are valid
         // items for the item
         if (!empty($items)) {
-            $itemsSkus = $this->itemsHelper->getSkus($items);
+            $itemsSkus = $this->itemHelper->getSkus($items);
 
             if (!empty($itemsSkus)) {
                 $itemsCollection->addFieldToFilter('sku', array('in' => $itemsSkus));
@@ -86,7 +86,7 @@ class Shippit_Shippit_Model_Request_Api_Shipment extends Varien_Object
 
         // For all valid items, process the quantity to be marked as shipped
         foreach ($itemsCollection as $item) {
-            $requestedQty = $this->itemsHelper->getItemData($items, 'sku', $item->getSku(), 'quantity');
+            $requestedQty = $this->itemHelper->getItemData($items, 'sku', $item->getSku(), 'quantity');
 
             /**
              * Magento marks a shipment only for the parent item in the order
@@ -94,7 +94,7 @@ class Shippit_Shippit_Model_Request_Api_Shipment extends Varien_Object
              */
             $rootItem = $this->_getRootItem($item);
 
-            $itemQty = $this->itemsHelper->getQtyToShip($rootItem, $requestedQty);
+            $itemQty = $this->itemHelper->getQtyToShip($rootItem, $requestedQty);
 
             if ($itemQty > 0) {
                 $this->addItem($item->getId(), $itemQty);

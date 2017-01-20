@@ -14,12 +14,85 @@
  * @license    http://www.shippit.com/terms
  */
 
-class Shippit_Shippit_Helper_Sync_Order_Items extends Shippit_Shippit_Helper_Sync_Order
+class Shippit_Shippit_Helper_Sync_Item extends Shippit_Shippit_Helper_Data
 {
     const UNIT_WEIGHT_KILOGRAMS = 'kilograms';
     const UNIT_WEIGHT_GRAMS = 'grams';
 
+    const UNIT_DIMENSION_MILLIMETRES = 'millimetres';
+    const UNIT_DIMENSION_CENTIMETRES = 'centimetres';
+    const UNIT_DIMENSION_METRES = 'metres';
+
     protected $locationAttributeCode = null;
+
+    /**
+     * Path to module sync order config options
+     */
+    const XML_PATH_SETTINGS = 'shippit/sync_item/';
+
+    /**
+     * Return store config value for key
+     *
+     * @param   string $key
+     * @return  string
+     */
+    public function getStoreConfig($key, $flag = false)
+    {
+        $path = self::XML_PATH_SETTINGS . $key;
+
+        if ($flag) {
+            return Mage::getStoreConfigFlag($path);
+        }
+        else {
+            return Mage::getStoreConfig($path);
+        }
+    }
+
+    // BEGIN: Configuration Helpers
+
+    public function getProductUnitWeight()
+    {
+        return self::getStoreConfig('product_unit_weight');
+    }
+
+    public function isProductDimensionActive()
+    {
+        return self::getStoreConfig('product_dimension_active', true);
+    }
+
+    public function getProductUnitDimension()
+    {
+        return self::getStoreConfig('product_unit_dimension');
+    }
+
+    public function getProductDimensionLengthAttributeCode()
+    {
+        return self::getStoreConfig('product_dimension_length_attribute_code');
+    }
+
+    public function getProductDimensionWidthAttributeCode()
+    {
+        return self::getStoreConfig('product_dimension_width_attribute_code');
+    }
+
+    public function getProductDimensionDepthAttributeCode()
+    {
+        return self::getStoreConfig('product_dimension_depth_attribute_code');
+    }
+
+    public function isProductLocationActive()
+    {
+        return self::getStoreConfig('product_location_active', true);
+    }
+
+    public function getProductLocationAttributeCode()
+    {
+        return self::getStoreConfig('product_location_attribute_code');
+    }
+
+    // END: Configuration Helpers
+
+    // BEGIN: Logic Helpers
 
     public function getSkus($items)
     {
@@ -98,6 +171,64 @@ class Shippit_Shippit_Helper_Sync_Order_Items extends Shippit_Shippit_Helper_Syn
         return $weight;
     }
 
+    public function getDimension($dimension)
+    {
+        // ensure the dimension is present and not empty
+        if (empty($dimension)) {
+            return $dimension;
+        }
+
+        switch ($this->getProductUnitDimension()) {
+            case self::UNIT_DIMENSION_MILLIMETRES:
+                $dimension = ($dimension / 10);
+                break;
+            case self::UNIT_DIMENSION_CENTIMETRES:
+                $dimension = $dimension;
+                break;
+            case self::UNIT_DIMENSION_METRES:
+                $dimension = ($dimension * 100);
+                break;
+        }
+
+        return (float) $dimension;
+    }
+
+    public function getWidth($item)
+    {
+        $attributeCode = $this->getProductDimensionWidthAttributeCode();
+
+        if ($attributeCode) {
+            return $this->getAttributeValue($item->getProduct(), $attributeCode);
+        }
+        else {
+            return null;
+        }
+    }
+
+    public function getLength($item)
+    {
+        $attributeCode = $this->getProductDimensionLengthAttributeCode();
+
+        if ($attributeCode) {
+            return $this->getAttributeValue($item->getProduct(), $attributeCode);
+        }
+        else {
+            return null;
+        }
+    }
+
+    public function getDepth($item)
+    {
+        $attributeCode = $this->getProductDimensionDepthAttributeCode();
+
+        if ($attributeCode) {
+            return $this->getAttributeValue($item->getProduct(), $attributeCode);
+        }
+        else {
+            return null;
+        }
+    }
+
     public function getLocation($item)
     {
         $attributeCode = $this->getLocationAttributeCode();
@@ -113,7 +244,7 @@ class Shippit_Shippit_Helper_Sync_Order_Items extends Shippit_Shippit_Helper_Syn
     public function getLocationAttributeCode()
     {
         if (is_null($this->locationAttributeCode)) {
-            $helper = Mage::helper('shippit/sync_order');
+            $helper = Mage::helper('shippit/sync_item');
 
             if (!$helper->isProductLocationActive()) {
                 $this->locationAttributeCode = false;
@@ -160,4 +291,6 @@ class Shippit_Shippit_Helper_Sync_Order_Items extends Shippit_Shippit_Helper_Syn
 
         return $prefix . $functionName;
     }
+
+    // END: Logic Helpers
 }

@@ -21,7 +21,7 @@
 class Shippit_Shippit_Model_Request_Sync_Order extends Varien_Object
 {
     protected $helper;
-    protected $itemsHelper;
+    protected $itemHelper;
     protected $items;
 
     /**
@@ -36,7 +36,7 @@ class Shippit_Shippit_Model_Request_Sync_Order extends Varien_Object
 
     public function __construct() {
         $this->helper = Mage::helper('shippit/sync_order');
-        $this->itemsHelper = Mage::helper('shippit/sync_order_items');
+        $this->itemHelper = Mage::helper('shippit/sync_item');
     }
 
     /**
@@ -67,7 +67,7 @@ class Shippit_Shippit_Model_Request_Sync_Order extends Varien_Object
         // if specific items have been passed,
         // ensure that these are the only items in the request
         if (!empty($items)) {
-            $itemsSkus = $this->itemsHelper->getSkus($items);
+            $itemsSkus = $this->itemHelper->getSkus($items);
 
             if (!empty($itemsSkus)) {
                 $itemsCollection = $itemsCollection->addFieldToFilter('sku', array('in' => $itemsSkus));
@@ -84,14 +84,17 @@ class Shippit_Shippit_Model_Request_Sync_Order extends Varien_Object
                 continue;
             }
 
-            $requestedQty = $this->itemsHelper->getItemData($items, 'sku', $item->getSku(), 'qty');
-            $itemQty = $this->itemsHelper->getQtyToShip($item, $requestedQty);
+            $requestedQty = $this->itemHelper->getItemData($items, 'sku', $item->getSku(), 'qty');
+            $itemQty = $this->itemHelper->getQtyToShip($item, $requestedQty);
             $itemPrice = $this->_getItemPrice($item);
             $itemWeight = $item->getWeight();
 
             $childItem = $this->_getChildItem($item);
             $itemName = $childItem->getName();
-            $itemLocation = $this->itemsHelper->getLocation($childItem);
+            $itemLength = $this->itemHelper->getLength($childItem);
+            $itemWidth = $this->itemHelper->getWidth($childItem);
+            $itemDepth = $this->itemHelper->getDepth($childItem);
+            $itemLocation = $this->itemHelper->getLocation($childItem);
 
             if ($itemQty > 0) {
                 $this->addItem(
@@ -100,6 +103,9 @@ class Shippit_Shippit_Model_Request_Sync_Order extends Varien_Object
                     $itemQty,
                     $itemPrice,
                     $itemWeight,
+                    $itemLength,
+                    $itemWidth,
+                    $itemDepth,
                     $itemLocation
                 );
 
@@ -226,7 +232,7 @@ class Shippit_Shippit_Model_Request_Sync_Order extends Varien_Object
      * Add a parcel with attributes
      *
      */
-    public function addItem($sku, $title, $qty, $price, $weight = 0, $location = null)
+    public function addItem($sku, $title, $qty, $price, $weight = 0, $length = null, $width = null, $depth = null, $location = null)
     {
         $items = $this->getItems();
 
@@ -239,7 +245,10 @@ class Shippit_Shippit_Model_Request_Sync_Order extends Varien_Object
             'title' => $title,
             'qty' => (float) $qty,
             'price' => (float) $price,
-            'weight' => (float) $this->itemsHelper->getWeight($weight),
+            'weight' => (float) $this->itemHelper->getWeight($weight),
+            'length' => (float) $length,
+            'width' => (float) $width,
+            'depth' => (float) $depth,
             'location' => $location
         );
 
