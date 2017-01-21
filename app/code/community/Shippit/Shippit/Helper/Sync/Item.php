@@ -180,13 +180,13 @@ class Shippit_Shippit_Helper_Sync_Item extends Shippit_Shippit_Helper_Data
 
         switch ($this->getProductUnitDimension()) {
             case self::UNIT_DIMENSION_MILLIMETRES:
-                $dimension = ($dimension / 10);
+                $dimension = ($dimension / 1000);
                 break;
             case self::UNIT_DIMENSION_CENTIMETRES:
-                $dimension = $dimension;
+                $dimension = ($dimension / 100);
                 break;
             case self::UNIT_DIMENSION_METRES:
-                $dimension = ($dimension * 100);
+                $dimension = $dimension;
                 break;
         }
 
