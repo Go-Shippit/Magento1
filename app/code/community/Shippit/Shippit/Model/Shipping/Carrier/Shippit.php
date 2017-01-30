@@ -223,10 +223,10 @@ class Shippit_Shippit_Model_Shipping_Carrier_Shippit extends Mage_Shipping_Model
                 $quotePrice *= (1 + ( (float) $this->helper->getMarginAmount() / 100));
                 break;
         }
-    
+
         // ensure we get the lowest price, but not below 0.
         $quotePrice = max(0, $quotePrice);
-    
+
         return $quotePrice;
     }
 
