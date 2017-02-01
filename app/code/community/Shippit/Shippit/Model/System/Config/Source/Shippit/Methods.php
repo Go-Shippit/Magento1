@@ -41,8 +41,7 @@ class Shippit_Shippit_Model_System_Config_Source_Shippit_Methods
         $methods = array(
             'standard' => 'Standard',
             'express' => 'Express',
-            'priority' => 'Priority',
-            'international' => 'International'
+            'priority' => 'Priority'
         );
 
         return $methods;

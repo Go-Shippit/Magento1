@@ -20,4 +20,24 @@ class Shippit_Shippit_Model_Resource_Sync_Order_Collection extends Mage_Core_Mod
     {
         $this->_init('shippit/sync_order');
     }
+
+    /**
+     * Mass update the current collection with data
+     *
+     * @param $data
+     * @return int
+     */
+    public function massUpdate(array $data)
+    {
+        $this->getConnection()->update(
+            $this->getResource()->getMainTable(),
+            $data,
+            $this->getResource()->getIdFieldName()
+                . ' IN('
+                    . implode(',', $this->getAllIds())
+                . ')'
+        );
+
+        return $this;
+    }
 }

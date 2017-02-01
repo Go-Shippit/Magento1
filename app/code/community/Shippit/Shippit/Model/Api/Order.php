@@ -111,12 +111,6 @@ class Shippit_Shippit_Model_Api_Order extends Mage_Core_Model_Abstract
         try {
             $order = $syncOrder->getOrder();
 
-            // If the order is destined for international, override the shipping method as international
-            if ($order->getShippingAddress()->getCountry() != 'AU'
-                && $syncOrder->getShippingMethod() != 'international') {
-                $syncOrder->setShippingMethod('international');
-            }
-
             // Add attempt
             $syncOrder->setAttemptCount($syncOrder->getAttemptCount() + 1);
 

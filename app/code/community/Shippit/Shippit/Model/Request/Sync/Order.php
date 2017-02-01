@@ -207,12 +207,11 @@ class Shippit_Shippit_Model_Request_Sync_Order extends Varien_Object
 
     public function setShippingMethod($shippingMethod)
     {
-        // Standard, express, priority and international options are available
+        // Standard, express and priority options are available
         $validShippingMethods = array(
             'standard',
             'express',
-            'priority',
-            'international'
+            'priority'
         );
 
         // if the shipping method passed is not a standard shippit service class, attempt to get a service class based on the configured mapping
