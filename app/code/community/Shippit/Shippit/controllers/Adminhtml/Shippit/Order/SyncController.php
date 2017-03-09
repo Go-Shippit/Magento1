@@ -28,6 +28,7 @@ class Shippit_Shippit_Adminhtml_Shippit_Order_SyncController extends Mage_Adminh
         }
 
         $order = Mage::getModel('sales/order')->load($orderId);
+        $storeId = $order->getStoreId();
 
         if (!$order) {
             $this->_getSession()->addError($this->__('The order could not be found'));
@@ -35,6 +36,12 @@ class Shippit_Shippit_Adminhtml_Shippit_Order_SyncController extends Mage_Adminh
 
             return;
         }
+
+        // get emulation model
+        $appEmulation = Mage::getSingleton('core/app_emulation');
+
+        // Start Store Emulation
+        $environment = $appEmulation->startEnvironmentEmulation($storeId);
 
         try {
             Mage::dispatchEvent(
@@ -53,8 +60,6 @@ class Shippit_Shippit_Adminhtml_Shippit_Order_SyncController extends Mage_Adminh
                     'order_id' => $orderId
                 )
             );
-
-            return;
         }
         catch (Exception $e) {
             $this->_getSession()->addError($this->__('An error occured while send the order to Shippit') . ' - ' . $e->getMessage());
@@ -65,9 +70,12 @@ class Shippit_Shippit_Adminhtml_Shippit_Order_SyncController extends Mage_Adminh
                     'order_id' => $orderId
                 )
             );
-
-            return;
         }
+
+        // Stop Store Emulation
+        $appEmulation->stopEnvironmentEmulation($environment);
+
+        return;
     }
 
     public function massSendAction()
@@ -87,8 +95,16 @@ class Shippit_Shippit_Adminhtml_Shippit_Order_SyncController extends Mage_Adminh
             ->addAttributeToSelect('shipping_method')
             ->addAttributeToFilter('entity_id', array('in' => $orderIds));
 
+        // get emulation model
+        $appEmulation = Mage::getSingleton('core/app_emulation');
+
         try {
             foreach ($orders as $order) {
+                $storeId = $order->getStoreId();
+
+                // Start Store Emulation
+                $environment = $appEmulation->startEnvironmentEmulation($storeId);
+
                 Mage::dispatchEvent(
                     'shippit_add_order',
                     array(
@@ -96,6 +112,9 @@ class Shippit_Shippit_Adminhtml_Shippit_Order_SyncController extends Mage_Adminh
                         'shipping_method' => $order->getShippingMethod()
                     )
                 );
+
+                // Stop Store Emulation
+                $appEmulation->stopEnvironmentEmulation($environment);
             }
 
             $this->_getSession()->addSuccess($this->__('The orders have been scheduled to sync with Shippit'));
