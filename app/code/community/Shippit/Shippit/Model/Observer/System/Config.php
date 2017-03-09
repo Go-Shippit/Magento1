@@ -83,11 +83,22 @@ class Shippit_Shippit_Model_Observer_System_Config
     {
         try {
             $apiKey = $this->helper->getApiKey();
+            $store = Mage::app()->getStore();
 
-            $webhookUrl = Mage::getUrl('shippit/order/update/', array(
-                'api_key' => $apiKey,
-                '_secure' => true,
-            ));
+            if ($store->getId() == Mage_Core_Model_App::ADMIN_STORE_ID) {
+                $webhookUrl = Mage::getUrl('shippit/order/update/', array(
+                    'api_key' => $apiKey,
+                    '_secure' => true,
+                ));
+            }
+            else {
+                $webhookUrl = Mage::getUrl('shippit/order/update/', array(
+                    'api_key' => $apiKey,
+                    '_store' => $store->getCode(),
+                    '_store_to_url' => true,
+                    '_secure' => true,
+                ));
+            }
 
             $requestData = new Varien_Object;
             $requestData->setWebhookUrl($webhookUrl);
