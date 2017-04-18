@@ -446,7 +446,7 @@
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
                             <show_in_store>0</show_in_store>
-                            <comment>Enter the attribute value to filter by. The * character indicates a wildcard.</comment>
+                            <comment>Enter the attribute value to filter by. A * character indicates a wildcard for attributes.</comment>
                             <depends>
                                 <enabled_product_attribute_active>1</enabled_product_attribute_active>
                             </depends>

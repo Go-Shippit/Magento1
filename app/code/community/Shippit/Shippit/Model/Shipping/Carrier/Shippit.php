@@ -348,18 +348,19 @@ class Shippit_Shippit_Model_Shipping_Carrier_Shippit extends Mage_Shipping_Model
                 ->getCollection()
                 ->addAttributeToFilter('entity_id', array('in' => $productIds));
 
-            // When filtering by attribute value, allow for * as a wildcard
-            if (strpos($attributeValue, '*') !== FALSE) {
-                $attributeValue = str_replace('*', '%', $attributeValue);
+            $attributeInputType = Mage::getResourceModel('catalog/product')
+                ->getAttribute($attributeCode)
+                ->getFrontendInput();
 
-                $attributeProductCount = $attributeProductCount->addAttributeToFilter($attributeCode, array('like' => $attributeValue))
-                    ->getSize();
+            if ($attributeInputType == 'select' || $attributeInputType == 'multiselect') {
+                // Attempt to filter items by the select / multiselect instance
+                $attributeProductCount = $this->_filterByAttributeOptionId($attributeProductCount, $attributeCode, $attributeValue);
             }
-            // Otherwise, use the exact match
             else {
-                $attributeProductCount = $attributeProductCount->addAttributeToFilter($attributeCode, array('eq' => $attributeValue))
-                    ->getSize();
+                $attributeProductCount = $this->_filterByAttributeValue($attributeProductCount, $attributeCode, $attributeValue);
             }
+
+            $attributeProductCount = $attributeProductCount->getSize();
 
             // If the number of filtered products is not
             // equal to the products in the cart, return false
@@ -370,6 +371,56 @@ class Shippit_Shippit_Model_Shipping_Carrier_Shippit extends Mage_Shipping_Model
 
         // All checks have passed, return true
         return true;
+    }
+
+    protected function _filterByAttributeOptionId($collection, $attributeCode, $attributeValue)
+    {
+        $attributeOptions = Mage::getResourceModel('catalog/product')
+            ->getAttribute($attributeCode)
+            ->getSource();
+
+        if (strpos($attributeValue, '*') !== FALSE) {
+            $attributeOptions = $attributeOptions->getAllOptions();
+            $pattern = preg_quote($attributeValue, '/');
+            $pattern = str_replace('\*', '.*', $pattern);
+            $attributeOptionIds = array();
+
+            foreach ($attributeOptions as $attributeOption) {
+                if (preg_match('/^' . $pattern . '$/i', $attributeOption['label'])) {
+                    $attributeOptionIds[] = $attributeOption['value'];
+                }
+            }
+        }
+        else {
+            $attributeOptions = $attributeOptions->getOptionId($attributeValue);
+            $attributeOptionIds = array($attributeOptions);
+        }
+
+        // if we have no options that match the filter,
+        // avoid filtering and return early.
+        if (empty($attributeOptionIds)) {
+            return $collection;
+        }
+
+        return $collection->addAttributeToFilter(
+            $attributeCode,
+            array(
+                'in' => $attributeOptionIds
+            )
+        );
+    }
+
+    protected function _filterByAttributeValue($collection, $attributeCode, $attributeValue)
+    {
+        // Convert the attribute value with "*" to replace with a mysql wildcard character
+        $attributeValue = str_replace('*', '%', $attributeValue);
+
+        return $collection->addAttributeToFilter(
+            $attributeCode,
+            array(
+                'like' => $attributeValue
+            )
+        );
     }
 
     private function _getParcelAttributes($request)
