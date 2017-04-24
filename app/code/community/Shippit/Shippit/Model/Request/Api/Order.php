@@ -653,7 +653,7 @@ class Shippit_Shippit_Model_Request_Api_Order extends Varien_Object
         );
 
         // for dimensions, ensure the item has values for all dimensions
-        if (!empty((float) $length) && !empty((float) $width) && !empty((float) $depth)) {
+        if (!empty($length) && !empty($width) && !empty($depth)) {
             $newParcel = array_merge(
                 $newParcel,
                 array(
