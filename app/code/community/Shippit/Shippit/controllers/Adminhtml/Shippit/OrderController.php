@@ -87,8 +87,20 @@ class Shippit_Shippit_Adminhtml_Shippit_OrderController extends Mage_Adminhtml_C
                 ->save();
         }
 
+        // get emulation model
+        $appEmulation = Mage::getSingleton('core/app_emulation');
+
         foreach ($syncOrders as $syncOrder) {
+            $storeId = $syncOrder->getOrder()->getStoreId();
+
+            // Start Store Emulation
+            $environment = $appEmulation->startEnvironmentEmulation($storeId);
+
+            // Sync the order
             $apiOrder->sync($syncOrder, true);
+
+            // Stop Store Emulation
+            $appEmulation->stopEnvironmentEmulation($environment);
         }
 
         $this->_redirect('*/*/index');

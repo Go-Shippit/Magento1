@@ -29,43 +29,53 @@ class Shippit_Shippit_Model_Observer_System_Config
 
     public function checkApiKey(Varien_Event_Observer $observer)
     {
-        $request = Mage::app()->getRequest();
+        // get emulation model
+        $appEmulation = Mage::getSingleton('core/app_emulation');
 
-        if ($request->getParam('section') != 'shippit') {
-            return;
-        }
+        $configApiKeys = Mage::getModel('core/config_data')->getCollection()
+            ->addFieldToFilter('path', 'shippit/general/api_key');
 
-        try {
-            $apiKeyValid = false;
+        foreach ($configApiKeys as $configApiKey) {
+            $storeId = $this->getStoreIdFromScope($configApiKey->getScope(), $configApiKey->getScopeId());
 
-            $merchant = $this->api->getMerchant();
+            // Start Store Emulation
+            $environment = $appEmulation->startEnvironmentEmulation($storeId);
 
-            if (property_exists($merchant, 'error')) {
-                if ($merchant->error == 'invalid_merchant_account') {
-                    Mage::getSingleton('adminhtml/session')->addError(
-                        $this->helper->__('Shippit configuration error: Please check the API Key')
-                    );
+            try {
+                $apiKeyValid = false;
+
+                $merchant = $this->api->getMerchant();
+
+                if (property_exists($merchant, 'error')) {
+                    if ($merchant->error == 'invalid_merchant_account') {
+                        Mage::getSingleton('adminhtml/session')->addError(
+                            $this->helper->__('Shippit configuration error - Please check the API Key for store "%s"', Mage::app()->getStore()->getName())
+                        );
+                    }
+                    else {
+                        Mage::getSingleton('adminhtml/session')->addError(
+                            $this->helper->__('Shippit API error for store "%s" - ' . $merchant->error, Mage::app()->getStore()->getName())
+                        );
+                    }
                 }
                 else {
-                    Mage::getSingleton('adminhtml/session')->addError(
-                        $this->helper->__('Shippit API error: ' . $merchant->error)
+                    Mage::getSingleton('adminhtml/session')->addSuccess(
+                        $this->helper->__('Shippit API Key Validated for store "%s"', Mage::app()->getStore()->getName())
                     );
+
+                    $apiKeyValid = true;
                 }
             }
-            else {
-                Mage::getSingleton('adminhtml/session')->addSuccess(
-                    $this->helper->__('Shippit API Key Validated')
-                );
-
-                $apiKeyValid = true;
+            catch (Exception $e) {
+                Mage::getSingleton('adminhtml/session')->addError('Shippit API error: An error occured while communicating with the Shippit API for store "%s"', Mage::app()->getStore()->getName());
             }
-        }
-        catch (Exception $e) {
-            Mage::getSingleton('adminhtml/session')->addError('Shippit API error: An error occured while communicating with the Shippit API');
-        }
 
-        if ($apiKeyValid && $this->syncShippingHelper->isActive()) {
-            $this->registerWebhook();
+            if ($apiKeyValid && $this->syncShippingHelper->isActive()) {
+                $this->registerWebhook();
+            }
+
+            // Stop Store Emulation
+            $appEmulation->stopEnvironmentEmulation($environment);
         }
     }
 
@@ -73,11 +83,22 @@ class Shippit_Shippit_Model_Observer_System_Config
     {
         try {
             $apiKey = $this->helper->getApiKey();
+            $store = Mage::app()->getStore();
 
-            $webhookUrl = Mage::getUrl('shippit/order/update/', array(
-                'api_key' => $apiKey,
-                '_secure' => true,
-            ));
+            if ($store->getId() == Mage_Core_Model_App::ADMIN_STORE_ID) {
+                $webhookUrl = Mage::getUrl('shippit/order/update/', array(
+                    'api_key' => $apiKey,
+                    '_secure' => true,
+                ));
+            }
+            else {
+                $webhookUrl = Mage::getUrl('shippit/order/update/', array(
+                    'api_key' => $apiKey,
+                    '_store' => $store->getCode(),
+                    '_store_to_url' => true,
+                    '_secure' => true,
+                ));
+            }
 
             $requestData = new Varien_Object;
             $requestData->setWebhookUrl($webhookUrl);
@@ -85,21 +106,38 @@ class Shippit_Shippit_Model_Observer_System_Config
 
             if (property_exists($merchant, 'error')) {
                 Mage::getSingleton('adminhtml/session')->addError(
-                    $this->helper->__('Shippit Webhook Registration Error: An error occured while registering the webhook with Shippit' . $merchant->error)
+                    $this->helper->__('Shippit Webhook Registration Error: An error occured while registering the webhook with Shippit for store "%s" - ' . $merchant->error, Mage::app()->getStore()->getName())
                 );
             }
             else {
                 Mage::getSingleton('adminhtml/session')->addSuccess(
-                    $this->helper->__('Shippit Webhook Registered: ' . $webhookUrl)
+                    $this->helper->__('Shippit Webhook Registered for store "%s": ' . $webhookUrl, Mage::app()->getStore()->getName())
                 );
             }
         }
         catch (Exception $e) {
             Mage::getSingleton('adminhtml/session')->addError(
-                $this->helper->__('Shippit Webhook Registration Error: An unknown error occured while registering the webhook with Shippit ' . $e->getMessage())
+                $this->helper->__('Shippit Webhook Registration Error: An unknown error occured while registering the webhook with Shippit for store "%s" ' . $e->getMessage(), Mage::app()->getStore()->getName())
             );
         }
 
         return;
+    }
+
+    /**
+     * Returns the Store Id given the scope/scopeId
+     */
+    public function getStoreIdFromScope($scope, $scopeId)
+    {
+        $storeId = Mage_Core_Model_App::ADMIN_STORE_ID;
+
+        if ($scope === 'websites') {
+            $storeId = Mage::app()->getWebsite($scopeId)->getDefaultGroup()->getDefaultStoreId();
+        }
+        elseif ($scope === 'stores') {
+            $storeId = $scopeId;
+        }
+
+        return $storeId;
     }
 }

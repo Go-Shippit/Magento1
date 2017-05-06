@@ -109,14 +109,6 @@ class Shippit_Shippit_Helper_Api extends Mage_Core_Helper_Abstract
 
     protected function prepareMatadata($uri, $requestData, $apiResponse = null)
     {
-        if ($this->logger->bugsnag) {
-            // get the core meta data
-            $metaData = Mage::helper('shippit/bugsnag')->getMetaData();
-        }
-        else {
-            $metaData = array();
-        }
-
         // add the request meta data
         $requestMetaData = array(
             'api_request' => array(
@@ -130,9 +122,7 @@ class Shippit_Shippit_Helper_Api extends Mage_Core_Helper_Abstract
             $requestMetaData['api_request']['response_body'] = json_decode($apiResponse->getBody());
         }
 
-        $metaData = array_merge($metaData, $requestMetaData);
-
-        $this->logger->setMetaData($metaData);
+        $this->logger->setMetaData($requestMetaData);
     }
 
     public function getQuote(Varien_Object $requestData)
