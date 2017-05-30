@@ -22,7 +22,8 @@ class Shippit_Shippit_OrderController extends Mage_Core_Controller_Front_Action
     const ERROR_BAD_REQUEST = 'An invalid request was recieved';
     const ERROR_ORDER_MISSING = 'The order id requested was not found';
     const ERROR_ORDER_STATUS = 'The order id requested has an status that is not available for shipping';
-    const NOTICE_SHIPMENT_STATUS = 'Ignoring the order status update, as we only respond to ready_for_pickup state';
+    const NOTICE_SHIPMENT_STATUS = 'Ignoring the order status update, as we only respond to ready_for_pickup, in_transit state';
+    const NOTICE_SHIPMENT_STATUS_INTRANSIT_PARTIAL = 'Ignoring the order status update, as we only respond to in_transit when the order has not yet had any shipments';
     const ERROR_SHIPMENT_FAILED = 'The shipment record was not able to be created at this time, please try again.';
     const SUCCESS_SHIPMENT_CREATED = 'The shipment record was created successfully.';
 
@@ -51,12 +52,19 @@ class Shippit_Shippit_OrderController extends Mage_Core_Controller_Front_Action
 
         $this->_logRequest($request);
 
+        // Allow in transit requests to make it through, as we
+        // complete further checks in "checkRequestInTransit"
         if (!$this->_checkRequest($request)) {
             return;
         }
 
         // attempt to retrieve request data values for the shipment
         $order = $this->_getOrder($request);
+
+        if (!$this->_checkRequestOrderInTransit($request, $order)) {
+            return;
+        }
+
         $products = $this->_getProducts($request);
         $courierName = $this->_getCourierName($request);
         $trackingNumber = $this->_getTrackingNumber($request);
@@ -164,7 +172,13 @@ class Shippit_Shippit_OrderController extends Mage_Core_Controller_Front_Action
             return false;
         }
 
-        if (!isset($request['current_state']) || empty($request['current_state']) || $request['current_state'] != 'ready_for_pickup') {
+        if (!isset($request['current_state'])
+            || empty($request['current_state'])
+            || (
+                $request['current_state'] != 'ready_for_pickup'
+                && $request['current_state'] != 'in_transit'
+            )
+        ) {
             $response = $this->_prepareResponse(
                 true,
                 self::NOTICE_SHIPMENT_STATUS
@@ -179,6 +193,25 @@ class Shippit_Shippit_OrderController extends Mage_Core_Controller_Front_Action
             $response = $this->_prepareResponse(
                 false,
                 self::ERROR_ORDER_MISSING
+            );
+
+            $this->getResponse()->setBody($response);
+
+            return false;
+        }
+
+        return true;
+    }
+
+    protected function _checkRequestOrderInTransit($request, $order)
+    {
+        // Don't allow requests that are "in_transit"
+        // to be accepted when an order has 1 or more shipments
+        if ($request['current_state'] == 'in_transit'
+            && $order->hasShipments()) {
+            $response = $this->_prepareResponse(
+                true,
+                self::NOTICE_SHIPMENT_STATUS_INTRANSIT_PARTIAL
             );
 
             $this->getResponse()->setBody($response);
