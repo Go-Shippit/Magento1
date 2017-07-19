@@ -67,7 +67,9 @@ class Shippit_Shippit_Model_Observer_System_Config
                 }
             }
             catch (Exception $e) {
-                Mage::getSingleton('adminhtml/session')->addError('Shippit API error: An error occured while communicating with the Shippit API for store "%s"', Mage::app()->getStore()->getName());
+                Mage::getSingleton('adminhtml/session')->addError(
+                    $this->helper->__('Shippit API error: An error occured while communicating with the Shippit API for store "%s"', Mage::app()->getStore()->getName())
+                );
             }
 
             if ($apiKeyValid && $this->syncShippingHelper->isActive()) {
