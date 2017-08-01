@@ -84,7 +84,7 @@ class Shippit_Shippit_Model_Request_Sync_Order extends Varien_Object
                 continue;
             }
 
-            if ($itemQty > 0) {
+            if ($this->getItemQty($items, $item) > 0) {
                 $this->addItem(
                     $this->getItemSku($item),
                     $this->getItemName($item),
