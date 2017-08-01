@@ -84,38 +84,17 @@ class Shippit_Shippit_Model_Request_Sync_Order extends Varien_Object
                 continue;
             }
 
-            $requestedQty = $this->itemHelper->getItemData($items, 'sku', $item->getSku(), 'qty');
-            $itemQty = $this->itemHelper->getQtyToShip($item, $requestedQty);
-            $itemPrice = $this->_getItemPrice($item);
-            $itemWeight = $item->getWeight();
-
-            $childItem = $this->_getChildItem($item);
-            $itemName = $childItem->getName();
-
-            if ($this->itemHelper->isProductDimensionActive()) {
-                $itemLength = $this->itemHelper->getLength($childItem);
-                $itemWidth = $this->itemHelper->getWidth($childItem);
-                $itemDepth = $this->itemHelper->getDepth($childItem);
-            }
-            else {
-                $itemLength = null;
-                $itemWidth = null;
-                $itemDepth = null;
-            }
-
-            $itemLocation = $this->itemHelper->getLocation($childItem);
-
             if ($itemQty > 0) {
                 $this->addItem(
-                    $item->getSku(),
-                    $itemName,
-                    $itemQty,
-                    $itemPrice,
-                    $itemWeight,
-                    $itemLength,
-                    $itemWidth,
-                    $itemDepth,
-                    $itemLocation
+                    $this->getItemSku($item),
+                    $this->getItemName($item),
+                    $this->getItemQty($items, $item),
+                    $this->getItemPrice($item),
+                    $this->getItemWeight($item),
+                    $this->getItemLength($item),
+                    $this->getItemWidth($item),
+                    $this->getItemDepth($item),
+                    $this->getItemLocation($item)
                 );
 
                 $itemsAdded++;
@@ -129,7 +108,84 @@ class Shippit_Shippit_Model_Request_Sync_Order extends Varien_Object
         return $this;
     }
 
-    private function _getItemPrice($item)
+    protected function isProductDimensionActive()
+    {
+        return $this->itemHelper->isProductDimensionActive();
+    }
+
+    protected function getItemSku($item)
+    {
+        return $item->getSku();
+    }
+
+    protected function getItemName($item)
+    {
+        $childItem = $this->_getChildItem($item);
+
+        return $childItem->getName();
+    }
+
+    protected function getItemQty($items, $item)
+    {
+        $requestedQty = $this->getRequestedQuantity($items, 'sku', $item->getSku(), 'qty');
+
+        return $this->itemHelper->getQtyToShip($item, $requestedQty);
+    }
+
+    protected function getRequestedQuantity($items, $itemKey, $itemValue, $itemDataKey)
+    {
+        return $this->itemHelper->getItemData($items, $itemKey, $item->getSku(), $itemDataKey);
+    }
+
+    protected function getItemWeight($item)
+    {
+        return $item->getWeight();
+    }
+
+    protected function getItemLength($item)
+    {
+        $childItem = $this->_getChildItem($item);
+        $isProductDimensionActive = $this->isProductDimensionActive();
+
+        if (!$this->isProductDimensionActive()) {
+            return;
+        }
+
+        return $this->itemHelper->getLength($childItem);
+    }
+
+    protected function getItemWidth($item)
+    {
+        $childItem = $this->_getChildItem($item);
+        $isProductDimensionActive = $this->isProductDimensionActive();
+
+        if (!$this->isProductDimensionActive()) {
+            return;
+        }
+
+        return $this->itemHelper->getWidth($childItem);
+    }
+
+    protected function getItemDepth($item)
+    {
+        $childItem = $this->_getChildItem($item);
+        $isProductDimensionActive = $this->isProductDimensionActive();
+
+        if (!$this->isProductDimensionActive()) {
+            return;
+        }
+
+        return $this->itemHelper->getDepth($childItem);
+    }
+
+    protected function getItemLocation($item)
+    {
+        $childItem = $this->_getChildItem($item);
+
+        return $this->itemHelper->getLocation($childItem);
+    }
+
+    protected function getItemPrice($item)
     {
         $rootItem = $this->_getRootItem($item);
 
@@ -157,7 +213,7 @@ class Shippit_Shippit_Model_Request_Sync_Order extends Varien_Object
      * @param  Mage_Sales_Model_Order_Item $item
      * @return Mage_Sales_Model_Order_Item
      */
-    private function _getRootItem($item)
+    protected function _getRootItem($item)
     {
         if ($item->getParentItem()) {
             return $item->getParentItem();
@@ -175,7 +231,7 @@ class Shippit_Shippit_Model_Request_Sync_Order extends Varien_Object
      * @param  Mage_Sales_Model_Order_Item $item
      * @return Mage_Sales_Model_Order_Item
      */
-    private function _getChildItem($item)
+    protected function _getChildItem($item)
     {
         if ($item->getHasChildren()) {
             $rootItem = $this->_getRootItem($item);
