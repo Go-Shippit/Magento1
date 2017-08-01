@@ -67,7 +67,7 @@ class Shippit_Shippit_Model_Request_Sync_Order extends Varien_Object
         // if specific items have been passed,
         // ensure that these are the only items in the request
         if (!empty($items)) {
-            $itemsSkus = $this->getSkus($items);
+            $itemsSkus = $this->itemHelper->getSkus($items);
 
             if (!empty($itemsSkus)) {
                 $itemsCollection = $itemsCollection->addFieldToFilter('sku', array('in' => $itemsSkus));
@@ -84,23 +84,17 @@ class Shippit_Shippit_Model_Request_Sync_Order extends Varien_Object
                 continue;
             }
 
-            $requestedQty = $this->getRequestedQuantity($items, 'sku', $item->getSku(), 'qty');
-            $itemQty = $this->getItemQty($item, $requestedQty);
-
-            $childItem = $this->_getChildItem($item);
-            $isProductDimensionActive = $this->isProductDimensionActive();
-
             if ($itemQty > 0) {
                 $this->addItem(
-                    $item->getSku(),
-                    $this->getItemName($childItem),
-                    $itemQty,
+                    $this->getItemSku($item),
+                    $this->getItemName($item),
+                    $this->getItemQty($items, $item),
                     $this->getItemPrice($item),
                     $this->getItemWeight($item),
-                    $this->getItemLength($childItem, $isProductDimensionActive),
-                    $this->getItemWidth($childItem, $isProductDimensionActive),
-                    $this->getItemDepth($childItem, $isProductDimensionActive),
-                    $this->getItemLocation($childItem)
+                    $this->getItemLength($item),
+                    $this->getItemWidth($item),
+                    $this->getItemDepth($item),
+                    $this->getItemLocation($item)
                 );
 
                 $itemsAdded++;
@@ -114,9 +108,28 @@ class Shippit_Shippit_Model_Request_Sync_Order extends Varien_Object
         return $this;
     }
 
-    protected function getSkus($items)
+    protected function isProductDimensionActive()
     {
-        return $this->itemHelper->getSkus($items);
+        return $this->itemHelper->isProductDimensionActive();
+    }
+
+    protected function getItemSku($item)
+    {
+        return $item->getSku();
+    }
+
+    protected function getItemName($item)
+    {
+        $childItem = $this->_getChildItem($item);
+
+        return $childItem->getName();
+    }
+
+    protected function getItemQty($items, $item)
+    {
+        $requestedQty = $this->getRequestedQuantity($items, 'sku', $item->getSku(), 'qty');
+
+        return $this->itemHelper->getQtyToShip($item, $requestedQty);
     }
 
     protected function getRequestedQuantity($items, $itemKey, $itemValue, $itemDataKey)
@@ -124,62 +137,55 @@ class Shippit_Shippit_Model_Request_Sync_Order extends Varien_Object
         return $this->itemHelper->getItemData($items, $itemKey, $item->getSku(), $itemDataKey);
     }
 
-    protected function isProductDimensionActive()
-    {
-        return $this->itemHelper->isProductDimensionActive();
-    }
-
-    protected function getItemName($childItem)
-    {
-        return $childItem->getName();
-    }
-
     protected function getItemWeight($item)
     {
         return $item->getWeight();
     }
 
-    protected function getItemLength($childItem, $isProductDimensionActive)
+    protected function getItemLength($item)
     {
-        if($isProductDimensionActive) {
-            return $this->itemHelper->getLength($childItem);
+        $childItem = $this->_getChildItem($item);
+        $isProductDimensionActive = $this->isProductDimensionActive();
+
+        if (!$this->isProductDimensionActive()) {
+            return;
         }
-        else {
-            return null;
-        }
+
+        return $this->itemHelper->getLength($childItem);
     }
 
-    protected function getItemWidth($childItem, $isProductDimensionActive)
+    protected function getItemWidth($item)
     {
-        if($isProductDimensionActive) {
-            return $this->itemHelper->getWidth($childItem);
+        $childItem = $this->_getChildItem($item);
+        $isProductDimensionActive = $this->isProductDimensionActive();
+
+        if (!$this->isProductDimensionActive()) {
+            return;
         }
-        else {
-            return null;
-        }
+
+        return $this->itemHelper->getWidth($childItem);
     }
 
-    protected function getItemDepth($childItem, $isProductDimensionActive)
+    protected function getItemDepth($item)
     {
-        if($isProductDimensionActive) {
-            return $this->itemHelper->getDepth($childItem);
+        $childItem = $this->_getChildItem($item);
+        $isProductDimensionActive = $this->isProductDimensionActive();
+
+        if (!$this->isProductDimensionActive()) {
+            return;
         }
-        else {
-            return null;
-        }
+
+        return $this->itemHelper->getDepth($childItem);
     }
 
-    protected function getItemLocation($childItem)
+    protected function getItemLocation($item)
     {
+        $childItem = $this->_getChildItem($item);
+
         return $this->itemHelper->getLocation($childItem);
     }
 
     protected function getItemPrice($item)
-    {
-        return $this->_getItemPrice($item);
-    }
-
-    protected function _getItemPrice($item)
     {
         $rootItem = $this->_getRootItem($item);
 
@@ -199,11 +205,6 @@ class Shippit_Shippit_Model_Request_Sync_Order extends Varien_Object
         else {
             return $rootItem->getBasePriceInclTax();
         }
-    }
-
-    protected function getItemQty($item, $requestedQty)
-    {
-        return $this->itemHelper->getQtyToShip($item, $requestedQty);
     }
 
     /**
