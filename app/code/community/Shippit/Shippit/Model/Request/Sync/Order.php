@@ -67,7 +67,7 @@ class Shippit_Shippit_Model_Request_Sync_Order extends Varien_Object
         // if specific items have been passed,
         // ensure that these are the only items in the request
         if (!empty($items)) {
-            $itemsSkus = $this->itemHelper->getSkus($items);
+            $itemsSkus = $this->getSkus($items);
 
             if (!empty($itemsSkus)) {
                 $itemsCollection = $itemsCollection->addFieldToFilter('sku', array('in' => $itemsSkus));
@@ -84,11 +84,11 @@ class Shippit_Shippit_Model_Request_Sync_Order extends Varien_Object
                 continue;
             }
 
-            $requestedQty = $this->itemHelper->getItemData($items, 'sku', $item->getSku(), 'qty');
+            $requestedQty = $this->getRequestedQuantity($items, 'sku', $item->getSku(), 'qty');
             $itemQty = $this->getItemQty($item, $requestedQty);
 
             $childItem = $this->_getChildItem($item);
-            $isProductDimensionActive = $this->itemHelper->isProductDimensionActive();
+            $isProductDimensionActive = $this->isProductDimensionActive();
 
             if ($itemQty > 0) {
                 $this->addItem(
@@ -112,6 +112,21 @@ class Shippit_Shippit_Model_Request_Sync_Order extends Varien_Object
         }
 
         return $this;
+    }
+
+    protected function getSkus($items)
+    {
+        return $this->itemHelper->getSkus($items);
+    }
+
+    protected function getRequestedQuantity($items, $itemKey, $itemValue, $itemDataKey)
+    {
+        return $this->itemHelper->getItemData($items, $itemKey, $item->getSku(), $itemDataKey);
+    }
+
+    protected function isProductDimensionActive()
+    {
+        return $this->itemHelper->isProductDimensionActive();
     }
 
     protected function getItemName($childItem)
