@@ -132,9 +132,9 @@ class Shippit_Shippit_Model_Request_Sync_Order extends Varien_Object
         return $this->itemHelper->getQtyToShip($item, $requestedQty);
     }
 
-    protected function getRequestedQuantity($items, $itemKey, $itemValue, $itemDataKey)
+    protected function getRequestedQuantity($items, $itemKey, $itemSku, $itemDataKey)
     {
-        return $this->itemHelper->getItemData($items, $itemKey, $item->getSku(), $itemDataKey);
+        return $this->itemHelper->getItemData($items, $itemKey, $itemSku, $itemDataKey);
     }
 
     protected function getItemWeight($item)
