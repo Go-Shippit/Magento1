@@ -310,6 +310,15 @@
                 <showmethod/>
                 <sort_order>10</sort_order>
             </shippit>
+            <shippit_cc>
+                <model>shippit/shipping_carrier_clickAndCollect</model>
+                <active>0</active>
+                <title>Shippit Click and Collect</title>
+                <method/>
+                <sallowspecific/>
+                <specificcountry/>
+                <sort_order>20</sort_order>
+            </shippit_cc>
         </carriers>
     </default>
 </config>

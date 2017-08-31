@@ -41,7 +41,8 @@ class Shippit_Shippit_Model_System_Config_Source_Shippit_Methods
         $methods = array(
             'standard' => 'Standard',
             'express' => 'Express',
-            'priority' => 'Priority'
+            'priority' => 'Priority',
+            'click_and_collect' => 'Click and Collect'
         );
 
         return $methods;
