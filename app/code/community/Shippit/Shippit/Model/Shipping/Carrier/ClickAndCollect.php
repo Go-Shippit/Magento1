@@ -23,6 +23,16 @@ class Shippit_Shippit_Model_Shipping_Carrier_ClickAndCollect extends Mage_Shippi
      */
     protected $_code = 'shippit_cc';
 
+    protected $helper;
+
+    /**
+     * Attach the helper as a class variable
+     */
+    public function __construct()
+    {
+        $this->helper = Mage::helper('shippit/data');
+    }
+
     public function isTrackingAvailable()
     {
         return false;
@@ -35,6 +45,10 @@ class Shippit_Shippit_Model_Shipping_Carrier_ClickAndCollect extends Mage_Shippi
 
     public function collectRates(Mage_Shipping_Model_Rate_Request $request)
     {
+        if (!$this->helper->isActive()) {
+            return false;
+        }
+
         $result = Mage::getModel('shipping/rate_result');
 
         $result->append($this->_getClickAndCollectRate());
