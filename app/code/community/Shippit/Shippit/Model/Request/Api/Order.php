@@ -642,6 +642,9 @@ class Shippit_Shippit_Model_Request_Api_Order extends Varien_Object
             $parcelAttributes = array();
         }
 
+        // Ensure weights are treated as units with 2 decimal places
+        $weight = round($weight, 2);
+
         $newParcel = array(
             'sku' => $sku,
             'title' => $title,
