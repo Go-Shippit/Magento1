@@ -263,7 +263,7 @@ class Shippit_Shippit_Model_Request_Sync_Order extends Varien_Object
 
     public function setShippingMethod($shippingMethod)
     {
-        // Standard, express, priority and clickandcollect options are available
+        // Standard, express, priority and click_and_collect options are available
         $validShippingMethods = array(
             'standard',
             'express',

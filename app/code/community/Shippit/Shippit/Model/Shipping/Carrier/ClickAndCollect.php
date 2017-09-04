@@ -14,7 +14,7 @@
  * @license    http://www.shippit.com/terms
  */
 
-class Shippit_Shippit_Model_Shipping_Carrier_ClickAndCollect extends Mage_Shipping_Model_Carrier_Abstract implements Mage_Shipping_Model_Carrier_Interface
+class Shippit_Shippit_Model_Shipping_Carrier_ClickAndCollect extends Shippit_Shippit_Model_Shipping_Carrier_Abstract implements Mage_Shipping_Model_Carrier_Interface
 {
     /**
      * Carrier's code
@@ -33,14 +33,11 @@ class Shippit_Shippit_Model_Shipping_Carrier_ClickAndCollect extends Mage_Shippi
         $this->helper = Mage::helper('shippit/data');
     }
 
-    public function isTrackingAvailable()
-    {
-        return false;
-    }
-
     public function getAllowedMethods()
     {
-        return;
+        $allowedMethods['shippit_cc'] = $this->getConfigData('title');
+
+        return $allowedMethods;
     }
 
     public function collectRates(Mage_Shipping_Model_Rate_Request $request)

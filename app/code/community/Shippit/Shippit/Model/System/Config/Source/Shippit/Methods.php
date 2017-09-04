@@ -29,7 +29,7 @@ class Shippit_Shippit_Model_System_Config_Source_Shippit_Methods
         foreach ($methods as $methodValue => $methodLabel) {
             $methodOptions[] = array(
                 'label' => $methodLabel,
-                'value' => $methodValue
+                'value' => $methodValue,
             );
         }
 
@@ -42,7 +42,7 @@ class Shippit_Shippit_Model_System_Config_Source_Shippit_Methods
             'standard' => 'Standard',
             'express' => 'Express',
             'priority' => 'Priority',
-            'click_and_collect' => 'Click and Collect'
+            'click_and_collect' => 'Click and Collect',
         );
 
         return $methods;

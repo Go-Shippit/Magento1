@@ -313,7 +313,7 @@
             <shippit_cc>
                 <model>shippit/shipping_carrier_clickAndCollect</model>
                 <active>0</active>
-                <title>Shippit Click and Collect</title>
+                <title>Click and Collect</title>
                 <method/>
                 <sallowspecific/>
                 <specificcountry/>
