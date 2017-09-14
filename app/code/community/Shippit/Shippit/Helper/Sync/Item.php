@@ -23,6 +23,8 @@ class Shippit_Shippit_Helper_Sync_Item extends Shippit_Shippit_Helper_Data
     const UNIT_DIMENSION_CENTIMETRES = 'centimetres';
     const UNIT_DIMENSION_METRES = 'metres';
 
+    const DEFAULT_WEIGHT = 0.2;
+
     protected $locationAttributeCode = null;
 
     /**
@@ -169,6 +171,11 @@ class Shippit_Shippit_Helper_Sync_Item extends Shippit_Shippit_Helper_Data
         }
 
         return $weight;
+    }
+
+    public function getDefaultWeight()
+    {
+        return self::DEFAULT_WEIGHT;
     }
 
     public function getDimension($dimension)
