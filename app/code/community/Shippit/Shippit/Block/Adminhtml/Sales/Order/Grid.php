@@ -116,7 +116,7 @@ class Shippit_Shippit_Block_Adminhtml_Sales_Order_Grid extends Mage_Adminhtml_Bl
             'index'  => 'service_class',
             'frame_callback' => array($this, 'decorateServiceClass'),
             'type'   => 'options',
-            'options' => Mage::getSingleton('shippit/system_config_source_shippit_methods')->getMethods(true)
+            'options' => Mage::getSingleton('shippit/system_config_source_shippit_shipping_methods')->getMethods(true)
         ));
 
         $this->addColumn('order_state', array(

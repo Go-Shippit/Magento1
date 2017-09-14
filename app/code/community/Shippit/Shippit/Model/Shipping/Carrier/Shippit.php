@@ -233,7 +233,7 @@ class Shippit_Shippit_Model_Shipping_Carrier_Shippit extends Shippit_Shippit_Mod
     public function getAllowedMethods()
     {
         $configAllowedMethods = $this->helper->getAllowedMethods();
-        $availableMethods = Mage::getModel('shippit/system_config_source_shippit_methods')->getMethods();
+        $availableMethods = Mage::getModel('shippit/system_config_source_shippit_shipping_methods')->getMethods();
 
         $allowedMethods = array();
 

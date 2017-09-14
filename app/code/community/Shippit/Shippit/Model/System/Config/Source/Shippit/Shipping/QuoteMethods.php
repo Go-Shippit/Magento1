@@ -14,7 +14,7 @@
  * @license    http://www.shippit.com/terms
  */
 
-class Shippit_Shippit_Model_System_Config_Source_Shippit_LiveQuote_Methods
+class Shippit_Shippit_Model_System_Config_Source_Shippit_Shipping_QuoteMethods
 {
     /**
      * Returns code => code pairs of attributes for all product attributes
