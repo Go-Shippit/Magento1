@@ -642,13 +642,16 @@ class Shippit_Shippit_Model_Request_Api_Order extends Varien_Object
             $parcelAttributes = array();
         }
 
+        // Ensure weights are treated as units with 2 decimal places
+        $weight = round($weight, 2);
+
         $newParcel = array(
             'sku' => $sku,
             'title' => $title,
             'qty' => (float) $qty,
             'price' => (float) $price,
-            // if a 0 weight is provided, stub the weight to 0.2kg
-            'weight' => (float) ($weight == 0 ? 0.2 : $weight),
+            // if a 0 weight is provided, stub the weight to the default weight value
+            'weight' => (float) ($weight == 0 ? $this->itemHelper->getDefaultWeight() : $weight),
             'location' => $location
         );
 
