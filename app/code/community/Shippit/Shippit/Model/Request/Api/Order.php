@@ -650,8 +650,8 @@ class Shippit_Shippit_Model_Request_Api_Order extends Varien_Object
             'title' => $title,
             'qty' => (float) $qty,
             'price' => (float) $price,
-            // if a 0 weight is provided, stub the weight to 0.2kg
-            'weight' => (float) ($weight == 0 ? 0.2 : $weight),
+            // if a 0 weight is provided, stub the weight to the default weight value
+            'weight' => (float) ($weight == 0 ? $this->itemHelper->getDefaultWeight() : $weight),
             'location' => $location
         );
 
