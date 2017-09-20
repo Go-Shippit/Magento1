@@ -90,6 +90,12 @@ class Shippit_Shippit_Helper_Sync_Order extends Shippit_Shippit_Helper_Data
 
     public function getShippitShippingMethod($shippingMethod)
     {
+        // If the shipping method is a shippit click and collect
+        // method, process as 'click_and_collect'
+        if (strpos($shippingMethod, self::CARRIER_CODE_CC) !== FALSE) {
+            return 'click_and_collect';
+        }
+
         // If the shipping method is a shippit method,
         // processing using the selected shipping options
         if (strpos($shippingMethod, self::CARRIER_CODE) !== FALSE) {

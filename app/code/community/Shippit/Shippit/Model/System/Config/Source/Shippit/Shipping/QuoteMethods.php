@@ -14,7 +14,7 @@
  * @license    http://www.shippit.com/terms
  */
 
-class Shippit_Shippit_Model_System_Config_Source_Shippit_Methods
+class Shippit_Shippit_Model_System_Config_Source_Shippit_Shipping_QuoteMethods
 {
     /**
      * Returns code => code pairs of attributes for all product attributes
@@ -29,7 +29,7 @@ class Shippit_Shippit_Model_System_Config_Source_Shippit_Methods
         foreach ($methods as $methodValue => $methodLabel) {
             $methodOptions[] = array(
                 'label' => $methodLabel,
-                'value' => $methodValue
+                'value' => $methodValue,
             );
         }
 
@@ -41,7 +41,7 @@ class Shippit_Shippit_Model_System_Config_Source_Shippit_Methods
         $methods = array(
             'standard' => 'Standard',
             'express' => 'Express',
-            'priority' => 'Priority'
+            'priority' => 'Priority',
         );
 
         return $methods;

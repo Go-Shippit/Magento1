@@ -14,7 +14,7 @@
  * @license    http://www.shippit.com/terms
  */
 
-class Shippit_Shippit_Model_Shipping_Carrier_Shippit extends Mage_Shipping_Model_Carrier_Abstract implements Mage_Shipping_Model_Carrier_Interface
+class Shippit_Shippit_Model_Shipping_Carrier_Shippit extends Shippit_Shippit_Model_Shipping_Carrier_Abstract implements Mage_Shipping_Model_Carrier_Interface
 {
     /**
      * Carrier's code
@@ -230,25 +230,10 @@ class Shippit_Shippit_Model_Shipping_Carrier_Shippit extends Mage_Shipping_Model
         return $quotePrice;
     }
 
-    public function isTrackingAvailable()
-    {
-        return true;
-    }
-
-    public function getTrackingInfo($tracking)
-    {
-        $track = Mage::getModel('shipping/tracking_result_status');
-        $track->setUrl('https://www.shippit.com/track/' . $tracking)
-            ->setTracking($tracking)
-            ->setCarrierTitle($this->getConfigData('name'));
-
-        return $track;
-    }
-
     public function getAllowedMethods()
     {
         $configAllowedMethods = $this->helper->getAllowedMethods();
-        $availableMethods = Mage::getModel('shippit/system_config_source_shippit_methods')->getMethods();
+        $availableMethods = Mage::getModel('shippit/system_config_source_shippit_shipping_methods')->getMethods();
 
         $allowedMethods = array();
 

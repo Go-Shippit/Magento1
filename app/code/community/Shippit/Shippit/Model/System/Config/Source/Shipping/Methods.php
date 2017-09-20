@@ -24,7 +24,7 @@ class Shippit_Shippit_Model_System_Config_Source_Shipping_Methods
         foreach ($carriers as $carrierCode => $carrier) {
             // if the carrier is shippit, exclude it from the
             // returned results
-            if ($excludeShippit && $carrierCode == 'shippit') {
+            if ($excludeShippit && ($carrierCode == 'shippit' || $carrierCode == 'shippit_cc')) {
                 continue;
             }
 

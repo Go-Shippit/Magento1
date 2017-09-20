@@ -29,6 +29,7 @@ class Shippit_Shippit_Helper_Data extends Mage_Core_Helper_Abstract
     const SYNC_MODE_CUSTOM = 'custom';
 
     const CARRIER_CODE = 'shippit';
+    const CARRIER_CODE_CC = 'shippit_cc';
 
     /**
      * Return store config value for key
