@@ -23,7 +23,7 @@ class Shippit_Shippit_Block_Checkout_Cart_Shipping extends Mage_Checkout_Block_C
      */
     public function getCityActive()
     {
-        return (bool) Mage::helper('shippit/carrier')->isActive()
+        return (bool) Mage::helper('shippit/carrier_shippit')->isActive()
             || parent::getCityActive();
     }
 
@@ -34,7 +34,7 @@ class Shippit_Shippit_Block_Checkout_Cart_Shipping extends Mage_Checkout_Block_C
      */
     public function getStateActive()
     {
-        return (bool) Mage::helper('shippit/carrier')->isActive()
+        return (bool) Mage::helper('shippit/carrier_shippit')->isActive()
             || parent::getStateActive();
     }
 }

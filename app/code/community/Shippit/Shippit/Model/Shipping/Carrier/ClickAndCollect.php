@@ -30,7 +30,12 @@ class Shippit_Shippit_Model_Shipping_Carrier_ClickAndCollect extends Shippit_Shi
      */
     public function __construct()
     {
-        $this->helper = Mage::helper('shippit/data');
+        $this->helper = Mage::helper('shippit/carrier_clickAndCollect');
+    }
+
+    public function isActive()
+    {
+        return $this->helper->isActive();
     }
 
     public function getAllowedMethods()
@@ -42,10 +47,6 @@ class Shippit_Shippit_Model_Shipping_Carrier_ClickAndCollect extends Shippit_Shi
 
     public function collectRates(Mage_Shipping_Model_Rate_Request $request)
     {
-        if (!$this->helper->isActive()) {
-            return false;
-        }
-
         $result = Mage::getModel('shipping/rate_result');
 
         $result->append($this->_getClickAndCollectRate());
