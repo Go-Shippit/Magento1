@@ -36,11 +36,16 @@ class Shippit_Shippit_Model_Shipping_Carrier_Shippit extends Shippit_Shippit_Mod
      */
     public function __construct()
     {
-        $this->helper = Mage::helper('shippit/carrier');
+        $this->helper = Mage::helper('shippit/carrier_shippit');
         $this->api = Mage::helper('shippit/api');
         $this->logger = Mage::getModel('shippit/logger');
 
         return parent::__construct();
+    }
+
+    public function isActive()
+    {
+        return $this->helper->isActive();
     }
 
     /**
@@ -52,10 +57,6 @@ class Shippit_Shippit_Model_Shipping_Carrier_Shippit extends Shippit_Shippit_Mod
      */
     public function collectRates(Mage_Shipping_Model_Rate_Request $request)
     {
-        if (!$this->helper->isActive()) {
-            return false;
-        }
-
         // check if we have any methods allowed before proceeding
         $allowedMethods = $this->helper->getAllowedMethods();
         if (count($allowedMethods) == 0) {

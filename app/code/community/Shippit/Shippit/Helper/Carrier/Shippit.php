@@ -14,7 +14,7 @@
  * @license    http://www.shippit.com/terms
  */
 
-class Shippit_Shippit_Helper_Carrier extends Shippit_Shippit_Helper_Data
+class Shippit_Shippit_Helper_Carrier_Shippit extends Shippit_Shippit_Helper_Data
 {
     /**
      * Path to module carrier options
