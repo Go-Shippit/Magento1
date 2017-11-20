@@ -20,7 +20,6 @@
 class Shippit_Shippit_Model_Request_Api_Shipment extends Varien_Object
 {
     protected $itemHelper;
-    protected $items = null;
 
     const ORDER = 'order';
     const ITEMS = 'items';
@@ -28,7 +27,8 @@ class Shippit_Shippit_Model_Request_Api_Shipment extends Varien_Object
     const ERROR_ORDER_MISSING = 'The order id requested was not found';
     const ERROR_ORDER_STATUS = 'The order id requested has an status that is not available for shipping';
 
-    public function __construct() {
+    public function __construct()
+    {
         $this->itemHelper = Mage::helper('shippit/sync_item');
 
         return $this;
@@ -68,9 +68,6 @@ class Shippit_Shippit_Model_Request_Api_Shipment extends Varien_Object
      */
     public function processItems($items = array())
     {
-        // store items on the internal model property
-        $this->items = $items;
-
         $itemsCollection = Mage::getResourceModel('sales/order_item_collection')
             ->addFieldToFilter('order_id', $this->getOrderId());
 
@@ -84,9 +81,9 @@ class Shippit_Shippit_Model_Request_Api_Shipment extends Varien_Object
             }
         }
 
-        // For all valid items, process the quantity to be marked as shipped
+        // For all valid items, process the qty to be marked as shipped
         foreach ($itemsCollection as $item) {
-            $requestedQty = $this->itemHelper->getItemData($items, 'sku', $item->getSku(), 'quantity');
+            $requestedQty = $this->itemHelper->getItemData($items, 'sku', $item->getSku(), 'qty');
 
             /**
              * Magento marks a shipment only for the parent item in the order
@@ -96,9 +93,11 @@ class Shippit_Shippit_Model_Request_Api_Shipment extends Varien_Object
 
             $itemQty = $this->itemHelper->getQtyToShip($rootItem, $requestedQty);
 
-            if ($itemQty > 0) {
-                $this->addItem($item->getId(), $itemQty);
+            if ($itemQty <= 0) {
+                continue;
             }
+
+            $this->addItem($item->getId(), $itemQty);
         }
 
         return $this;

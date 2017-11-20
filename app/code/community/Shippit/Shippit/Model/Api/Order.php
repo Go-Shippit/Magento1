@@ -21,9 +21,10 @@
 
 class Shippit_Shippit_Model_Api_Order extends Mage_Core_Model_Abstract
 {
-    protected $api;
     protected $helper;
     protected $itemHelper;
+    protected $api;
+    protected $logger;
 
     public function __construct()
     {
@@ -136,7 +137,11 @@ class Shippit_Shippit_Model_Api_Order extends Mage_Core_Model_Abstract
             if ($displayNotifications) {
                 Mage::getSingleton('adminhtml/session')
                     ->addSuccess(
-                        $this->helper->__('Order ' . $order->getIncrementId() . ' Synced with Shippit - ' . $apiResponse->tracking_number)
+                        $this->helper->__(
+                            'Order %s Synced with Shippit - Shippit Tracking Number %s',
+                            $order->getIncrementId(),
+                            $apiResponse->tracking_number
+                        )
                     );
             }
         }
@@ -155,7 +160,11 @@ class Shippit_Shippit_Model_Api_Order extends Mage_Core_Model_Abstract
             if ($displayNotifications) {
                 Mage::getSingleton('adminhtml/session')
                     ->addError(
-                        $this->helper->__('Order ' . $syncOrder->getOrder()->getIncrementId() . ' was not Synced with Shippit - ' . $e->getMessage())
+                        $this->helper->__(
+                            'Order %s was not Synced with Shippit - %s',
+                            $syncOrder->getOrder()->getIncrementId(),
+                            $e->getMessage()
+                        )
                     );
             }
 

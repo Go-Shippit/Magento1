@@ -14,16 +14,16 @@
  * @license    http://www.shippit.com/terms
  */
 
-class Shippit_Shippit_Adminhtml_Shippit_OrderController extends Mage_Adminhtml_Controller_Action
+class Shippit_Shippit_Adminhtml_Shippit_ShipmentController extends Mage_Adminhtml_Controller_Action
 {
     public function indexAction()
     {
-        $this->_title($this->__('Sales'))->_title($this->__('Shippit Orders'));
+        $this->_title($this->__('Sales'))->_title($this->__('Shippit Shipments'));
 
         $this->loadLayout();
-        $this->_setActiveMenu('sales/shippit/orders');
+        $this->_setActiveMenu('sales/shippit/shipments');
 
-        $this->_addContent($this->getLayout()->createBlock('shippit/adminhtml_sales_order'));
+        $this->_addContent($this->getLayout()->createBlock('shippit/adminhtml_sales_shipment'));
         $this->renderLayout();
     }
 
@@ -36,28 +36,19 @@ class Shippit_Shippit_Adminhtml_Shippit_OrderController extends Mage_Adminhtml_C
     public function massSyncAction()
     {
         $syncIds = $this->getRequest()->getPost('sync_ids', array());
-        $this->_syncOrders($syncIds);
+        $this->_syncShipments($syncIds);
     }
 
     public function syncAction()
     {
         $syncId = $this->getRequest()->getParam('id', null);
-
-        if (empty($syncId)) {
-            $this->_getSession()->addError($this->__('You must select at least 1 order to sync'));
-
-            $this->_redirect('*/*/index');
-
-            return;
-        }
-
-        $this->_syncOrders(array($syncId));
+        $this->_syncShipments(array($syncId));
     }
 
-    private function _syncOrders($syncIds)
+    private function _syncShipments($syncIds)
     {
         if (empty($syncIds)) {
-            $this->_getSession()->addError($this->__('You must select at least 1 order to sync'));
+            $this->_getSession()->addError($this->__('You must select at least 1 shipment to sync'));
 
             $this->_redirect('*/*/index');
 
@@ -65,24 +56,26 @@ class Shippit_Shippit_Adminhtml_Shippit_OrderController extends Mage_Adminhtml_C
         }
 
         // get a list of all pending sync in the sync queue
-        $syncOrders = Mage::getModel('shippit/sync_order')
+        $syncShipments = Mage::getModel('shippit/sync_shipment')
             ->getCollection()
             ->addFieldToFilter('sync_id', array('in', $syncIds));
 
-        if ($syncOrders->getSize() == 0) {
-            $this->_getSession()->addError($this->__('No valid orders were found'));
+        if ($syncShipments->getSize() == 0) {
+            $this->_getSession()->addError($this->__('No valid shipments were found'));
 
             $this->_redirect('*/*/index');
 
             return;
         }
 
-        $apiOrder = Mage::getSingleton('shippit/api_order');
+        $apiShipment = Mage::getSingleton('shippit/api_shipment');
 
         // reset the status of all items and attempts
-        foreach ($syncOrders as $syncOrder) {
-            $syncOrder->setStatus(Shippit_Shippit_Model_Sync_Order::STATUS_PENDING)
-                ->setTrackNumber(null)
+        foreach ($syncShipments as $syncShipment) {
+            $syncShipment->setStatus(Shippit_Shippit_Model_Sync_Shipment::STATUS_PENDING)
+                ->setAttemptCount(0)
+                ->setShipmentIncrement(null)
+                ->setTrackingNumber(null)
                 ->setSyncedAt(null)
                 ->save();
         }
@@ -90,14 +83,14 @@ class Shippit_Shippit_Adminhtml_Shippit_OrderController extends Mage_Adminhtml_C
         // get emulation model
         $appEmulation = Mage::getSingleton('core/app_emulation');
 
-        foreach ($syncOrders as $syncOrder) {
-            $storeId = $syncOrder->getOrder()->getStoreId();
+        foreach ($syncShipments as $syncShipment) {
+            $storeId = $syncShipment->getStoreId();
 
             // Start Store Emulation
             $environment = $appEmulation->startEnvironmentEmulation($storeId);
 
             // Sync the order
-            $apiOrder->sync($syncOrder, true);
+            $apiShipment->sync($syncShipment, true);
 
             // Stop Store Emulation
             $appEmulation->stopEnvironmentEmulation($environment);
@@ -113,7 +106,7 @@ class Shippit_Shippit_Adminhtml_Shippit_OrderController extends Mage_Adminhtml_C
         $syncId = $this->getRequest()->getParam('id', null);
 
         if (empty($syncId)) {
-            $this->_getSession()->addError($this->__('You must select at least 1 order to remove'));
+            $this->_getSession()->addError($this->__('You must select at least 1 shipment to remove'));
 
             $this->_redirect('*/*/index');
 
@@ -133,15 +126,15 @@ class Shippit_Shippit_Adminhtml_Shippit_OrderController extends Mage_Adminhtml_C
     private function _removeItems($syncIds)
     {
         if (empty($syncIds)) {
-            $this->_getSession()->addError($this->__('You must select at least 1 order to remove'));
+            $this->_getSession()->addError($this->__('You must select at least 1 shipment to remove'));
 
             $this->_redirect('*/*/index');
 
             return;
         }
 
-        // Get a list of all order sync items to be removed
-        $syncItems = Mage::getModel('shippit/sync_order')
+        // Get the shipment sync items to be removed
+        $syncItems = Mage::getModel('shippit/sync_shipment')
             ->getCollection()
             ->addFieldToFilter('sync_id', array('in', $syncIds));
 
@@ -150,10 +143,10 @@ class Shippit_Shippit_Adminhtml_Shippit_OrderController extends Mage_Adminhtml_C
         }
 
         if (count($syncItems) > 1) {
-            $this->_getSession()->addSuccess($this->__('The orders have been removed from the sync queue'));
+            $this->_getSession()->addSuccess($this->__('The shipments have been removed from the sync queue'));
         }
         else {
-            $this->_getSession()->addSuccess($this->__('The order has been removed from the sync queue'));
+            $this->_getSession()->addSuccess($this->__('The shipment has been removed from the sync queue'));
         }
 
         $this->_redirect('*/*/index');
@@ -166,7 +159,7 @@ class Shippit_Shippit_Adminhtml_Shippit_OrderController extends Mage_Adminhtml_C
         $syncId = $this->getRequest()->getParam('id', null);
 
         if (empty($syncId)) {
-            $this->_getSession()->addError($this->__('You must select at least 1 order to schedule'));
+            $this->_getSession()->addError($this->__('You must select at least 1 shipment to schedule'));
 
             $this->_redirect('*/*/index');
 
@@ -186,31 +179,32 @@ class Shippit_Shippit_Adminhtml_Shippit_OrderController extends Mage_Adminhtml_C
     private function _scheduleItems($syncIds)
     {
         if (empty($syncIds)) {
-            $this->_getSession()->addError($this->__('You must select at least 1 order to schedule'));
+            $this->_getSession()->addError($this->__('You must select at least 1 shipment to schedule'));
 
             $this->_redirect('*/*/index');
 
             return;
         }
 
-        // Get a list of all order sync items to be scheduled
-        $syncItems = Mage::getModel('shippit/sync_order')
+        // Get the shipment sync items to reschedule
+        $syncItems = Mage::getModel('shippit/sync_shipment')
             ->getCollection()
             ->addFieldToFilter('sync_id', array('in', $syncIds));
 
         foreach ($syncItems as $syncItem) {
-            $syncItem->setStatus(Shippit_Shippit_Model_Sync_Order::STATUS_PENDING)
+            $syncItem->setStatus(Shippit_Shippit_Model_Sync_Shipment::STATUS_PENDING)
                 ->setAttemptCount(0)
+                ->setShipmentIncrement(null)
                 ->setTrackNumber(null)
                 ->setSyncedAt(null)
                 ->save();
         }
 
         if (count($syncItems) > 1) {
-            $this->_getSession()->addSuccess($this->__('The orders have been successfully reset and will sync with Shippit again shortly'));
+            $this->_getSession()->addSuccess($this->__('The shipments have been successfully reset and will be processed again shortly'));
         }
         else {
-            $this->_getSession()->addSuccess($this->__('The order has been successfully reset and will sync with Shippit again shortly'));
+            $this->_getSession()->addSuccess($this->__('The shipments has been successfully reset and will be processed again shortly'));
         }
 
         $this->_redirect('*/*/index');
@@ -220,6 +214,6 @@ class Shippit_Shippit_Adminhtml_Shippit_OrderController extends Mage_Adminhtml_C
 
     protected function _isAllowed()
     {
-        return Mage::getSingleton('admin/session')->isAllowed('sales/shippit/orders');
+        return Mage::getSingleton('admin/session')->isAllowed('sales/shippit/shipments');
     }
 }

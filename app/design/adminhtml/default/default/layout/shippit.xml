@@ -21,4 +21,10 @@
 
         <block type="shippit/adminhtml_sales_order_grid" name="shippit.sales.order.grid" output="toHtml" />
     </adminhtml_shippit_order_grid>
+
+    <adminhtml_shippit_shipment_grid>
+        <update handle="formkey"/>
+
+        <block type="shippit/adminhtml_sales_shipment_grid" name="shippit.sales.shipment.grid" output="toHtml" />
+    </adminhtml_shippit_shipment_grid>
 </layout>

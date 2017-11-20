@@ -18,7 +18,7 @@
 <config>
     <modules>
         <Shippit_Shippit>
-            <version>4.7.4</version>
+            <version>4.8.0</version>
         </Shippit_Shippit>
     </modules>
 
@@ -48,12 +48,19 @@
                     <order_sync>
                         <table>shippit_order_sync</table>
                     </order_sync>
+
                     <sync_order>
                         <table>shippit_sync_order</table>
                     </sync_order>
                     <sync_order_item>
                         <table>shippit_sync_order_item</table>
                     </sync_order_item>
+                    <sync_shipment>
+                        <table>shippit_sync_shipment</table>
+                    </sync_shipment>
+                    <sync_shipment_item>
+                        <table>shippit_sync_shipment_item</table>
+                    </sync_shipment_item>
                 </entities>
             </shippit_resource>
         </models>
@@ -247,6 +254,14 @@
                     <model>shippit/api_order::run</model>
                 </run>
             </shippit_order_sync>
+            <shippit_shipment_sync>
+                <schedule>
+                    <cron_expr>*/5 * * * *</cron_expr>
+                </schedule>
+                <run>
+                    <model>shippit/api_shipment::run</model>
+                </run>
+            </shippit_shipment_sync>
         </jobs>
     </crontab>
 

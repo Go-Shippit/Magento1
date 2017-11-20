@@ -14,24 +14,24 @@
  * @license    http://www.shippit.com/terms
  */
 
-class Shippit_Shippit_Model_Resource_Sync_Order_Item_Collection extends Mage_Core_Model_Resource_Db_Collection_Abstract
+class Shippit_Shippit_Model_Resource_Sync_Shipment_Item_Collection extends Mage_Core_Model_Resource_Db_Collection_Abstract
 {
     protected function _construct()
     {
-        $this->_init('shippit/sync_order_item');
+        $this->_init('shippit/sync_shipment_item');
     }
 
     /**
-     * Filter the items collection by the SyncOrder
+     * Filter the items collection by the Sync Shipment
      *
-     * @param Shippit_Shippit_Model_Sync_Order $syncOrder The Sync Order Object
+     * @param Shippit_Shippit_Model_Sync_Shipment $syncShipment The Sync Shipment Object
      */
-    public function addSyncOrderFilter(Mage_Core_Model_Abstract $syncOrder)
+    public function addSyncShipmentFilter(Shippit_Shippit_Model_Sync_Shipment $syncShipment)
     {
-        $syncOrderId = $syncOrder->getSyncId();
+        $syncShipmentId = $syncShipment->getSyncId();
 
-        if ($syncOrderId) {
-            $this->addFieldToFilter('sync_id', $syncOrderId);
+        if ($syncShipmentId) {
+            $this->addFieldToFilter('sync_id', $syncShipmentId);
         }
         else {
             $this->addFieldToFilter('sync_id', null);
