@@ -27,4 +27,18 @@
 
         <block type="shippit/adminhtml_sales_shipment_grid" name="shippit.sales.shipment.grid" output="toHtml" />
     </adminhtml_shippit_shipment_grid>
+
+    <adminhtml_sales_order_view>
+        <reference name="order_tab_info">
+            <action method="setTemplate">
+                <template>shippit/sales/order/view/tab/info.phtml</template>
+            </action>
+
+            <block type="core/text_list" name="order_info_shipping" />
+        </reference>
+
+        <reference name="order_info_shipping">
+            <block type="shippit/adminhtml_sales_order_view_info" name="shippit.sales.order.shipping.options" template="shippit/sales/order/view/shipping/options.phtml" />
+        </reference>
+    </adminhtml_sales_order_view>
 </layout>
