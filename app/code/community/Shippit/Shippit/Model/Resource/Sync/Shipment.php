@@ -24,10 +24,10 @@ class Shippit_Shippit_Model_Resource_Sync_Shipment extends Mage_Core_Model_Resou
     /**
      * Perform operations before object save
      *
-     * @param Shippit_Shippit_Model_Sync_Shipment $object
+     * @param Mage_Core_Model_Abstract $object
      * @return Shippit_Shippit_Model_Resource_Sync_Shipment
      */
-    protected function _beforeSave(Shippit_Shippit_Model_Sync_Shipment $object)
+    protected function _beforeSave(Mage_Core_Model_Abstract $object)
     {
         if (!$object->getId()) {
             $object->setCreatedAt(Mage::getSingleton('core/date')->gmtDate());
@@ -39,10 +39,10 @@ class Shippit_Shippit_Model_Resource_Sync_Shipment extends Mage_Core_Model_Resou
     /**
      * Save related items to the Sync Shipment
      *
-     * @param Shippit_Shippit_Model_Sync_Shipment $syncShipment
+     * @param Mage_Core_Model_Abstract $syncShipment
      * @return Shippit_Shippit_Model_Sync_Shipment
      */
-    protected function _afterSave(Shippit_Shippit_Model_Sync_Shipment $syncShipment)
+    protected function _afterSave(Mage_Core_Model_Abstract $syncShipment)
     {
         $this->_saveItems($syncShipment);
 
