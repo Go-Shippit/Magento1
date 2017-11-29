@@ -18,7 +18,7 @@
 <config>
     <modules>
         <Shippit_Shippit>
-            <version>4.8.1</version>
+            <version>4.8.2</version>
         </Shippit_Shippit>
     </modules>
 
