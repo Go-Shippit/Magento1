@@ -84,21 +84,26 @@ class Shippit_Shippit_Model_Request_Sync_Order extends Varien_Object
                 continue;
             }
 
-            if ($this->getItemQty($items, $item) > 0) {
-                $this->addItem(
-                    $this->getItemSku($item),
-                    $this->getItemName($item),
-                    $this->getItemQty($items, $item),
-                    $this->getItemPrice($item),
-                    $this->getItemWeight($item),
-                    $this->getItemLength($item),
-                    $this->getItemWidth($item),
-                    $this->getItemDepth($item),
-                    $this->getItemLocation($item)
-                );
+            $itemQty = $this->getItemQty($items, $item);
 
-                $itemsAdded++;
+            // If the item qty is 0, skip this item from being sent to Shippit
+            if ($itemQty <= 0) {
+                continue;
             }
+
+            $this->addItem(
+                $this->getItemSku($item),
+                $this->getItemName($item),
+                $itemQty,
+                $this->getItemPrice($item),
+                $this->getItemWeight($item),
+                $this->getItemLength($item),
+                $this->getItemWidth($item),
+                $this->getItemDepth($item),
+                $this->getItemLocation($item)
+            );
+
+            $itemsAdded++;
         }
 
         if ($itemsAdded == 0) {
@@ -193,18 +198,46 @@ class Shippit_Shippit_Model_Request_Sync_Order extends Varien_Object
         // - If the root item is a bundle, use the item price
         //   Otherwise, use the root item price
         if ($rootItem->getProductType() == 'bundle') {
-            // if we are sending the bundle together
-            if ($rootItem->getId() == $item->getId()) {
-                return $rootItem->getBasePriceInclTax();
-            }
-            // if we are sending individually
-            else {
-                return $item->getBasePriceInclTax();
-            }
+            return $this->getBundleItemPrice($item);
         }
         else {
-            return $rootItem->getBasePriceInclTax();
+            return $this->getBasicItemPrice($item);
         }
+    }
+
+    protected function getBundleItemPrice($item)
+    {
+        $rootItem = $this->_getRootItem($item);
+
+        // if we are sending the bundle together
+        if ($rootItem->getId() == $item->getId()) {
+            $childItems = $rootItem->getChildrenItems();
+            $itemPrice = 0;
+
+            foreach ($childItems as $childItem) {
+                // Get the number of items in the bundle per bundle package purchased
+                $childItemQty = ($childItem->getQtyOrdered() / $rootItem->getQtyOrdered());
+                $rowTotalAfterDiscounts = $childItem->getBaseRowTotal() - $childItem->getBaseDiscountAmount();
+                $rowUnitPrice = $rowTotalAfterDiscounts / $childItem->getQtyOrdered();
+                $bundleItemUnitPrice = $rowUnitPrice * $childItemQty;
+
+                $itemPrice += $bundleItemUnitPrice;
+            }
+
+            return round($itemPrice, 2);
+        }
+        // if we are sending the bundle individually
+        else {
+            return $this->getBasicItemPrice($item);
+        }
+    }
+
+    protected function getBasicItemPrice($item)
+    {
+        $rowTotalAfterDiscounts = $item->getBaseRowTotal() - $item->getBaseDiscountAmount();
+        $itemPrice = $rowTotalAfterDiscounts / $item->getQtyOrdered();
+
+        return round($itemPrice, 2);
     }
 
     /**
