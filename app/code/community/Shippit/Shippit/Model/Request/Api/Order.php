@@ -50,6 +50,7 @@ class Shippit_Shippit_Model_Request_Api_Order extends Varien_Object
     const SHIPPING_SERVICE_EXPRESS         = 'express';
     const SHIPPING_SERVICE_PRIORITY        = 'priority';
     const SHIPPING_SERVICE_CLICKANDCOLLECT = 'click_and_collect';
+    const SHIPPING_SERVICE_PLAINLABEL      = 'PlainLabel';
 
     public function __construct()
     {
@@ -383,6 +384,12 @@ class Shippit_Shippit_Model_Request_Api_Order extends Varien_Object
         }
         elseif ($shippingMethod == 'click_and_collect') {
             return $this->setCourierType(self::SHIPPING_SERVICE_CLICKANDCOLLECT);
+        }
+        elseif ($shippingMethod == 'PlainLabel') {
+            $this->setCourierType(null);
+            $this->setCourierAllocation(self::SHIPPING_SERVICE_PLAINLABEL);
+
+            return $this;
         }
         else {
             return $this->setData(self::COURIER_TYPE, self::SHIPPING_SERVICE_STANDARD);
