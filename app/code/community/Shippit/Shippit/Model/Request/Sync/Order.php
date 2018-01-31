@@ -296,21 +296,16 @@ class Shippit_Shippit_Model_Request_Sync_Order extends Varien_Object
 
     public function setShippingMethod($shippingMethod)
     {
-        // Standard, express, priority and click_and_collect options are available
-        $validShippingMethods = array(
-            'standard',
-            'express',
-            'priority',
-            'click_and_collect',
-        );
+        // Retrieve the shipping method options available from shippit
+        $validShippingMethods = Mage::getModel('shippit/system_config_source_shippit_shipping_methods')->getMethods();
 
         // if the shipping method passed is not a standard shippit service class,
         // attempt to get a service class based on the configured mapping
-        if (!in_array($shippingMethod, $validShippingMethods)) {
+        if (!array_key_exists($shippingMethod, $validShippingMethods)) {
             $shippingMethod = $this->helper->getShippitShippingMethod($shippingMethod);
         }
 
-        if (in_array($shippingMethod, $validShippingMethods)) {
+        if (array_key_exists($shippingMethod, $validShippingMethods)) {
             return $this->setData(self::SHIPPING_METHOD, $shippingMethod);
         }
         else {

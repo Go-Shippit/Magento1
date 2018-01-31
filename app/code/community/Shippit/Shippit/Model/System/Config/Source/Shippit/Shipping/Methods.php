@@ -43,6 +43,7 @@ class Shippit_Shippit_Model_System_Config_Source_Shippit_Shipping_Methods
             'express' => 'Express',
             'priority' => 'Priority',
             'click_and_collect' => 'Click and Collect',
+            'PlainLabel' => 'Plain Label',
         );
 
         return $methods;
