@@ -97,6 +97,9 @@ class Shippit_Shippit_Model_Shipping_Carrier_Shippit extends Shippit_Shippit_Mod
             $shippingQuotes = $this->api->getQuote($quoteRequest);
         }
         catch (Exception $e) {
+			if ( Mage::helper( "shippit" )->isDebugActive() ) {
+		        Mage::logException( $e );
+	        }
             return false;
         }
 
