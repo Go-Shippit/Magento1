@@ -92,6 +92,7 @@ class Shippit_Shippit_Adminhtml_Shippit_Order_SyncController extends Mage_Adminh
         $orders = Mage::getModel('sales/order')
             ->getCollection()
             ->addAttributeToSelect('entity_id')
+            ->addAttributeToSelect('store_id')
             ->addAttributeToSelect('shipping_method')
             ->addAttributeToFilter('entity_id', array('in' => $orderIds));
 
