@@ -21,8 +21,14 @@ class Shippit_Shippit_Block_Adminhtml_System_Config_Form_Field_Renderer_Shippit_
         $column = $this->getColumn();
         $options = Mage::getModel('shippit/system_config_source_shippit_shipping_methods')->toOptionArray();
 
-        foreach ($options as $option) {
-            $optionsHtml[] = '<option value="' . $option['value'] . '">' . $option['label'] . "</option>";
+        foreach ($options as $optionGroup) {
+            $optionsHtml[] = '<optgroup label="' . $optionGroup['label'] . '">';
+
+            foreach ($optionGroup['value'] as $optionValue => $optionLabel) {
+                $optionsHtml[] = '<option value="' . $optionValue . '">' . $optionLabel . "</option>";
+            }
+
+            $optionsHtml[] = '</optgroup>';
         }
 
         return '<select class="'.$column['class'].'" style="'.$column['style'].'" name="'.$this->getInputName().'">'.implode('', $optionsHtml).'</select>';

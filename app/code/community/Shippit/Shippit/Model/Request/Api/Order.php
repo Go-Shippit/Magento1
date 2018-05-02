@@ -24,6 +24,8 @@ class Shippit_Shippit_Model_Request_Api_Order extends Varien_Object
     protected $carrierCode;
     protected $itemHelper;
     protected $order;
+    protected $serviceLevels;
+    protected $couriers;
 
     /**
      * Constants for keys of data array. Identical to the name of the getter in snake case
@@ -58,6 +60,8 @@ class Shippit_Shippit_Model_Request_Api_Order extends Varien_Object
         $this->api = Mage::helper('shippit/api');
         $this->carrierCode = $this->helper->getCarrierCode();
         $this->itemHelper = Mage::helper('shippit/sync_item');
+        $this->serviceLevels = Shippit_Shippit_Model_System_Config_Source_Shippit_Shipping_Methods::$serviceLevels;
+        $this->couriers = Shippit_Shippit_Model_System_Config_Source_Shippit_Shipping_Methods::$couriers;
     }
 
     public function processSyncOrder(Shippit_Shippit_Model_Sync_Order $syncOrder)
@@ -363,36 +367,31 @@ class Shippit_Shippit_Model_Request_Api_Order extends Varien_Object
      */
     public function setShippingMethod($shippingMethod = null)
     {
-        // set the courier details based on the shipping method
-        if ($shippingMethod == 'standard') {
-            return $this->setCourierType(self::SHIPPING_SERVICE_STANDARD);
-        }
-        elseif ($shippingMethod == 'express') {
-            return $this->setCourierType(self::SHIPPING_SERVICE_EXPRESS);
-        }
-        elseif ($shippingMethod == 'priority') {
-            // get the special delivery attributes
-            $deliveryDate = $this->_getOrderDeliveryDate($this->order);
-            $deliveryWindow = $this->_getOrderDeliveryWindow($this->order);
+        // If the shipping method is a service level,
+        // set the courier type attribute
+        if (array_key_exists($shippingMethod, $this->serviceLevels)) {
+            $this->setCourierType($shippingMethod);
 
-            if (!empty($deliveryDate) && !empty($deliveryWindow)) {
-                $this->setDeliveryDate($deliveryDate);
-                $this->setDeliveryWindow($deliveryWindow);
+            if ($shippingMethod == self::SHIPPING_SERVICE_PRIORITY) {
+                // get the special delivery attributes
+                $deliveryDate = $this->_getOrderDeliveryDate($this->order);
+                $deliveryWindow = $this->_getOrderDeliveryWindow($this->order);
+
+                if (!empty($deliveryDate) && !empty($deliveryWindow)) {
+                    $this->setDeliveryDate($deliveryDate);
+                    $this->setDeliveryWindow($deliveryWindow);
+                }
             }
-
-            return $this->setCourierType(self::SHIPPING_SERVICE_PRIORITY);
         }
-        elseif ($shippingMethod == 'click_and_collect') {
-            return $this->setCourierType(self::SHIPPING_SERVICE_CLICKANDCOLLECT);
+        // If shipping method is in the list of available
+        // couriers then set a courier allocation
+        elseif (array_key_exists($shippingMethod, $this->couriers)) {
+            $this->setCourierAllocation($shippingMethod);
         }
-        elseif ($shippingMethod == 'PlainLabel') {
-            $this->setCourierType(null);
-            $this->setCourierAllocation(self::SHIPPING_SERVICE_PLAINLABEL);
-
-            return $this;
-        }
+        // Otherwise, if no matches are found, send
+        // the order as a standard service level
         else {
-            return $this->setData(self::COURIER_TYPE, self::SHIPPING_SERVICE_STANDARD);
+            $this->setCourierType(self::SHIPPING_SERVICE_STANDARD);
         }
     }
 

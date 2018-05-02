@@ -23,6 +23,8 @@ class Shippit_Shippit_Model_Request_Sync_Order extends Varien_Object
     protected $helper;
     protected $itemHelper;
     protected $items;
+    protected $serviceLevels;
+    protected $couriers;
 
     /**
      * Constants for keys of data array. Identical to the name of the getter in snake case
@@ -37,6 +39,8 @@ class Shippit_Shippit_Model_Request_Sync_Order extends Varien_Object
     public function __construct() {
         $this->helper = Mage::helper('shippit/sync_order');
         $this->itemHelper = Mage::helper('shippit/sync_item');
+        $this->serviceLevels = Shippit_Shippit_Model_System_Config_Source_Shippit_Shipping_Methods::$serviceLevels;
+        $this->couriers = Shippit_Shippit_Model_System_Config_Source_Shippit_Shipping_Methods::$couriers;
     }
 
     /**
@@ -301,11 +305,13 @@ class Shippit_Shippit_Model_Request_Sync_Order extends Varien_Object
 
         // if the shipping method passed is not a standard shippit service class,
         // attempt to get a service class based on the configured mapping
-        if (!array_key_exists($shippingMethod, $validShippingMethods)) {
+        if (!array_key_exists($shippingMethod, $this->serviceLevels)
+            && !array_key_exists($shippingMethod, $this->couriers)) {
             $shippingMethod = $this->helper->getShippitShippingMethod($shippingMethod);
         }
 
-        if (array_key_exists($shippingMethod, $validShippingMethods)) {
+        if (array_key_exists($shippingMethod, $this->serviceLevels)
+            || array_key_exists($shippingMethod, $this->couriers)) {
             return $this->setData(self::SHIPPING_METHOD, $shippingMethod);
         }
         else {
