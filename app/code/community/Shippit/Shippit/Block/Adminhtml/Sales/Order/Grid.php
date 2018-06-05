@@ -32,7 +32,7 @@ class Shippit_Shippit_Block_Adminhtml_Sales_Order_Grid extends Mage_Adminhtml_Bl
             ->addFieldToSelect(
                 array(
                     'sync_id',
-                    'service_class' => 'shipping_method',
+                    'shippit_shipping_method' => 'shipping_method',
                     'track_number',
                     'synced_at',
                     'sync_status' => 'status'
@@ -56,7 +56,7 @@ class Shippit_Shippit_Block_Adminhtml_Sales_Order_Grid extends Mage_Adminhtml_Bl
                 'main_table.status'
             )
             ->addFilterToMap(
-                'service_class',
+                'shippit_shipping_method',
                 'main_table.shipping_method'
             )
             ->addFilterToMap(
@@ -111,12 +111,12 @@ class Shippit_Shippit_Block_Adminhtml_Sales_Order_Grid extends Mage_Adminhtml_Bl
             'currency_code' => $currency
         ));
 
-        $this->addColumn('service_class', array(
-            'header' => $helper->__('Service Class'),
-            'index'  => 'service_class',
+        $this->addColumn('shippit_shipping_method', array(
+            'header' => $helper->__('Shipping Method'),
+            'index'  => 'shippit_shipping_method',
             'frame_callback' => array($this, 'decorateServiceClass'),
             'type'   => 'options',
-            'options' => Mage::getSingleton('shippit/system_config_source_shippit_shipping_methods')->getMethods(true)
+            'options' => Mage::getSingleton('shippit/system_config_source_shippit_shipping_methods')->toArray()
         ));
 
         $this->addColumn('order_state', array(
