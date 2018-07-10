@@ -101,10 +101,23 @@ class Shippit_Shippit_Model_Observer_Order_Sync
     {
         $this->_hasAttemptedSync = true;
 
-        // attempt the sync
-        $syncOrderResult = Mage::getModel('shippit/api_order')->sync($syncOrder);
+        // get emulation model
+        $appEmulation = Mage::getSingleton('core/app_emulation');
 
-        return $syncOrderResult;
+        // Start Store Emulation
+        $environment = $appEmulation->startEnvironmentEmulation($syncOrder->getOrder()->getStoreId());
+
+        try {
+            // attempt the sync
+            $syncOrderResult = Mage::getModel('shippit/api_order')->sync($syncOrder);
+
+            return $syncOrderResult;
+        } catch (Exception $e) {
+            $this->_getSession()->addError($this->__('An error occured while send the order to Shippit') . ' - ' . $e->getMessage());
+        } finally {
+            // Stop Store Emulation
+            $appEmulation->stopEnvironmentEmulation($environment);
+        }
     }
 
     /**
@@ -123,7 +136,7 @@ class Shippit_Shippit_Model_Observer_Order_Sync
             return false;
         }
 
-        if ($syncOrder->getStatus() == Shippit_Shippit_Model_Sync_Order::STATUS_PENDING) {
+        if ($syncOrder->getStatus() === Shippit_Shippit_Model_Sync_Order::STATUS_PENDING) {
             return false;
         }
 
