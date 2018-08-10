@@ -30,6 +30,7 @@ class Shippit_Shippit_Model_Shipping_Carrier_Shippit extends Shippit_Shippit_Mod
     protected $helper;
     protected $api;
     protected $logger;
+    protected $itemHelper;
 
     /**
      * Attach the helper as a class variable
@@ -39,6 +40,7 @@ class Shippit_Shippit_Model_Shipping_Carrier_Shippit extends Shippit_Shippit_Mod
         $this->helper = Mage::helper('shippit/carrier_shippit');
         $this->api = Mage::helper('shippit/api');
         $this->logger = Mage::getModel('shippit/logger');
+        $this->itemHelper = Mage::helper('shippit/sync_item');
 
         return parent::__construct();
     }
@@ -409,15 +411,131 @@ class Shippit_Shippit_Model_Shipping_Carrier_Shippit extends Shippit_Shippit_Mod
         );
     }
 
+    /*
+        Check if item is elligible to be added for the quote request
+        based on various product type and option conditions
+     */
+    protected function canAddItemToQuote($item)
+    {
+        // If item is virtual return early
+        if ($item->getIsVirtual()) {
+            return false;
+        }
+
+        $rootItem = $this->getRootItem($item);
+
+        // // Always true if item product type is simple with no parent
+        if (empty($item->getParentItemId()) && $item->getProductType() == Mage_Catalog_Model_Product_Type::TYPE_SIMPLE) {
+            return true;
+        }
+        // Always true if item product type is a grouped product
+        elseif ($rootItem->getProductType() == Mage_Catalog_Model_Product_Type::TYPE_GROUPED) {
+            return true;
+        }
+        // If the product is a bundle, check if it's shipped together or seperately...
+        elseif ($rootItem->getProductType() == Mage_Catalog_Model_Product_Type::TYPE_BUNDLE) {
+            // If the bundle is being shipped seperately
+            if ($rootItem->isShipSeparately()) {
+                // Check if this is the bundle item, or the item within the bundle
+                // If it's the bundle item
+                if ($item->getId() == $rootItem->getId()) {
+                    return false;
+                }
+                // Otherewise, if it's the child item of a shipped seperately bundle
+                else {
+                    return true;
+                }
+            }
+            else {
+                // Check if this is the bundle item, or the item within the bundle
+                // If it's the bundle item
+                if ($item->getId() == $rootItem->getId()) {
+                    return true;
+                }
+                // Otherewise, if it's the child item of a shipped together bundle
+                else {
+                    return false;
+                }
+            }
+        }
+        // If the product is a configurable product
+        elseif ($rootItem->getProductType() == Mage_Catalog_Model_Product_Type::TYPE_CONFIGURABLE) {
+            // Check if the item is a parent / child and return accordingly
+            if ($item->getId() == $rootItem->getId()) {
+                return false;
+            }
+            else {
+                return true;
+            }
+        }
+    }
+
     private function _getParcelAttributes($request)
     {
-        $parcelAttributes = array(
-            array(
-                'qty' => $request->getPackageQty(),
-                'weight' => ($request->getPackageWeight() / $request->getPackageQty())
-            )
-        );
+        // loop through each item and prepare the parcel attributes
+        $items = $request->getAllItems();
+        $parcelAttributes = [];
+
+        foreach ($items as $item) {
+            if (!$this->canAddItemToQuote($item)) {
+                continue;
+            }
+
+            $newParcel = [
+                'qty' => $item->getQty(),
+                'weight' => ($item->getWeight() ? $item->getWeight() : 0.2),
+            ];
+
+            $length = $this->getItemLength($item);
+            $width = $this->getItemWidth($item);
+            $depth = $this->getItemDepth($item);
+
+            // for dimensions, ensure the item has values for all dimensions
+            if (!empty($length) && !empty($width) && !empty($depth)) {
+                $newParcel['length'] = (float) $length;
+                $newParcel['width'] = (float) $width;
+                $newParcel['depth'] = (float) $depth;
+            }
+
+            $parcelAttributes[] = $newParcel;
+        }
 
         return $parcelAttributes;
+    }
+
+    protected function getItemLength($item)
+    {
+        if (!$this->itemHelper->isProductDimensionActive()) {
+            return;
+        }
+
+        return $this->helper->getLength($item);
+    }
+
+    protected function getItemWidth($item)
+    {
+        if (!$this->itemHelper->isProductDimensionActive()) {
+            return;
+        }
+
+        return $this->helper->getWidth($item);
+    }
+
+    protected function getItemDepth($item)
+    {
+        if (!$this->itemHelper->isProductDimensionActive()) {
+            return;
+        }
+
+        return $this->helper->getDepth($item);
+    }
+
+    protected function getRootItem($item)
+    {
+        if ($item->getParentItem()) {
+            return $item->getParentItem();
+        }
+
+        return $item;
     }
 }

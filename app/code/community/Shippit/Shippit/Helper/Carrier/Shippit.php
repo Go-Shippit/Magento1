@@ -17,9 +17,20 @@
 class Shippit_Shippit_Helper_Carrier_Shippit extends Shippit_Shippit_Helper_Data
 {
     /**
+     * Configuration Helper
+     * @var Shippit_Shippit_Helper_Sync_Item
+     */
+    protected $itemHelper;
+
+    /**
      * Path to module carrier options
      */
     const XML_PATH_SETTINGS = 'carriers/shippit/';
+
+    public function __construct()
+    {
+        $this->itemHelper = Mage::helper('shippit/sync_item');
+    }
 
     /**
      * Return store config value for key
@@ -95,5 +106,55 @@ class Shippit_Shippit_Helper_Carrier_Shippit extends Shippit_Shippit_Helper_Data
     public function getEnabledProductAttributeValue()
     {
         return self::getStoreConfig('enabled_product_attribute_value');
+    }
+
+    public function getProductById($id)
+    {
+        return Mage::getModel('catalog/product')->load($id);
+    }
+
+    public function getLength($item)
+    {
+        $attributeCode = $this->itemHelper->getProductDimensionLengthAttributeCode();
+
+        if (empty($attributeCode)) {
+            return;
+        }
+
+        $product = $this->getProductById($item->getProductId());
+
+        $attributeValue = $this->itemHelper->getAttributeValue($product, $attributeCode);
+
+        return $this->itemHelper->getDimension($attributeValue);
+    }
+
+    public function getWidth($item)
+    {
+        $attributeCode = $this->itemHelper->getProductDimensionWidthAttributeCode();
+
+        if (empty($attributeCode)) {
+            return;
+        }
+
+        $product = $this->getProductById($item->getProductId());
+
+        $attributeValue = $this->itemHelper->getAttributeValue($product, $attributeCode);
+
+        return $this->itemHelper->getDimension($attributeValue);
+    }
+
+    public function getDepth($item)
+    {
+        $attributeCode = $this->itemHelper->getProductDimensionDepthAttributeCode();
+
+        if (empty($attributeCode)) {
+            return;
+        }
+
+        $product = $this->getProductById($item->getProductId());
+
+        $attributeValue = $this->itemHelper->getAttributeValue($product, $attributeCode);
+
+        return $this->itemHelper->getDimension($attributeValue);
     }
 }
