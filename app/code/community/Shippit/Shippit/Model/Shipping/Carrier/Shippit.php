@@ -66,7 +66,7 @@ class Shippit_Shippit_Model_Shipping_Carrier_Shippit extends Shippit_Shippit_Mod
         }
 
         // check the products are eligible for shippit shipping
-        if (!$this->_canShipProducts($request)) {
+        if (!$this->canShipProducts($request)) {
             return false;
         }
 
@@ -92,7 +92,7 @@ class Shippit_Shippit_Model_Shipping_Carrier_Shippit extends Shippit_Shippit_Mod
             $quoteRequest->setDropoffState($regionCodeFallback);
         }
 
-        $quoteRequest->setParcelAttributes($this->_getParcelAttributes($request));
+        $quoteRequest->setParcelAttributes($this->getParcelAttributes($request));
 
         try {
             // Call the api and retrieve the quote
@@ -102,12 +102,12 @@ class Shippit_Shippit_Model_Shipping_Carrier_Shippit extends Shippit_Shippit_Mod
             return false;
         }
 
-        $this->_processShippingQuotes($rateResult, $shippingQuotes);
+        $this->processShippingQuotes($rateResult, $shippingQuotes);
 
         return $rateResult;
     }
 
-    private function _processShippingQuotes(&$rateResult, $shippingQuotes)
+    protected function processShippingQuotes(&$rateResult, $shippingQuotes)
     {
         $allowedMethods = $this->helper->getAllowedMethods();
 
@@ -121,19 +121,19 @@ class Shippit_Shippit_Model_Shipping_Carrier_Shippit extends Shippit_Shippit_Mod
                 switch ($shippingQuote->service_level) {
                     case 'priority':
                         if ($isPriorityAvailable) {
-                            $this->_addPriorityQuote($rateResult, $shippingQuote);
+                            $this->addPriorityQuote($rateResult, $shippingQuote);
                         }
 
                         break;
                     case 'express':
                         if ($isExpressAvailable) {
-                            $this->_addExpressQuote($rateResult, $shippingQuote);
+                            $this->addExpressQuote($rateResult, $shippingQuote);
                         }
 
                         break;
                     case 'standard':
                         if ($isStandardAvailable) {
-                            $this->_addStandardQuote($rateResult, $shippingQuote);
+                            $this->addStandardQuote($rateResult, $shippingQuote);
                         }
 
                         break;
@@ -144,7 +144,7 @@ class Shippit_Shippit_Model_Shipping_Carrier_Shippit extends Shippit_Shippit_Mod
         return $rateResult;
     }
 
-    private function _addStandardQuote(&$rateResult, $shippingQuote)
+    protected function addStandardQuote(&$rateResult, $shippingQuote)
     {
         foreach ($shippingQuote->quotes as $shippingQuoteQuote) {
             $rateResultMethod = Mage::getModel('shipping/rate_result_method');
@@ -153,13 +153,13 @@ class Shippit_Shippit_Model_Shipping_Carrier_Shippit extends Shippit_Shippit_Mod
                 ->setMethod('standard')
                 ->setMethodTitle('Standard')
                 ->setCost($shippingQuoteQuote->price)
-                ->setPrice($this->_getQuotePrice($shippingQuoteQuote->price));
+                ->setPrice($this->getQuotePrice($shippingQuoteQuote->price));
 
             $rateResult->append($rateResultMethod);
         }
     }
 
-    private function _addExpressQuote(&$rateResult, $shippingQuote)
+    protected function addExpressQuote(&$rateResult, $shippingQuote)
     {
         foreach ($shippingQuote->quotes as $shippingQuoteQuote) {
             $rateResultMethod = Mage::getModel('shipping/rate_result_method');
@@ -168,13 +168,13 @@ class Shippit_Shippit_Model_Shipping_Carrier_Shippit extends Shippit_Shippit_Mod
                 ->setMethod('express')
                 ->setMethodTitle('Express')
                 ->setCost($shippingQuoteQuote->price)
-                ->setPrice($this->_getQuotePrice($shippingQuoteQuote->price));
+                ->setPrice($this->getQuotePrice($shippingQuoteQuote->price));
 
             $rateResult->append($rateResultMethod);
         }
     }
 
-    private function _addPriorityQuote(&$rateResult, $shippingQuote)
+    protected function addPriorityQuote(&$rateResult, $shippingQuote)
     {
         $maxTimeslots = $this->helper->getMaxTimeslots();
         $timeslotCount = 0;
@@ -205,7 +205,7 @@ class Shippit_Shippit_Model_Shipping_Carrier_Shippit extends Shippit_Shippit_Mod
                 ->setMethod($method)
                 ->setMethodTitle($methodTitle)
                 ->setCost($shippingQuoteQuote->price)
-                ->setPrice($this->_getQuotePrice($shippingQuoteQuote->price));
+                ->setPrice($this->getQuotePrice($shippingQuoteQuote->price));
 
             $rateResult->append($rateResultMethod);
         }
@@ -216,7 +216,7 @@ class Shippit_Shippit_Model_Shipping_Carrier_Shippit extends Shippit_Shippit_Mod
      * @param  float $quotePrice The quote amount
      * @return float             The quote amount, with margin if applicable
      */
-    private function _getQuotePrice($quotePrice)
+    protected function getQuotePrice($quotePrice)
     {
         switch ($this->helper->getMargin()) {
             case 'fixed':
@@ -272,10 +272,10 @@ class Shippit_Shippit_Model_Shipping_Carrier_Shippit extends Shippit_Shippit_Mod
     /**
      * Checks the request and ensures all products are either enabled, or part of the attributes elidgable
      *
-     * @param  [type] $request The shipment request
-     * @return boolean         True or false
+     * @param  Mage_Shipping_Model_Rate_Request $request The shipment request
+     * @return boolean
      */
-    private function _canShipProducts($request)
+    protected function canShipProducts($request)
     {
         $items = $request->getAllItems();
         $productIds = array();
@@ -292,8 +292,8 @@ class Shippit_Shippit_Model_Shipping_Carrier_Shippit extends Shippit_Shippit_Mod
             $productIds[] = $item->getProduct()->getId();
         }
 
-        $canShipEnabledProducts = $this->_canShipEnabledProducts($productIds);
-        $canShipEnabledProductAttributes = $this->_canShipEnabledProductAttributes($productIds);
+        $canShipEnabledProducts = $this->canShipEnabledProducts($productIds);
+        $canShipEnabledProductAttributes = $this->canShipEnabledProductAttributes($productIds);
 
         if ($canShipEnabledProducts && $canShipEnabledProductAttributes) {
             return true;
@@ -303,7 +303,7 @@ class Shippit_Shippit_Model_Shipping_Carrier_Shippit extends Shippit_Shippit_Mod
         }
     }
 
-    private function _canShipEnabledProducts($productIds)
+    protected function canShipEnabledProducts($productIds)
     {
         if (!$this->helper->isEnabledProductActive()) {
             return true;
@@ -322,7 +322,7 @@ class Shippit_Shippit_Model_Shipping_Carrier_Shippit extends Shippit_Shippit_Mod
         return true;
     }
 
-    private function _canShipEnabledProductAttributes($productIds)
+    protected function canShipEnabledProductAttributes($productIds)
     {
         if (!$this->helper->isEnabledProductAttributeActive()) {
             return true;
@@ -342,10 +342,10 @@ class Shippit_Shippit_Model_Shipping_Carrier_Shippit extends Shippit_Shippit_Mod
 
             if ($attributeInputType == 'select' || $attributeInputType == 'multiselect') {
                 // Attempt to filter items by the select / multiselect instance
-                $attributeProductCount = $this->_filterByAttributeOptionId($attributeProductCount, $attributeCode, $attributeValue);
+                $attributeProductCount = $this->filterByAttributeOptionId($attributeProductCount, $attributeCode, $attributeValue);
             }
             else {
-                $attributeProductCount = $this->_filterByAttributeValue($attributeProductCount, $attributeCode, $attributeValue);
+                $attributeProductCount = $this->filterByAttributeValue($attributeProductCount, $attributeCode, $attributeValue);
             }
 
             $attributeProductCount = $attributeProductCount->getSize();
@@ -361,7 +361,7 @@ class Shippit_Shippit_Model_Shipping_Carrier_Shippit extends Shippit_Shippit_Mod
         return true;
     }
 
-    protected function _filterByAttributeOptionId($collection, $attributeCode, $attributeValue)
+    protected function filterByAttributeOptionId($collection, $attributeCode, $attributeValue)
     {
         $attributeOptions = Mage::getResourceModel('catalog/product')
             ->getAttribute($attributeCode)
@@ -398,7 +398,7 @@ class Shippit_Shippit_Model_Shipping_Carrier_Shippit extends Shippit_Shippit_Mod
         );
     }
 
-    protected function _filterByAttributeValue($collection, $attributeCode, $attributeValue)
+    protected function filterByAttributeValue($collection, $attributeCode, $attributeValue)
     {
         // Convert the attribute value with "*" to replace with a mysql wildcard character
         $attributeValue = str_replace('*', '%', $attributeValue);
@@ -473,7 +473,7 @@ class Shippit_Shippit_Model_Shipping_Carrier_Shippit extends Shippit_Shippit_Mod
         }
     }
 
-    private function _getParcelAttributes($request)
+    protected function getParcelAttributes($request)
     {
         // loop through each item and prepare the parcel attributes
         $items = $request->getAllItems();
