@@ -411,9 +411,12 @@ class Shippit_Shippit_Model_Shipping_Carrier_Shippit extends Shippit_Shippit_Mod
         );
     }
 
-    /*
-        Check if item is elligible to be added for the quote request
-        based on various product type and option conditions
+    /**
+     * Check if the item is shippable and that it can
+     * be added to the quote request
+     *
+     * @param Mage_Sales_Model_Quote_Item $item
+     * @return boolean
      */
     protected function canAddItemToQuote($item)
     {
