@@ -32,4 +32,18 @@ $installer->getConnection()
         )
     );
 
+$installer->getConnection()
+    ->addColumn(
+        $installer->getTable('shippit/sync_order_item'),
+        'origin_country_code',
+        array(
+            'type' => Varien_Db_Ddl_Table::TYPE_TEXT,
+            'length' => 255,
+            'default' => null,
+            'nullable' => true,
+            'after' => 'tariff_code',
+            'comment' => 'Item Origin Country Code'
+        )
+    );
+
 $installer->endSetup();

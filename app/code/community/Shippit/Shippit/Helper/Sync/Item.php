@@ -94,7 +94,7 @@ class Shippit_Shippit_Helper_Sync_Item extends Shippit_Shippit_Helper_Data
 
     public function isProductTariffCodeActive()
     {
-        return $this->getValue('product_tariff_code_active');
+        return self::getStoreConfig('product_tariff_code_active');
     }
 
     public function getProductTariffAttributeCode()
@@ -121,6 +121,37 @@ class Shippit_Shippit_Helper_Sync_Item extends Shippit_Shippit_Helper_Data
         }
 
         return $tariffCode;
+    }
+
+    public function isProductOriginCountryCodeActive()
+    {
+        return self::getStoreConfig('product_origin_country_code_active');
+    }
+
+    public function getProductOriginCountryCodeAttributeCode()
+    {
+        return self::getStoreConfig('product_origin_country_code_attribute_code');
+    }
+
+    public function getOriginCountryCode($item)
+    {
+        $attributeCode = $this->getProductOriginCountryCodeAttributeCode();
+
+        if (empty($attributeCode)) {
+            return;
+        }
+
+        $originCountryCode = $this->getAttributeValue($item->getProduct(), $attributeCode);
+
+        // Trim the value, as some attributes can introduce a space character when it's empty
+        $originCountryCode = trim($originCountryCode);
+
+        // If an empty value is provided, return null
+        if (empty($originCountryCode)) {
+            return;
+        }
+
+        return $originCountryCode;
     }
 
     // END: Configuration Helpers

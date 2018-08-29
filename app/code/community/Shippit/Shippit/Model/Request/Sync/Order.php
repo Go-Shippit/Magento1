@@ -105,7 +105,8 @@ class Shippit_Shippit_Model_Request_Sync_Order extends Varien_Object
                 $this->getItemWidth($item),
                 $this->getItemDepth($item),
                 $this->getItemLocation($item),
-                $this->getItemTariffCode($item)
+                $this->getItemTariffCode($item),
+                $this->getOriginCountryCode($item)
             );
 
             $itemsAdded++;
@@ -197,20 +198,82 @@ class Shippit_Shippit_Model_Request_Sync_Order extends Varien_Object
 
     protected function getItemTariffCode($item)
     {
-        $childItem = $this->_getChildItem($item);
-        $tariffCode =  $this->itemHelper->getTariffCode($childItem);
+        if (!$this->itemHelper->isProductTariffCodeActive()) {
+            return;
+        }
 
-        // If product is configurable and
-        // child item does not have tariffcode value set
-        // then we fallback to parent product's tariffcode value
-        if ($item->getProduct()->getTypeId() == Mage_Catalog_Model_Product_Type_Configurable::TYPE_CODE
-            && empty(trim($tariffCode))
+        $rootItem = $this->_getRootItem($item);
+        $childItem = $this->_getChildItem($item);
+
+        // Attempt to retrieve the tariff code from the child item
+        $tariffCode = $this->itemHelper->getTariffCode($childItem);
+
+        // If product has a parent product and the child item
+        // does not have tariff code value set, attempt to
+        // use the root product tariff code value
+        if (
+            $rootItem != $childItem
+            && empty($tariffCode)
         ) {
-            $parentItem = $this->_getRootItem($item);
-            $tariffCode =  $this->itemHelper->getTariffCode($parentItem);
+            $tariffCode = $this->itemHelper->getTariffCode($rootItem);
         }
 
         return $tariffCode;
+    }
+
+    protected function getOriginCountryCode($item)
+    {
+        if (!$this->itemHelper->isProductOriginCountryCodeActive()) {
+            return;
+        }
+
+        $rootItem = $this->_getRootItem($item);
+        $childItem = $this->_getChildItem($item);
+
+        // Attempt to retrieve the origin country from the child item
+        $originCountryCode = $this->itemHelper->getOriginCountryCode($childItem);
+
+        // If product has a parent product and the child item
+        // does not have origin country code value set,
+        // attempt to use the root product origin
+        // country code value
+        if (
+            $rootItem != $childItem
+            && empty($originCountryCode)
+        ) {
+            $originCountryCode = $this->itemHelper->getOriginCountryCode($rootItem);
+        }
+
+        // If the value is 2 characters, assume this is a valid ISO2 code standard
+        // Otherwise, attempt to lookup the country by name / ISO3 code and
+        // convert this value into ISO2
+        if (strlen($originCountryCode) > 2) {
+            $countryCollection = Mage::getModel('directory/country')->getCollection();
+            $countryData = [];
+
+            foreach ($countryCollection as $country) {
+                $countryData[] = [
+                    'name' => $country->getName(),
+                    'iso2_code' => $country->getData('iso2_code'),
+                    'iso3_code' => $country->getData('iso3_code'),
+                ];
+            }
+
+            // Attempt to lookup using the name or iso3 code
+            $countriesFound = array_filter($countryData, function($country) use ($originCountryCode) {
+                return (
+                    $country['iso3_code'] == $originCountryCode
+                    || $country['name'] == $originCountryCode
+                );
+            });
+
+            // If we have at least 1 country match, set this as the origin country code
+            if (!empty($countriesFound)) {
+                $originCountryCode = reset($countriesFound)['iso2_code'];
+            }
+        }
+
+        return $originCountryCode;
     }
 
     protected function getItemPrice($item)
@@ -361,7 +424,8 @@ class Shippit_Shippit_Model_Request_Sync_Order extends Varien_Object
         $width = null,
         $depth = null,
         $location = null,
-        $tariffCode = null
+        $tariffCode = null,
+        $originCountryCode = null
     ) {
         $items = $this->getItems();
 
@@ -377,6 +441,7 @@ class Shippit_Shippit_Model_Request_Sync_Order extends Varien_Object
             'weight' => (float) $this->itemHelper->getWeight($weight),
             'location' => $location,
             'tariff_code' => $tariffCode,
+            'origin_country_code' => $originCountryCode,
         );
 
         // for dimensions, ensure the item has values for all dimensions

@@ -318,6 +318,28 @@
                                 <product_tariff_code_active>1</product_tariff_code_active>
                             </depends>
                         </product_tariff_code_attribute_code>
+                        <product_origin_country_code_active translate="label comment">
+                            <label>Send Product Country Of Origin to Shippit</label>
+                            <frontend_type>select</frontend_type>
+                            <source_model>adminhtml/system_config_source_yesno</source_model>
+                            <sort_order>110</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                        </product_origin_country_code_active>
+                        <product_origin_country_code_attribute_code>
+                            <label>Product Country of Origin Attribute Code</label>
+                            <frontend_type>select</frontend_type>
+                            <source_model>shippit/system_config_source_catalog_attributes</source_model>
+                            <sort_order>120</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                            <comment>The Product Attribute to be used for Country Of Origin information sent to Shippit.</comment>
+                            <depends>
+                                <product_origin_country_code_active>1</product_origin_country_code_active>
+                            </depends>
+                        </product_origin_country_code_attribute_code>
                     </fields>
                 </sync_item>
 
