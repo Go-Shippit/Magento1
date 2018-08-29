@@ -104,7 +104,8 @@ class Shippit_Shippit_Model_Request_Sync_Order extends Varien_Object
                 $this->getItemLength($item),
                 $this->getItemWidth($item),
                 $this->getItemDepth($item),
-                $this->getItemLocation($item)
+                $this->getItemLocation($item),
+                $this->getItemTariffCode($item)
             );
 
             $itemsAdded++;
@@ -192,6 +193,24 @@ class Shippit_Shippit_Model_Request_Sync_Order extends Varien_Object
         $childItem = $this->_getChildItem($item);
 
         return $this->itemHelper->getLocation($childItem);
+    }
+
+    protected function getItemTariffCode($item)
+    {
+        $childItem = $this->_getChildItem($item);
+        $tariffCode =  $this->itemHelper->getTariffCode($childItem);
+
+        // If product is configurable and
+        // child item does not have tariffcode value set
+        // then we fallback to parent product's tariffcode value
+        if ($item->getProduct()->getTypeId() == Mage_Catalog_Model_Product_Type_Configurable::TYPE_CODE
+            && empty(trim($tariffCode))
+        ) {
+            $parentItem = $this->_getRootItem($item);
+            $tariffCode =  $this->itemHelper->getTariffCode($parentItem);
+        }
+
+        return $tariffCode;
     }
 
     protected function getItemPrice($item)
@@ -332,8 +351,18 @@ class Shippit_Shippit_Model_Request_Sync_Order extends Varien_Object
      * Add a parcel with attributes
      *
      */
-    public function addItem($sku, $title, $qty, $price, $weight = 0, $length = null, $width = null, $depth = null, $location = null)
-    {
+    public function addItem(
+        $sku,
+        $title,
+        $qty,
+        $price,
+        $weight = 0,
+        $length = null,
+        $width = null,
+        $depth = null,
+        $location = null,
+        $tariffCode = null
+    ) {
         $items = $this->getItems();
 
         if (empty($items)) {
@@ -346,7 +375,8 @@ class Shippit_Shippit_Model_Request_Sync_Order extends Varien_Object
             'qty' => (float) $qty,
             'price' => (float) $price,
             'weight' => (float) $this->itemHelper->getWeight($weight),
-            'location' => $location
+            'location' => $location,
+            'tariff_code' => $tariffCode,
         );
 
         // for dimensions, ensure the item has values for all dimensions

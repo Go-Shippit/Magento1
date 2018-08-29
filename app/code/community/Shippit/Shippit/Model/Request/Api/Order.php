@@ -167,7 +167,8 @@ class Shippit_Shippit_Model_Request_Api_Order extends Varien_Object
                     $item->getLength(),
                     $item->getWidth(),
                     $item->getDepth(),
-                    $item->getLocation()
+                    $item->getLocation(),
+                    $item->getTariffCode()
                 );
             }
         }
@@ -644,8 +645,18 @@ class Shippit_Shippit_Model_Request_Api_Order extends Varien_Object
      * Add a parcel with attributes
      *
      */
-    public function addItem($sku, $title, $qty, $price, $weight = 0, $length = null, $width = null, $depth = null, $location = null)
-    {
+    public function addItem(
+        $sku,
+        $title,
+        $qty,
+        $price,
+        $weight = 0,
+        $length = null,
+        $width = null,
+        $depth = null,
+        $location = null,
+        $tariffCode = null
+    ) {
         $parcelAttributes = $this->getParcelAttributes();
 
         if (empty($parcelAttributes)) {
@@ -662,7 +673,8 @@ class Shippit_Shippit_Model_Request_Api_Order extends Varien_Object
             'price' => (float) $price,
             // if a 0 weight is provided, stub the weight to the default weight value
             'weight' => (float) ($weight == 0 ? $this->itemHelper->getDefaultWeight() : $weight),
-            'location' => $location
+            'location' => $location,
+            'tariff_code' => $tariffCode,
         );
 
         // for dimensions, ensure the item has values for all dimensions

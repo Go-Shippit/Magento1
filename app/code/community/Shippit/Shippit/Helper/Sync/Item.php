@@ -92,6 +92,37 @@ class Shippit_Shippit_Helper_Sync_Item extends Shippit_Shippit_Helper_Data
         return self::getStoreConfig('product_location_attribute_code');
     }
 
+    public function isProductTariffCodeActive()
+    {
+        return $this->getValue('product_tariff_code_active');
+    }
+
+    public function getProductTariffAttributeCode()
+    {
+        return self::getStoreConfig('product_tariff_code_attribute_code');
+    }
+
+    public function getTariffCode($item)
+    {
+        $attributeCode = $this->getProductTariffAttributeCode();
+
+        if (empty($attributeCode)) {
+            return;
+        }
+
+        $tariffCode = $this->getAttributeValue($item->getProduct(), $attributeCode);
+
+        // Trim the value, as some attributes can introduce a space character when it's empty
+        $tariffCode = trim($tariffCode);
+
+        // If an empty value is provided, return null
+        if (empty($tariffCode)) {
+            return;
+        }
+
+        return $tariffCode;
+    }
+
     // END: Configuration Helpers
 
     // BEGIN: Logic Helpers
