@@ -433,8 +433,8 @@ class Shippit_Shippit_Model_Shipping_Carrier_Shippit extends Shippit_Shippit_Mod
 
         $rootItem = $this->getRootItem($item);
 
-        // // Always true if item product type is simple with no parent
-        if (empty($item->getParentItemId()) && $item->getProductType() == Mage_Catalog_Model_Product_Type::TYPE_SIMPLE) {
+        // Always true if item product type is simple with no parent
+        if ($item->getParentItemId() == null && $item->getProductType() == Mage_Catalog_Model_Product_Type::TYPE_SIMPLE) {
             return true;
         }
         // Always true if item product type is a grouped product
@@ -483,17 +483,17 @@ class Shippit_Shippit_Model_Shipping_Carrier_Shippit extends Shippit_Shippit_Mod
     {
         // loop through each item and prepare the parcel attributes
         $items = $request->getAllItems();
-        $parcelAttributes = [];
+        $parcelAttributes = array();
 
         foreach ($items as $item) {
             if (!$this->canAddItemToQuote($item)) {
                 continue;
             }
 
-            $newParcel = [
+            $newParcel = array(
                 'qty' => $item->getQty(),
-                'weight' => ($item->getWeight() ? $item->getWeight() : 0.2),
-            ];
+                'weight' => ($item->getWeight() ? $item->getWeight() : 0.2)
+            );
 
             $length = $this->getItemLength($item);
             $width = $this->getItemWidth($item);
