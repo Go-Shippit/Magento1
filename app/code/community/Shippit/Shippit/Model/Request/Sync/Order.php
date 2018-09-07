@@ -197,17 +197,24 @@ class Shippit_Shippit_Model_Request_Sync_Order extends Varien_Object
 
     protected function getItemTariffCode($item)
     {
-        $childItem = $this->_getChildItem($item);
-        $tariffCode =  $this->itemHelper->getTariffCode($childItem);
+        if (!$this->itemHelper->isProductTariffCodeActive()) {
+            return;
+        }
 
-        // If product is configurable and
-        // child item does not have tariffcode value set
-        // then we fallback to parent product's tariffcode value
-        if ($item->getProduct()->getTypeId() == Mage_Catalog_Model_Product_Type_Configurable::TYPE_CODE
-            && empty(trim($tariffCode))
+        $rootItem = $this->_getRootItem($item);
+        $childItem = $this->_getChildItem($item);
+
+        // Attempt to retrieve the tariff code from the child item
+        $tariffCode = $this->itemHelper->getTariffCode($childItem);
+
+        // If product has a parent product and the child item
+        // does not have tariff code value set, attempt to
+        // use the root product tariff code value
+        if (
+            $rootItem != $childItem
+            && empty($tariffCode)
         ) {
-            $parentItem = $this->_getRootItem($item);
-            $tariffCode =  $this->itemHelper->getTariffCode($parentItem);
+            $tariffCode = $this->itemHelper->getTariffCode($rootItem);
         }
 
         return $tariffCode;

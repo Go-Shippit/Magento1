@@ -97,14 +97,14 @@ class Shippit_Shippit_Helper_Sync_Item extends Shippit_Shippit_Helper_Data
         return $this->getValue('product_tariff_code_active');
     }
 
-    public function getProductTariffAttributeCode()
+    public function getProductTariffCodeAttributeCode()
     {
         return self::getStoreConfig('product_tariff_code_attribute_code');
     }
 
     public function getTariffCode($item)
     {
-        $attributeCode = $this->getProductTariffAttributeCode();
+        $attributeCode = $this->getProductTariffCodeAttributeCode();
 
         if (empty($attributeCode)) {
             return;
