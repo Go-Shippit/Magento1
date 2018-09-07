@@ -92,7 +92,8 @@ class Shippit_Shippit_Model_Api_Shipment extends Mage_Core_Model_Abstract
             $syncShipment->setAttemptCount($syncShipment->getAttemptCount() + 1);
 
             $order = $syncShipment->getOrder();
-            $products = $syncShipment->getItemsCollection()->toArray()['items'];
+            $products = $syncShipment->getItemsCollection()->toArray();
+            $products = $products['items'];
 
             // Ensure the order exists
             if (!$this->_checkOrderExists($order)) {
