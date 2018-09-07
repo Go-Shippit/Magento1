@@ -102,27 +102,6 @@ class Shippit_Shippit_Helper_Sync_Item extends Shippit_Shippit_Helper_Data
         return self::getStoreConfig('product_tariff_code_attribute_code');
     }
 
-    public function getTariffCode($item)
-    {
-        $attributeCode = $this->getProductTariffCodeAttributeCode();
-
-        if (empty($attributeCode)) {
-            return;
-        }
-
-        $tariffCode = $this->getAttributeValue($item->getProduct(), $attributeCode);
-
-        // Trim the value, as some attributes can introduce a space character when it's empty
-        $tariffCode = trim($tariffCode);
-
-        // If an empty value is provided, return null
-        if (empty($tariffCode)) {
-            return;
-        }
-
-        return $tariffCode;
-    }
-
     public function isProductOriginCountryCodeActive()
     {
         return self::getStoreConfig('product_origin_country_code_active');
@@ -131,27 +110,6 @@ class Shippit_Shippit_Helper_Sync_Item extends Shippit_Shippit_Helper_Data
     public function getProductOriginCountryCodeAttributeCode()
     {
         return self::getStoreConfig('product_origin_country_code_attribute_code');
-    }
-
-    public function getOriginCountryCode($item)
-    {
-        $attributeCode = $this->getProductOriginCountryCodeAttributeCode();
-
-        if (empty($attributeCode)) {
-            return;
-        }
-
-        $originCountryCode = $this->getAttributeValue($item->getProduct(), $attributeCode);
-
-        // Trim the value, as some attributes can introduce a space character when it's empty
-        $originCountryCode = trim($originCountryCode);
-
-        // If an empty value is provided, return null
-        if (empty($originCountryCode)) {
-            return;
-        }
-
-        return $originCountryCode;
     }
 
     // END: Configuration Helpers
@@ -330,6 +288,48 @@ class Shippit_Shippit_Helper_Sync_Item extends Shippit_Shippit_Helper_Data
         }
 
         return $this->locationAttributeCode;
+    }
+
+    public function getTariffCode($item)
+    {
+        $attributeCode = $this->getProductTariffCodeAttributeCode();
+
+        if (empty($attributeCode)) {
+            return;
+        }
+
+        $tariffCode = $this->getAttributeValue($item->getProduct(), $attributeCode);
+
+        // Trim the value, as some attributes can introduce a space character when it's empty
+        $tariffCode = trim($tariffCode);
+
+        // If an empty value is provided, return null
+        if (empty($tariffCode)) {
+            return;
+        }
+
+        return $tariffCode;
+    }
+
+    public function getOriginCountryCode($item)
+    {
+        $attributeCode = $this->getProductOriginCountryCodeAttributeCode();
+
+        if (empty($attributeCode)) {
+            return;
+        }
+
+        $originCountryCode = $this->getAttributeValue($item->getProduct(), $attributeCode);
+
+        // Trim the value, as some attributes can introduce a space character when it's empty
+        $originCountryCode = trim($originCountryCode);
+
+        // If an empty value is provided, return null
+        if (empty($originCountryCode)) {
+            return;
+        }
+
+        return $originCountryCode;
     }
 
     /**
