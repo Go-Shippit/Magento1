@@ -252,11 +252,11 @@ class Shippit_Shippit_Model_Request_Sync_Order extends Varien_Object
             $countryData = array();
 
             foreach ($countryCollection as $country) {
-                $countryData[] = [
+                $countryData[] = array(
                     'name' => $country->getName(),
                     'iso2_code' => $country->getData('iso2_code'),
                     'iso3_code' => $country->getData('iso3_code'),
-                ];
+                );
             }
 
             // Attempt to lookup using the name or iso3 code
