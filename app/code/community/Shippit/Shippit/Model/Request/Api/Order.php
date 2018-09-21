@@ -168,7 +168,8 @@ class Shippit_Shippit_Model_Request_Api_Order extends Varien_Object
                     $item->getWidth(),
                     $item->getDepth(),
                     $item->getLocation(),
-                    $item->getTariffCode()
+                    $item->getTariffCode(),
+                    $item->getOriginCountryCode()
                 );
             }
         }
@@ -655,7 +656,8 @@ class Shippit_Shippit_Model_Request_Api_Order extends Varien_Object
         $width = null,
         $depth = null,
         $location = null,
-        $tariffCode = null
+        $tariffCode = null,
+        $originCountryCode = null
     ) {
         $parcelAttributes = $this->getParcelAttributes();
 
@@ -675,6 +677,7 @@ class Shippit_Shippit_Model_Request_Api_Order extends Varien_Object
             'weight' => (float) ($weight == 0 ? $this->itemHelper->getDefaultWeight() : $weight),
             'location' => $location,
             'tariff_code' => $tariffCode,
+            'origin_country_code' => $originCountryCode,
         );
 
         // for dimensions, ensure the item has values for all dimensions
