@@ -305,18 +305,21 @@ class Shippit_Shippit_Model_Request_Sync_Order extends Varien_Object
 
         // if the shipping method passed is not a standard shippit service class,
         // attempt to get a service class based on the configured mapping
-        if (!array_key_exists($shippingMethod, $this->serviceLevels)
+        if (!empty($shippingMethod)
+            && !array_key_exists($shippingMethod, $this->serviceLevels)
             && !array_key_exists($shippingMethod, $this->couriers)) {
             $shippingMethod = $this->helper->getShippitShippingMethod($shippingMethod);
         }
 
-        if (array_key_exists($shippingMethod, $this->serviceLevels)
-            || array_key_exists($shippingMethod, $this->couriers)) {
+        if (!empty($shippingMethod)
+            && (
+                array_key_exists($shippingMethod, $this->serviceLevels)
+                || array_key_exists($shippingMethod, $this->couriers)
+            )) {
             return $this->setData(self::SHIPPING_METHOD, $shippingMethod);
         }
-        else {
-            return $this->setData(self::SHIPPING_METHOD, 'standard');
-        }
+
+        return $this->setData(self::SHIPPING_METHOD, 'standard');
     }
 
     public function reset()
