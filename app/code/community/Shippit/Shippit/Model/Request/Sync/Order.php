@@ -249,7 +249,7 @@ class Shippit_Shippit_Model_Request_Sync_Order extends Varien_Object
         // convert this value into ISO2
         if (strlen($originCountryCode) > 2) {
             $countryCollection = Mage::getModel('directory/country')->getCollection();
-            $countryData = [];
+            $countryData = array();
 
             foreach ($countryCollection as $country) {
                 $countryData[] = [
