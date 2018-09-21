@@ -77,10 +77,12 @@ class Shippit_Shippit_Helper_Sync_Order extends Shippit_Shippit_Helper_Data
         $values = unserialize( self::getStoreConfig('shipping_method_mapping'));
         $mappings = array();
 
-        if (!empty($values)) {
-            foreach ($values as $value) {
-                $mappings[$value['shipping_method']] = $value['shippit_service'];
-            }
+        if (empty($values)) {
+            return $mappings;
+        }
+
+        foreach ($values as $value) {
+            $mappings[$value['shipping_method']] = $value['shippit_service'];
         }
 
         return $mappings;
