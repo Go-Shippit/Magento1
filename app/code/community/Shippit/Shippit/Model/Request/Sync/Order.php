@@ -104,7 +104,8 @@ class Shippit_Shippit_Model_Request_Sync_Order extends Varien_Object
                 $this->getItemLength($item),
                 $this->getItemWidth($item),
                 $this->getItemDepth($item),
-                $this->getItemLocation($item)
+                $this->getItemLocation($item),
+                $this->getItemTariffCode($item)
             );
 
             $itemsAdded++;
@@ -192,6 +193,31 @@ class Shippit_Shippit_Model_Request_Sync_Order extends Varien_Object
         $childItem = $this->_getChildItem($item);
 
         return $this->itemHelper->getLocation($childItem);
+    }
+
+    protected function getItemTariffCode($item)
+    {
+        if (!$this->itemHelper->isProductTariffCodeActive()) {
+            return;
+        }
+
+        $rootItem = $this->_getRootItem($item);
+        $childItem = $this->_getChildItem($item);
+
+        // Attempt to retrieve the tariff code from the child item
+        $tariffCode = $this->itemHelper->getTariffCode($childItem);
+
+        // If product has a parent product and the child item
+        // does not have tariff code value set, attempt to
+        // use the root product tariff code value
+        if (
+            $rootItem != $childItem
+            && empty($tariffCode)
+        ) {
+            $tariffCode = $this->itemHelper->getTariffCode($rootItem);
+        }
+
+        return $tariffCode;
     }
 
     protected function getItemPrice($item)
@@ -335,8 +361,18 @@ class Shippit_Shippit_Model_Request_Sync_Order extends Varien_Object
      * Add a parcel with attributes
      *
      */
-    public function addItem($sku, $title, $qty, $price, $weight = 0, $length = null, $width = null, $depth = null, $location = null)
-    {
+    public function addItem(
+        $sku,
+        $title,
+        $qty,
+        $price,
+        $weight = 0,
+        $length = null,
+        $width = null,
+        $depth = null,
+        $location = null,
+        $tariffCode = null
+    ) {
         $items = $this->getItems();
 
         if (empty($items)) {
@@ -349,7 +385,8 @@ class Shippit_Shippit_Model_Request_Sync_Order extends Varien_Object
             'qty' => (float) $qty,
             'price' => (float) $price,
             'weight' => (float) $this->itemHelper->getWeight($weight),
-            'location' => $location
+            'location' => $location,
+            'tariff_code' => $tariffCode,
         );
 
         // for dimensions, ensure the item has values for all dimensions
