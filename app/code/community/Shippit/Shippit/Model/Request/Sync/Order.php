@@ -269,7 +269,8 @@ class Shippit_Shippit_Model_Request_Sync_Order extends Varien_Object
 
             // If we have at least 1 country match, set this as the origin country code
             if (!empty($countriesFound)) {
-                $originCountryCode = reset($countriesFound)['iso2_code'];
+                $country = reset($countriesFound);
+                $originCountryCode = $country['iso2_code'];
             }
         }
 
