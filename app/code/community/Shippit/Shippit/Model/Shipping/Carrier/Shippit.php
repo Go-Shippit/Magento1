@@ -59,11 +59,6 @@ class Shippit_Shippit_Model_Shipping_Carrier_Shippit extends Shippit_Shippit_Mod
      */
     public function collectRates(Mage_Shipping_Model_Rate_Request $request)
     {
-        // Prevent quotes for destinations outside of AU (currently not supported)
-        if ($request->getDestCountryId() != 'AU') {
-            return false;
-        }
-
         // check if we have any methods allowed before proceeding
         $allowedMethods = $this->helper->getAllowedMethods();
 
@@ -81,6 +76,10 @@ class Shippit_Shippit_Model_Shipping_Carrier_Shippit extends Shippit_Shippit_Mod
 
         // Get the first available dates based on the customer's shippit profile settings
         $quoteRequest->setOrderDate('');
+
+        if ($request->getDestCountryId()) {
+            $quoteRequest->setDropoffCountryCode($request->getDestCountryId());
+        }
 
         if ($request->getDestCity()) {
             $quoteRequest->setDropoffSuburb($request->getDestCity());
