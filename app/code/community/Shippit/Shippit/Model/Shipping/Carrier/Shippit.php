@@ -518,7 +518,7 @@ class Shippit_Shippit_Model_Shipping_Carrier_Shippit extends Shippit_Shippit_Mod
             return $this->itemHelper->getWeight($item->getWeight());
         }
 
-        return 0.2;
+        return $this->itemHelper->getDefaultWeight();
     }
 
     protected function getItemLength($item)
