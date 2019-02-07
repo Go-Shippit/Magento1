@@ -491,7 +491,7 @@ class Shippit_Shippit_Model_Shipping_Carrier_Shippit extends Shippit_Shippit_Mod
 
             $newParcel = array(
                 'qty' => $item->getQty(),
-                'weight' => ($item->getWeight() ? $item->getWeight() : 0.2)
+                'weight' => $this->getItemWeight($item),
             );
 
             $length = $this->getItemLength($item);
@@ -509,6 +509,15 @@ class Shippit_Shippit_Model_Shipping_Carrier_Shippit extends Shippit_Shippit_Mod
         }
 
         return $parcelAttributes;
+    }
+
+    protected function getItemWeight($item)
+    {
+        if ($item->getWeight()) {
+            return $this->itemHelper->getWeight($item->getWeight());
+        }
+
+        return $this->itemHelper->getDefaultWeight();
     }
 
     protected function getItemLength($item)
