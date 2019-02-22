@@ -33,6 +33,14 @@ class Shippit_Shippit_Model_Observer_Order_Sync
      */
     public function addOrder(Varien_Event_Observer $observer)
     {
+        $order = $observer->getEvent()->getOrder();
+
+        // Get emulation model
+        $appEmulation = Mage::getSingleton('core/app_emulation');
+
+        // Start Store Emulation
+        $environment = $appEmulation->startEnvironmentEmulation($order->getStoreId());
+
         // If the module is not active, stop processing
         if (!$this->helper->isActive()) {
             return $this;
@@ -42,8 +50,6 @@ class Shippit_Shippit_Model_Observer_Order_Sync
         if ($this->helper->getMode() == Shippit_Shippit_Helper_Data::SYNC_MODE_CUSTOM) {
             return $this;
         }
-
-        $order = $observer->getEvent()->getOrder();
 
         // Ensure we have an order
         if (!$order || !$order->getId() || $order->getIsVirtual()) {
@@ -94,18 +100,15 @@ class Shippit_Shippit_Model_Observer_Order_Sync
             }
         }
 
+        // Stop Store Emulation
+        $appEmulation->stopEnvironmentEmulation($environment);
+
         return $this;
     }
 
     private function _syncOrder($syncOrder)
     {
         $this->_hasAttemptedSync = true;
-
-        // Get emulation model
-        $appEmulation = Mage::getSingleton('core/app_emulation');
-
-        // Start Store Emulation
-        $environment = $appEmulation->startEnvironmentEmulation($syncOrder->getOrder()->getStoreId());
 
         try {
             // attempt the sync
@@ -115,10 +118,7 @@ class Shippit_Shippit_Model_Observer_Order_Sync
             $syncOrderResult = false;
             $this->_getSession()->addError($this->__('An error occured while send the order to Shippit') . ' - ' . $e->getMessage());
         }
-        
-        // Stop Store Emulation
-        $appEmulation->stopEnvironmentEmulation($environment);
-        
+
         return $syncOrderResult;
     }
 
