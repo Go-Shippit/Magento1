@@ -101,7 +101,7 @@ class Shippit_Shippit_Model_Observer_Order_Sync
     {
         $this->_hasAttemptedSync = true;
 
-        // get emulation model
+        // Get emulation model
         $appEmulation = Mage::getSingleton('core/app_emulation');
 
         // Start Store Emulation
@@ -110,14 +110,16 @@ class Shippit_Shippit_Model_Observer_Order_Sync
         try {
             // attempt the sync
             $syncOrderResult = Mage::getModel('shippit/api_order')->sync($syncOrder);
-
-            return $syncOrderResult;
-        } catch (Exception $e) {
-            $this->_getSession()->addError($this->__('An error occured while send the order to Shippit') . ' - ' . $e->getMessage());
-        } finally {
-            // Stop Store Emulation
-            $appEmulation->stopEnvironmentEmulation($environment);
         }
+        catch (Exception $e) {
+            $syncOrderResult = false;
+            $this->_getSession()->addError($this->__('An error occured while send the order to Shippit') . ' - ' . $e->getMessage());
+        }
+        
+        // Stop Store Emulation
+        $appEmulation->stopEnvironmentEmulation($environment);
+        
+        return $syncOrderResult;
     }
 
     /**
