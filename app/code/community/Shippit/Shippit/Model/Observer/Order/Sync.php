@@ -35,12 +35,6 @@ class Shippit_Shippit_Model_Observer_Order_Sync
     {
         $order = $observer->getEvent()->getOrder();
 
-        // Get emulation model
-        $appEmulation = Mage::getSingleton('core/app_emulation');
-
-        // Start Store Emulation
-        $environment = $appEmulation->startEnvironmentEmulation($order->getStoreId());
-
         // If the module is not active, stop processing
         if (!$this->helper->isActive()) {
             return $this;
@@ -99,9 +93,6 @@ class Shippit_Shippit_Model_Observer_Order_Sync
                 $this->logger->logException($e);
             }
         }
-
-        // Stop Store Emulation
-        $appEmulation->stopEnvironmentEmulation($environment);
 
         return $this;
     }
