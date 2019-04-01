@@ -33,8 +33,6 @@ class Shippit_Shippit_Model_Observer_Order_Sync
      */
     public function addOrder(Varien_Event_Observer $observer)
     {
-        $order = $observer->getEvent()->getOrder();
-
         // If the module is not active, stop processing
         if (!$this->helper->isActive()) {
             return $this;
@@ -44,6 +42,8 @@ class Shippit_Shippit_Model_Observer_Order_Sync
         if ($this->helper->getMode() == Shippit_Shippit_Helper_Data::SYNC_MODE_CUSTOM) {
             return $this;
         }
+
+        $order = $observer->getEvent()->getOrder();
 
         // Ensure we have an order
         if (!$order || !$order->getId() || $order->getIsVirtual()) {
@@ -101,14 +101,8 @@ class Shippit_Shippit_Model_Observer_Order_Sync
     {
         $this->_hasAttemptedSync = true;
 
-        try {
-            // attempt the sync
-            $syncOrderResult = Mage::getModel('shippit/api_order')->sync($syncOrder);
-        }
-        catch (Exception $e) {
-            $syncOrderResult = false;
-            $this->_getSession()->addError($this->__('An error occured while send the order to Shippit') . ' - ' . $e->getMessage());
-        }
+        // attempt the sync
+        $syncOrderResult = Mage::getModel('shippit/api_order')->sync($syncOrder);
 
         return $syncOrderResult;
     }
