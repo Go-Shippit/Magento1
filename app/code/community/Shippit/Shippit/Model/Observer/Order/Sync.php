@@ -123,7 +123,7 @@ class Shippit_Shippit_Model_Observer_Order_Sync
             return false;
         }
 
-        if ($syncOrder->getStatus() == Shippit_Shippit_Model_Sync_Order::STATUS_PENDING) {
+        if ($syncOrder->getStatus() === Shippit_Shippit_Model_Sync_Order::STATUS_PENDING) {
             return false;
         }
 
