@@ -24,17 +24,21 @@ if ($internationalOrders->count() > 0) {
 }
 
 // Update any mapped shipping methods that reference international to standard
-$mappedShippingMethods = unserialize(Mage::getStoreConfig('shippit/sync_order/shipping_method_mapping'));
+$shippingMethodMappingConfig = Mage::getStoreConfig('shippit/sync_order/shipping_method_mapping');
 
-foreach ($mappedShippingMethods as $mappedKey => $mappedValue) {
-    if ($mappedValue['shippit_service'] == 'international') {
-        $mappedShippingMethods[$mappedKey]['shippit_service'] = 'standard';
+if ($shippingMethodMappingConfig) {
+    $mappedShippingMethods = unserialize($shippingMethodMappingConfig);
+
+    foreach ($mappedShippingMethods as $mappedKey => $mappedValue) {
+        if ($mappedValue['shippit_service'] == 'international') {
+            $mappedShippingMethods[$mappedKey]['shippit_service'] = 'standard';
+        }
     }
-}
 
-Mage::getConfig()->saveConfig(
-    'shippit/sync_order/shipping_method_mapping',
-    serialize($mappedShippingMethods),
-    'default',
-    0
-);
+    Mage::getConfig()->saveConfig(
+        'shippit/sync_order/shipping_method_mapping',
+        serialize($mappedShippingMethods),
+        'default',
+        0
+    );
+}
