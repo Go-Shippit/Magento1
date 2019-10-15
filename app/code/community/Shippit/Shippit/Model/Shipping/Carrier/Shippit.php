@@ -77,6 +77,15 @@ class Shippit_Shippit_Model_Shipping_Carrier_Shippit extends Shippit_Shippit_Mod
         // Get the first available dates based on the customer's shippit profile settings
         $quoteRequest->setOrderDate('');
 
+        // Set dropoff address if available
+        if ($request->getDestStreet()) {
+            // Remove any blank lines
+            $destStreet = preg_replace('/^[ \t]*[\r\n]+/m', '', $request->getDestStreet());
+            // Replace new line characters with comma and a space
+            $dropOffAdrress = preg_replace("/[\n\r]/", ", ", $destStreet);
+            $quoteRequest->setDropoffAddress($dropOffAdrress);
+        }
+
         if ($request->getDestCountryId()) {
             $quoteRequest->setDropoffCountryCode($request->getDestCountryId());
         }
