@@ -99,7 +99,12 @@ class Shippit_Shippit_Model_Shipping_Carrier_Shippit extends Shippit_Shippit_Mod
 
         $quoteRequest->setParcelAttributes($this->getParcelAttributes($request));
 
-        // send dutiable amount for international delivery only
+        // @Workaround
+        // - Only add the dutiable_amount for domestic orders
+        // - The Shippit Quotes API does not currently support the dutiable_amount
+        //   field being present for domestic (AU) deliveries — declaring a dutiable
+        //   amount value for these quotes may result in some carrier quotes not
+        //   being available.
         if ($request->getDestCountryId() != 'AU') {
             $quoteRequest->setDutiableAmount($this->getDutiableAmount($request));
         }
@@ -423,8 +428,8 @@ class Shippit_Shippit_Model_Shipping_Carrier_Shippit extends Shippit_Shippit_Mod
 
     protected function getDutiableAmount($request)
     {
-        // get discounted value of the package i.e. actual
-        // amount that is paid by the customer
+        // Get the discounted value of the package
+        // ie: The actual order value as paid by the customer
         return $request->getPackageValueWithDiscount();
     }
 
