@@ -77,6 +77,13 @@ class Shippit_Shippit_Model_Shipping_Carrier_Shippit extends Shippit_Shippit_Mod
         // Get the first available dates based on the customer's shippit profile settings
         $quoteRequest->setOrderDate('');
 
+        if ($request->getDestStreet()) {
+            // Replace any newline characters in the street address with comma + space
+            $streetAddress = str_replace("\n", ', ', $request->getDestStreet());
+
+            $quoteRequest->setDropoffAddress($streetAddress);
+        }
+
         if ($request->getDestCountryId()) {
             $quoteRequest->setDropoffCountryCode($request->getDestCountryId());
         }
@@ -98,6 +105,16 @@ class Shippit_Shippit_Model_Shipping_Carrier_Shippit extends Shippit_Shippit_Mod
         }
 
         $quoteRequest->setParcelAttributes($this->getParcelAttributes($request));
+
+        // @Workaround
+        // - Only add the dutiable_amount for domestic orders
+        // - The Shippit Quotes API does not currently support the dutiable_amount
+        //   field being present for domestic (AU) deliveries — declaring a dutiable
+        //   amount value for these quotes may result in some carrier quotes not
+        //   being available.
+        if ($request->getDestCountryId() != 'AU') {
+            $quoteRequest->setDutiableAmount($this->getDutiableAmount($request));
+        }
 
         try {
             // Call the api and retrieve the quote
@@ -414,6 +431,13 @@ class Shippit_Shippit_Model_Shipping_Carrier_Shippit extends Shippit_Shippit_Mod
                 'like' => $attributeValue
             )
         );
+    }
+
+    protected function getDutiableAmount($request)
+    {
+        // Get the discounted value of the package
+        // ie: The actual order value as paid by the customer
+        return $request->getPackageValueWithDiscount();
     }
 
     /**
