@@ -99,6 +99,11 @@ class Shippit_Shippit_Model_Shipping_Carrier_Shippit extends Shippit_Shippit_Mod
 
         $quoteRequest->setParcelAttributes($this->getParcelAttributes($request));
 
+        // send dutiable amount for international delivery only
+        if ($request->getDestCountryId() != 'AU') {
+            $quoteRequest->setDutiableAmount($this->getDutiableAmount($request));
+        }
+
         try {
             // Call the api and retrieve the quote
             $shippingQuotes = $this->api->getQuote($quoteRequest);
@@ -414,6 +419,13 @@ class Shippit_Shippit_Model_Shipping_Carrier_Shippit extends Shippit_Shippit_Mod
                 'like' => $attributeValue
             )
         );
+    }
+
+    protected function getDutiableAmount($request)
+    {
+        // get discounted value of the package i.e. actual
+        // amount that is paid by the customer
+        return $request->getPackageValueWithDiscount();
     }
 
     /**
