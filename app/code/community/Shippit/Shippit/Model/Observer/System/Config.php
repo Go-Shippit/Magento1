@@ -16,8 +16,6 @@
 
 class Shippit_Shippit_Model_Observer_System_Config
 {
-    const SHIPPING_CART_METHOD_NAME = 'Magento 1';
-
     protected $helper;
     protected $syncShippingHelper;
     protected $api;
@@ -75,11 +73,11 @@ class Shippit_Shippit_Model_Observer_System_Config
             }
 
             if ($apiKeyValid) {
+                $this->registerShoppingCartName();
+
                 if ($this->syncShippingHelper->isActive()) {
                     $this->registerWebhook();
                 }
-
-                $this->registerShoppingCartName();
             }
 
             // Stop Store Emulation
@@ -136,14 +134,8 @@ class Shippit_Shippit_Model_Observer_System_Config
     {
         try {
             $requestData = new Varien_Object;
-            $requestData->setShippingCartMethodName(self::SHIPPING_CART_METHOD_NAME);
+            $requestData->setShippingCartMethodName('magento1');
             $merchant = $this->api->putMerchant($requestData, true);
-
-            if (property_exists($merchant, 'error')) {
-                Mage::getSingleton('adminhtml/session')->addError(
-                    $this->helper->__('The request to update the shopping cart integration name failed - please try again.')
-                );
-            }
         }
         catch (Exception $e) {
             Mage::getSingleton('adminhtml/session')->addError(
