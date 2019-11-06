@@ -72,8 +72,12 @@ class Shippit_Shippit_Model_Observer_System_Config
                 );
             }
 
-            if ($apiKeyValid && $this->syncShippingHelper->isActive()) {
-                $this->registerWebhook();
+            if ($apiKeyValid) {
+                $this->registerShoppingCartName();
+
+                if ($this->syncShippingHelper->isActive()) {
+                    $this->registerWebhook();
+                }
             }
 
             // Stop Store Emulation
@@ -124,6 +128,20 @@ class Shippit_Shippit_Model_Observer_System_Config
         }
 
         return;
+    }
+
+    public function registerShoppingCartName()
+    {
+        try {
+            $requestData = new Varien_Object;
+            $requestData->setShippingCartMethodName('magento1');
+            $merchant = $this->api->putMerchant($requestData, true);
+        }
+        catch (Exception $e) {
+            Mage::getSingleton('adminhtml/session')->addError(
+                $this->helper->__('The request to update the shopping cart integration name failed - please try again.')
+            );
+        }
     }
 
     /**
