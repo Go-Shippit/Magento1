@@ -99,4 +99,4 @@ phpcs-magento1:
   script:
     - php -v
     - phpcs --version
-    - phpcs app/ --standard=MEQP1 --colors --warning-severity=0 --severity=10 --extensions=php,phtml --runtime-set installed_paths vendor/magento/marketplace-eqp/MEQP1
+    - phpcs --colors --warning-severity=0 --standard=MEQP1 --severity=10 --extensions=php,phtml --ignore=./vendor --report=full,summary,gitblame . --runtime-set installed_paths vendor/magento/marketplace-eqp/MEQP1
