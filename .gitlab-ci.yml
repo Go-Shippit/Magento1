@@ -1,8 +1,22 @@
 # Stages
 stages:
+  - build
   - linter
   - code-style
 
+
+build:
+  type: build
+  image: tetraweb/php:7.1
+  artifacts:
+    untracked: true
+    expire_in: 7 days
+    paths:
+      - ./
+  script:
+    - php --version
+    - composer --version
+    - composer install --verbose --prefer-dist --no-progress --no-interaction --optimize-autoloader
 
 ###########
 # PHP 5.3 #
@@ -96,6 +110,8 @@ php-7.1-phpcs:
 phpcs-magento1:
   stage: code-style
   image: tetraweb/php:7.1
+  dependencies:
+    - build
   script:
     - php -v
     - phpcs --version
