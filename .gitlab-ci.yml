@@ -72,5 +72,5 @@ phpcs-magento1:
     - build
   script:
     - php -v
-    - phpcs --version
-    - phpcs --colors --warning-severity=0 --standard=MEQP1 --severity=10 --extensions=php,phtml --ignore=./vendor --report=full,summary,gitblame . --runtime-set installed_paths vendor/magento/marketplace-eqp
+    - vendor/bin/phpcs --version
+    - vendor/bin/phpcs --colors --warning-severity=0 --standard=MEQP1 --severity=10 --extensions=php,phtml --ignore=./vendor --report=full,summary,gitblame . --runtime-set installed_paths vendor/magento/marketplace-eqp
