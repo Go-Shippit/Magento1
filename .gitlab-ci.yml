@@ -13,13 +13,6 @@ build:
     expire_in: 7 days
     paths:
       - ./
-  before_script:
-    ##
-    ## Add composer authentication keys
-    ##
-    - mkdir -p ~/.composer
-    - echo "$COMPOSER_AUTH" > ~/.composer/auth.json
-
   script:
     - php --version
     - composer --version
