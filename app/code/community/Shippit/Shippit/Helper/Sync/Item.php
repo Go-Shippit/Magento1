@@ -361,7 +361,9 @@ class Shippit_Shippit_Helper_Sync_Item extends Shippit_Shippit_Helper_Data
             $attributeCode[0] = strtoupper($attributeCode[0]);
         }
 
-        $function = create_function('$c', 'return strtoupper($c[1]);');
+        $function = function($c) {
+            return strtoupper($c[1]);
+        };
         $functionName = preg_replace_callback('/_([a-z])/', $function, $attributeCode);
 
         return $prefix . $functionName;
