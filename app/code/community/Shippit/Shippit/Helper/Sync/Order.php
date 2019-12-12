@@ -74,7 +74,10 @@ class Shippit_Shippit_Helper_Sync_Order extends Shippit_Shippit_Helper_Data
 
     public function getShippingMethodMapping()
     {
-        $values = unserialize( self::getStoreConfig('shipping_method_mapping'));
+        $values = Zend_Serializer::unserialize(
+            self::getStoreConfig('shipping_method_mapping')
+        );
+        
         $mappings = array();
 
         if (empty($values)) {

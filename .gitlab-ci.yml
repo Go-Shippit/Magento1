@@ -1,94 +1,76 @@
 # Stages
 stages:
-  - linter
+  - build
+  - lint
   - code-style
 
 
-###########
-# PHP 5.3 #
-###########
-
-# PHP Linter
-php-5.3-linter:
-  type: linter
-  image: tetraweb/php:5.3
+build:
+  type: build
+  image: mamis/php-build:7.2
+  artifacts:
+    untracked: true
+    expire_in: 7 days
+    paths:
+      - ./
   script:
-    - php -v
-    - sh -c 'if find . -name "*.php" -exec php -l {} 2>&1 \; | grep -v "^No syntax errors detected"; then exit 1; fi'
+    - php --version
+    - composer --version
+    - composer install --verbose --prefer-dist --no-progress --no-interaction --optimize-autoloader
 
 
-###########
-# PHP 5.4 #
-###########
-
-# PHP Linter
-php-5.4-linter:
-  type: linter
-  image: tetraweb/php:5.4
+.php-linter: &php-linter
+  stage: lint
+  dependencies:
+    - build
   script:
-    - php -v
-    - sh -c 'if find . -name "*.php" -exec php -l {} 2>&1 \; | grep -v "^No syntax errors detected"; then exit 1; fi'
+    - php --version
+    - parallel-lint --version
+    - parallel-lint --exclude ./vendor ./
 
-
-###########
-# PHP 5.5 #
-###########
-
-# PHP Linter
 php-5.5-linter:
-  type: linter
-  image: tetraweb/php:5.5
-  script:
-    - php -v
-    - sh -c 'if find . -name "*.php" -exec php -l {} 2>&1 \; | grep -v "^No syntax errors detected"; then exit 1; fi'
+  <<: *php-linter
+  image: mamis/php-build:5.5
 
-
-###########
-# PHP 5.6 #
-###########
-
-# PHP Linter
 php-5.6-linter:
-  type: linter
-  image: tetraweb/php:5.6
-  script:
-    - php -v
-    - sh -c 'if find . -name "*.php" -exec php -l {} 2>&1 \; | grep -v "^No syntax errors detected"; then exit 1; fi'
+  <<: *php-linter
+  image: mamis/php-build:5.6
 
-
-###########
-# PHP 7.0 #
-###########
-
-# PHP Linter
 php-7.0-linter:
-  type: linter
-  image: tetraweb/php:7.0
-  script:
-    - php -v
-    - sh -c 'if find . -name "*.php" -exec php -l {} 2>&1 \; | grep -v "^No syntax errors detected"; then exit 1; fi'
+  <<: *php-linter
+  image: mamis/php-build:7.0
 
-
-###########
-# PHP 7.1 #
-###########
-
-# PHP Linter
 php-7.1-linter:
-  type: linter
-  image: tetraweb/php:7.1
-  script:
-    - php -v
-    - sh -c 'if find . -name "*.php" -exec php -l {} 2>&1 \; | grep -v "^No syntax errors detected"; then exit 1; fi'
+  <<: *php-linter
+  image: mamis/php-build:7.1
 
-# PHP CS
-php-7.1-phpcs:
-  type: code-style
-  image: tetraweb/php:7.1
+php-depreciations-linter:
+  stage: lint
+  image: mamis/php-build:7.1
+  dependencies:
+    - build
+  script:
+    - php --version
+    - phpcf --version
+    - phpcf --target=7.1 --exclude=vendor ./
+
+phpcs-psr2:
+  stage: code-style
+  image: mamis/php-build:7.1
+  dependencies:
+    - build
   script:
     - php -v
     - phpcs --version
-    - phpcs --colors --standard=PSR2 --report=full .
-    - phpcs --colors --standard=PSR2 --report=summary .
-    - phpcs --colors --standard=PSR2 --report=gitblame .
+    - phpcs --colors --standard=PSR2 --ignore=./vendor --report=full,summary,gitblame .
   allow_failure: true
+
+phpcs-magento1:
+  stage: code-style
+  image: mamis/php-build:7.1
+  dependencies:
+    - build
+  script:
+    - php -v
+    - vendor/bin/phpcs --version
+    - vendor/bin/phpcs --colors --warning-severity=0 --standard=MEQP1 --severity=10 --extensions=php,phtml --ignore=./vendor --report=full,summary,gitblame . --runtime-set installed_paths vendor/magento/marketplace-eqp

@@ -355,16 +355,26 @@ class Shippit_Shippit_Helper_Sync_Item extends Shippit_Shippit_Helper_Data
         return $attributeValue;
     }
 
-    private function getFunctionName($attributeCode, $prefix = 'get', $capitaliseFirstChar = true)
+    private function getFunctionName($attributeCode, $prefix = 'get')
     {
-        if ($capitaliseFirstChar) {
-            $attributeCode[0] = strtoupper($attributeCode[0]);
-        }
+        // Convert attributes code from "attribute_code" into "attribute code"
+        $attributeCode = str_replace(
+            ['-', '_'],
+            ' ',
+            $attributeCode
+        );
 
-        $function = create_function('$c', 'return strtoupper($c[1]);');
-        $functionName = preg_replace_callback('/_([a-z])/', $function, $attributeCode);
+        // Convert attribute code from "attribute code" into "Attribute Code"
+        $attributeCode = ucwords($attributeCode);
 
-        return $prefix . $functionName;
+        // Convert attribute code from "Attribute Code" into "AttributeCode"
+        $attributeCode = str_replace(
+            ' ',
+            '',
+            $attributeCode
+        );
+
+        return $prefix . $attributeCode;
     }
 
     // END: Logic Helpers

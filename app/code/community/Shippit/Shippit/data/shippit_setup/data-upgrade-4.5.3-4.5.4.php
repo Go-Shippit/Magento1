@@ -27,7 +27,7 @@ if ($internationalOrders->count() > 0) {
 $shippingMethodMappingConfig = Mage::getStoreConfig('shippit/sync_order/shipping_method_mapping');
 
 if ($shippingMethodMappingConfig) {
-    $mappedShippingMethods = unserialize($shippingMethodMappingConfig);
+    $mappedShippingMethods = Zend_Serializer::unserialize($shippingMethodMappingConfig);
 
     foreach ($mappedShippingMethods as $mappedKey => $mappedValue) {
         if ($mappedValue['shippit_service'] == 'international') {
@@ -37,7 +37,7 @@ if ($shippingMethodMappingConfig) {
 
     Mage::getConfig()->saveConfig(
         'shippit/sync_order/shipping_method_mapping',
-        serialize($mappedShippingMethods),
+        Zend_Serializer::serialize($mappedShippingMethods),
         'default',
         0
     );
