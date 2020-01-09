@@ -21,7 +21,7 @@ $orderTable = $installer->getConnection()
     ->describeTable($installer->getTable('sales/order'));
 
 $quoteTable = $installer->getConnection()
-    ->describeTable($installer->getTable('sales/order'));
+    ->describeTable($installer->getTable('sales/quote'));
 
 if (!isset($orderTable['shippit_sync'])) {
     $installer->getConnection()->addColumn(
