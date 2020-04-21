@@ -514,7 +514,7 @@ class Shippit_Shippit_Model_Shipping_Carrier_Shippit extends Shippit_Shippit_Mod
             }
 
             $newParcel = array(
-                'qty' => $item->getQty(),
+                'qty' => $this->getItemQty($item),
                 'weight' => $this->getItemWeight($item),
             );
 
@@ -533,6 +533,23 @@ class Shippit_Shippit_Model_Shipping_Carrier_Shippit extends Shippit_Shippit_Mod
         }
 
         return $parcelAttributes;
+    }
+
+    protected function getItemQty($item)
+    {
+        $rootItem = $this->getRootItem($item);
+
+        // Use the qty of the parent when configurable / bundle product (which ship separately) in cart
+        // because qty of the simple product always remains equal to 1 and magento sets actual qty on
+        // parent item itself
+        if ($item->getParentItemId() != null && $item->getParentItem()->getProductType() == Mage_Catalog_Model_Product_Type::TYPE_CONFIGURABLE) {
+            return $item->getParentItem()->getQty();
+        }
+        elseif ($item->getParentItemId() != null && $item->getParentItem()->getProductType() == Mage_Catalog_Model_Product_Type::TYPE_BUNDLE && $rootItem->isShipSeparately()) {
+            return $item->getParentItem()->getQty();
+        }
+
+        return $item->getQty();
     }
 
     protected function getItemWeight($item)
