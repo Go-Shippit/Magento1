@@ -543,10 +543,10 @@ class Shippit_Shippit_Model_Shipping_Carrier_Shippit extends Shippit_Shippit_Mod
         // because qty of the simple product always remains equal to 1 and magento sets actual qty on
         // parent item itself
         if ($item->getParentItemId() != null && $item->getParentItem()->getProductType() == Mage_Catalog_Model_Product_Type::TYPE_CONFIGURABLE) {
-            return $item->getParentItem()->getQty();
+            return $rootItem->getQty();
         }
         elseif ($item->getParentItemId() != null && $item->getParentItem()->getProductType() == Mage_Catalog_Model_Product_Type::TYPE_BUNDLE && $rootItem->isShipSeparately()) {
-            return $item->getParentItem()->getQty();
+            return ($item->getQty() * $rootItem->getQty());
         }
 
         return $item->getQty();
