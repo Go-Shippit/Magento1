@@ -539,7 +539,7 @@ class Shippit_Shippit_Model_Shipping_Carrier_Shippit extends Shippit_Shippit_Mod
     {
         // If the item has a parent, consider it's type and structure to determine an appropriate qty
         // - This is due to Magento storing differing qty values for the parent/child of an item
-        if ($item->hasParentItem()) {
+        if ($item->getParentItem()) {
             $parentItem = $this->getRootItem($item);
 
             // If the product is a configurable product, use the configurable item qty
@@ -557,7 +557,7 @@ class Shippit_Shippit_Model_Shipping_Carrier_Shippit extends Shippit_Shippit_Mod
             }
         }
 
-        // Otherwise, use the qty of the items 
+        // Otherwise, use the qty of the items
         return $item->getQty();
     }
 
