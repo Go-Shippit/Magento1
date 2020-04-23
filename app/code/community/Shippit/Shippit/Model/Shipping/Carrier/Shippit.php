@@ -537,18 +537,27 @@ class Shippit_Shippit_Model_Shipping_Carrier_Shippit extends Shippit_Shippit_Mod
 
     protected function getItemQty($item)
     {
-        $rootItem = $this->getRootItem($item);
+        // If the item has a parent, consider it's type and structure to determine an appropriate qty
+        // - This is due to Magento storing differing qty values for the parent/child of an item
+        if ($item->hasParentItem()) {
+            $parentItem = $this->getRootItem($item);
 
-        // Use the qty of the parent when configurable / bundle product (which ship separately) in cart
-        // because qty of the simple product always remains equal to 1 and magento sets actual qty on
-        // parent item itself
-        if ($item->getParentItemId() != null && $item->getParentItem()->getProductType() == Mage_Catalog_Model_Product_Type::TYPE_CONFIGURABLE) {
-            return $rootItem->getQty();
-        }
-        elseif ($item->getParentItemId() != null && $item->getParentItem()->getProductType() == Mage_Catalog_Model_Product_Type::TYPE_BUNDLE && $rootItem->isShipSeparately()) {
-            return ($item->getQty() * $rootItem->getQty());
+            // If the product is a configurable product, use the configurable item qty
+            if ($parentItem->getProductType() == Mage_Catalog_Model_Product_Type::TYPE_CONFIGURABLE) {
+                return $parentItem->getQty();
+            }
+
+            // If the product is a bundle product and the bundle items are being
+            // shipped seperately, use the bundle items qty * subitems qty
+            if (
+                $parentItem->getProductType() == Mage_Catalog_Model_Product_Type::TYPE_BUNDLE
+                && $parentItem->isShipSeparately()
+            ) {
+                return ($item->getQty() * $parentItem->getQty());
+            }
         }
 
+        // Otherwise, use the qty of the items 
         return $item->getQty();
     }
 
