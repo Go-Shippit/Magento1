@@ -21,9 +21,9 @@ $installer->startSetup();
  * Migrate settings data from v4.4.0 to v4.5.0
  */
 $configOptions = array(
-	'shippit/sync_order/product_unit_weight' => 'shippit/sync_item/product_unit_weight',
-	'shippit/sync_order/product_location_active' => 'shippit/sync_item/product_location_active',
-	'shippit/sync_order/product_location_attribute_code' => 'shippit/sync_item/product_location_attribute_code'
+    'shippit/sync_order/product_unit_weight' => 'shippit/sync_item/product_unit_weight',
+    'shippit/sync_order/product_location_active' => 'shippit/sync_item/product_location_active',
+    'shippit/sync_order/product_location_attribute_code' => 'shippit/sync_item/product_location_attribute_code'
 );
 
 foreach ($configOptions as $configOptionOldKey => $configOptionNewKey) {
