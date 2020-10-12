@@ -39,7 +39,14 @@ class Shippit_Shippit_Helper_Api extends Mage_Core_Helper_Abstract
                     'useragent' => self::API_USER_AGENT . ' v' . $this->helper->getModuleVersion(),
                 )
             )
-            ->setHeaders('Content-Type', 'application/json');
+            ->setHeaders('Content-Type', 'application/json')
+            ->setHeaders(
+                'Authorization',
+                sprintf(
+                    'Bearer %s',
+                    $this->helper->getApiKey()
+                )
+            );
     }
 
     public function getApiEndpoint()
@@ -54,18 +61,14 @@ class Shippit_Shippit_Helper_Api extends Mage_Core_Helper_Abstract
         }
     }
 
-    public function getApiUri($path, $apiKey = null)
+    public function getApiUri($path)
     {
-        if (is_null($apiKey)) {
-            $apiKey = $this->helper->getApiKey();
-        }
-
-        return $this->getApiEndpoint() . '/' . $path . '?auth_token=' . $apiKey;
+        return $this->getApiEndpoint() . '/' . $path;
     }
 
     public function call($uri, $requestData, $method = Zend_Http_Client::POST, $exceptionOnResponseError = true, $apiKey = null)
     {
-        $uri = $this->getApiUri($uri, $apiKey);
+        $uri = $this->getApiUri($uri);
 
         $jsonRequestData = json_encode($requestData);
 
@@ -75,6 +78,17 @@ class Shippit_Shippit_Helper_Api extends Mage_Core_Helper_Abstract
 
         if (!is_null($requestData)) {
             $apiRequest->setRawData($jsonRequestData);
+        }
+
+        // If an api key value is set, use this api key for the request
+        if (!empty($apiKey)) {
+            $apiRequest->setHeaders(
+                'Authorization',
+                sprintf(
+                    'Bearer %s',
+                    $this->helper->getApiKey()
+                )
+            );
         }
 
         try {
@@ -145,12 +159,12 @@ class Shippit_Shippit_Helper_Api extends Mage_Core_Helper_Abstract
             ->response;
     }
 
-    public function getMerchant()
+    public function getMerchant($apiKey = null)
     {
-        return $this->call('merchant', null, Zend_Http_Client::GET, false);
+        return $this->call('merchant', null, Zend_Http_Client::GET, false, $apiKey);
     }
 
-    public function putMerchant($requestData, $exceptionOnResponseError = false)
+    public function putMerchant($requestData, $exceptionOnResponseError = false, $apiKey = null)
     {
         $requestData = array(
             'merchant' => $requestData->toArray()
@@ -158,7 +172,7 @@ class Shippit_Shippit_Helper_Api extends Mage_Core_Helper_Abstract
 
         $url = $this->getApiUri('merchant');
 
-        return $this->call('merchant', $requestData, Zend_Http_Client::PUT, $exceptionOnResponseError)
+        return $this->call('merchant', $requestData, Zend_Http_Client::PUT, $exceptionOnResponseError, $apiKey)
             ->response;
     }
 }
