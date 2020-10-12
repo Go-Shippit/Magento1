@@ -2,7 +2,6 @@
     "name": "shippit/magento1",
     "description": "Shippit Integration Module",
     "type": "magento1-module",
-    "version": "1.5.1",
     "require-dev": {
         "magento/marketplace-eqp": "^4.0"
     },
