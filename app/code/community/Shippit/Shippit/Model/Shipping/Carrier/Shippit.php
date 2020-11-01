@@ -121,7 +121,8 @@ class Shippit_Shippit_Model_Shipping_Carrier_Shippit extends Shippit_Shippit_Mod
             $shippingQuotes = $this->api->getQuote($quoteRequest);
         }
         catch (Exception $e) {
-            return false;
+	        $this->logger->logException($e);
+	        return false;
         }
 
         $this->processShippingQuotes($rateResult, $shippingQuotes);
