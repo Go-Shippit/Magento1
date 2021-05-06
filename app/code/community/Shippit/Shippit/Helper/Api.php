@@ -39,14 +39,7 @@ class Shippit_Shippit_Helper_Api extends Mage_Core_Helper_Abstract
                     'useragent' => self::API_USER_AGENT . ' v' . $this->helper->getModuleVersion(),
                 )
             )
-            ->setHeaders('Content-Type', 'application/json')
-            ->setHeaders(
-                'Authorization',
-                sprintf(
-                    'Bearer %s',
-                    $this->helper->getApiKey()
-                )
-            );
+            ->setHeaders('Content-Type', 'application/json');
     }
 
     public function getApiEndpoint()
@@ -80,16 +73,15 @@ class Shippit_Shippit_Helper_Api extends Mage_Core_Helper_Abstract
             $apiRequest->setRawData($jsonRequestData);
         }
 
-        // If an api key value is set, use this api key for the request
-        if (!empty($apiKey)) {
-            $apiRequest->setHeaders(
-                'Authorization',
-                sprintf(
-                    'Bearer %s',
-                    $this->helper->getApiKey()
-                )
-            );
-        }
+        $apiRequest->setHeaders(
+            'Authorization',
+            sprintf(
+                'Bearer %s',
+                // If an api key value is set, use this api key for the request
+                // otherwise, use the configured api key
+                empty($apiKey) ? $this->helper->getApiKey() : $apiKey
+            )
+        );
 
         try {
             $apiResponse = null;
