@@ -1,76 +1,128 @@
-# Stages
+.show-php-version: &show-php-version
+  - php --version
+
+.show-phpcs-version: &show-phpcs-version
+  - vendor/bin/phpcs --version
+
+.configure-phpcs: &configure-phpcs
+  - vendor/bin/phpcs --config-set colors 1
+  - vendor/bin/phpcs --config-set ignore_warnings_on_exit 1
+  - vendor/bin/phpcs --config-set installed_paths vendor/escapestudios/symfony2-coding-standard,vendor/mamis/phpcs-coding-standard/src,vendor/magento/marketplace-eqp
+
+.show-parallel-lint-version: &show-parallel-lint-version
+  - vendor/bin/parallel-lint --version
+
+.show-composer-version: &show-composer-version
+  - composer --version
+
 stages:
   - build
-  - lint
-  - code-style
+  - test
 
 
-build:
-  type: build
-  image: mamis/php-build:7.2
+.build:
+  stage: build
   artifacts:
     untracked: true
     expire_in: 7 days
     paths:
-      - ./
+      - ./vendor
+  before_script:
+    - *show-php-version
+    - *show-composer-version
   script:
-    - php --version
-    - composer --version
-    - composer install --verbose --prefer-dist --no-progress --no-interaction --optimize-autoloader
+    - composer install --prefer-dist --no-progress --no-interaction --optimize-autoloader
 
-
-.php-linter: &php-linter
-  stage: lint
-  dependencies:
-    - build
-  script:
-    - php --version
-    - parallel-lint --version
-    - parallel-lint --exclude ./vendor ./
-
-php-5.5-linter:
-  <<: *php-linter
+build:php-5.5:
+  extends: .build
   image: mamis/php-build:5.5
 
-php-5.6-linter:
-  <<: *php-linter
-  image: mamis/php-build:5.6
+build:php-5.6:
+  extends: .build
+  image: registry.mamis.com.au/mamis/containers/php/build:5.6
 
-php-7.0-linter:
-  <<: *php-linter
-  image: mamis/php-build:7.0
+build:php-7.0:
+  extends: .build
+  image: registry.mamis.com.au/mamis/containers/php/build:7.0
 
-php-7.1-linter:
-  <<: *php-linter
-  image: mamis/php-build:7.1
+build:php-7.1:
+  extends: .build
+  image: registry.mamis.com.au/mamis/containers/php/build:7.1
 
-php-depreciations-linter:
-  stage: lint
-  image: mamis/php-build:7.1
-  dependencies:
-    - build
+build:php-7.2:
+  extends: .build
+  image: registry.mamis.com.au/mamis/containers/php/build:7.2
+
+
+.php-linter:
+  stage: test
+  before_script:
+    - *show-php-version
+    - *show-parallel-lint-version
   script:
-    - php --version
-    - phpcf --version
-    - phpcf --target=7.1 --exclude=vendor ./
+    - vendor/bin/parallel-lint --exclude ./vendor ./
 
-phpcs-psr2:
-  stage: code-style
-  image: mamis/php-build:7.1
-  dependencies:
-    - build
+php-linter:5.5:
+  extends: .php-linter
+  image: mamis/php-build:5.5
+  needs:
+    - build:php-5.5
+
+php-linter:5.6:
+  extends: .php-linter
+  image: registry.mamis.com.au/mamis/containers/php/build:5.6
+  needs:
+    - build:php-5.6
+
+php-linter:7.0:
+  extends: .php-linter
+  image: registry.mamis.com.au/mamis/containers/php/build:7.0
+  needs:
+    - build:php-7.0
+
+php-linter:7.1:
+  extends: .php-linter
+  image: registry.mamis.com.au/mamis/containers/php/build:7.1
+  needs:
+    - build:php-7.1
+
+php-linter:7.2:
+  extends: .php-linter
+  image: registry.mamis.com.au/mamis/containers/php/build:7.2
+  needs:
+    - build:php-7.2
+
+
+php-depreciations:
+  stage: test
+  image: registry.mamis.com.au/mamis/containers/php/build:7.2
+  needs:
+    - build:php-7.2
+  before_script:
+    - *show-php-version
+    - *show-phpcs-version
+    - *configure-phpcs
   script:
-    - php -v
-    - phpcs --version
-    - phpcs --colors --standard=PSR2 --ignore=./vendor --report=full,summary,gitblame .
+    - vendor/bin/phpdd --after=5.5 --target=7.2 --exclude=vendor ./
+
+
+.phpcs:
+  stage: test
+  image: registry.mamis.com.au/mamis/containers/php/build:7.2
+  needs:
+    - build:php-7.2
+  before_script:
+    - *show-php-version
+    - *show-phpcs-version
+    - *configure-phpcs
   allow_failure: true
 
-phpcs-magento1:
-  stage: code-style
-  image: mamis/php-build:7.1
-  dependencies:
-    - build
+phpcs-mamis:
+  extends: .phpcs
   script:
-    - php -v
-    - vendor/bin/phpcs --version
-    - vendor/bin/phpcs --colors --warning-severity=0 --standard=MEQP1 --severity=10 --extensions=php,phtml --ignore=./vendor --report=full,summary,gitblame . --runtime-set installed_paths vendor/magento/marketplace-eqp
+    - vendor/bin/phpcs --standard=Mamis --report=full,summary,gitblame --ignore=./vendor/* ./
+
+phpcs-magento1:
+  extends: .phpcs
+  script:
+    - vendor/bin/phpcs --standard=MEQP1 --colors --warning-severity=0 --severity=10 --extensions=php,phtml --report=full,summary,gitblame --ignore=./vendor/* ./ --runtime-set installed_paths vendor/magento/marketplace-eqp
