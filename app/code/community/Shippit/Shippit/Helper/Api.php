@@ -16,8 +16,8 @@
 
 class Shippit_Shippit_Helper_Api extends Mage_Core_Helper_Abstract
 {
-    const API_ENDPOINT_PRODUCTION = 'https://www.shippit.com/api/3';
-    const API_ENDPOINT_STAGING = 'https://staging.shippit.com/api/3';
+    const API_ENDPOINT_PRODUCTION = 'https://app.shippit.com/api/3';
+    const API_ENDPOINT_STAGING = 'https://app.staging.shippit.com/api/3';
     const API_TIMEOUT = 15;
     const API_USER_AGENT = 'Shippit_Shippit for Magento';
 
